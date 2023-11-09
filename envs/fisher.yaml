@@ -1,0 +1,7 @@
+name: fisher
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - phylofisher
+prefix: /scratch/jduque2/mambaforge/envs/fisher

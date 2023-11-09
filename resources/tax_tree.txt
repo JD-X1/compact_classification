@@ -1,0 +1,304 @@
+Amoeprot	Eukaryota;Amoebozoa;Tubulinea;Elardia;Euamoebida;Amoebidae;Amoeba;Amoeba proteus
+Arcevulg	Eukaryota;Amoebozoa;Tubulinea;Elardia;Arcellinida;Sphaerothecina;Arcellidae;Arcella;Arcella intermedia
+Armalang	Eukaryota;Amoebozoa;Evosea
+Cavoapop	Eukaryota;Amoebozoa;Evosea;Variosea;Cavosteliida;Cavosteliaceae;Cavostelium;Cavostelium apophysatum
+Cochminu	Eukaryota;Amoebozoa;Discosea
+Coprprot	Eukaryota;Amoebozoa;Tubulinea
+Cuneruss	Eukaryota;Amoebozoa;Discosea;Flabellinia;Dactylopodida;Paramoebidae;Cunea;Cunea russae
+Dracjorm	Eukaryota;Amoebozoa;Discosea
+Echibisp	Eukaryota;Amoebozoa;Evosea;Eumycetozoa;Myxogastria;Columellidia;Echinosteliales;Echinosteliidae;Echinostelium;Echinostelium bisporum
+Echiexud	Eukaryota;Amoebozoa;Tubulinea;Echinamoebida;Echinamoebidae;Echinamoeba;Echinamoeba exundans
+Endozona	Eukaryota;Amoebozoa;Discosea
+Filanola	Eukaryota;Amoebozoa;Evosea;Variosea;Filamoeba;Filamoeba nolandi
+Flabcita	Eukaryota;Amoebozoa;Tubulinea;Elardia;Leptomyxida;Flabellulidae;Flabellula;Flabellula citata
+Gocefonb	Eukaryota;Amoebozoa;Discosea;Himatismenida;Goceviidae;Gocevia;Gocevia fonbrunei
+Luaphula	Eukaryota;Amoebozoa;Discosea
+Masteilh	Eukaryota;Amoebozoa;Evosea;Archamoebae;Pelobiontida;Mastigella;Mastigella eilhardi
+Mayocant	Eukaryota;Amoebozoa;Discosea;Longamoebia;Dermamoebida;Mayorella;Mayorella cantabrigiensis
+MicrA134	Eukaryota;Amoebozoa;Tubulinea;Echinamoebida;Micriamoeba;unclassified Micriamoeba;Micriamoeba sp.
+NolaAFSM	Eukaryota;Amoebozoa;Tubulinea;Elardia;Euamoebida;Hartmannellidae;Nolandella;unclassified Nolandella;Nolandella sp.
+Ovaldese	Eukaryota;Amoebozoa;Discosea;Himatismenida;Cochliopodiidae;Planopodium;Planopodium desertum
+Paralevi	Eukaryota;Amoebozoa;Discosea;Longamoebia;Dermamoebida;Paradermamoeba;Paradermamoeba levis
+Pellcata	Eukaryota;Amoebozoa;Discosea;Flabellinia;Pellitidae;Pellita;Pellita catalonica
+Phalsoli	Eukaryota;Amoebozoa;Evosea;Variosea;Phalansterium;Phalansterium solitarium
+Hetepall	Eukaryota;Amoebozoa;Evosea;Eumycetozoa;Dictyostelia;Acytosteliales;Acytosteliaceae;Heterostelium;Heterostelium pallidum
+Rhizelon	Eukaryota;Amoebozoa;Evosea;Archamoebae;Rhizomastix;Rhizomastix elongata
+Rhizsaxo	Eukaryota;Amoebozoa;Tubulinea;Elardia;Leptomyxida;Flabellulidae;Rhizamoeba;Rhizamoeba saxonica
+Sapppeda	Eukaryota;Amoebozoa;Discosea;Longamoebia;Thecamoebida;Sappinia;Sappinia pedata
+Schivulg	Eukaryota;Amoebozoa;Evosea;Variosea;Cavosteliida;Schizoplasmodiopsis;Schizoplasmodiopsis vulgaris
+Sapochin	Eukaryota;Amoebozoa;Evosea
+Soliirre	Eukaryota;Amoebozoa;Evosea
+Squajapo	Eukaryota;Amoebozoa;Evosea;Cutosea;Squamamoeba;Squamamoeba japonica
+Stensten	Eukaryota;Amoebozoa;Discosea;Longamoebia;Thecamoebida;Stenamoeba;Stenamoeba stenopodia
+ThecSK13	Eukaryota;Amoebozoa;Discosea;Longamoebia;Thecamoebida;Thecamoeba;unclassified Thecamoeba;Thecamoeba sp.
+Tychacut	Eukaryota;Amoebozoa;Evosea;Variosea;Cavosteliida;Tychosporium;Tychosporium acutostipes
+Vermverm	Eukaryota;Amoebozoa;Tubulinea;Echinamoebida;Vermamoeba;Vermamoeba vermiformis
+Veximinu	Eukaryota;Amoebozoa;Discosea;Flabellinia;Dactylopodida;Vexilliferidae;Vexillifera;Vexillifera minutissima
+Ancysigm	Eukaryota;Ancyromonadida;Ancyromonadidae;Ancyromonas
+Fabotrop	Eukaryota;Ancyromonadida;Planomonadidae;Fabomonas;Fabomonas tropica
+Nutohowe	Eukaryota;Ancyromonadida;Nutomonas;Nutomonas howeae
+Nutolong	Eukaryota;Ancyromonadida;Nutomonas;Nutomonas longa
+Colltric	Eukaryota;CRuMs;Collodictyonidae;Collodictyon;Collodictyon triciliatum
+Diphrota	Eukaryota;CRuMs;Collodictyonidae;Diphylleia;Diphylleia rotans
+Mantplas	Eukaryota;CRuMs;Mantamonadidae;Mantamonas;Mantamonas plastica
+Rigiramo	Eukaryota;CRuMs;Rigifilida;Rigifila;Rigifila ramosa
+Bodosalt	Eukaryota;Discoba;Euglenozoa;Kinetoplastea;Metakinetoplastina;Eubodonida;Bodonidae;Bodo;Bodo saltans
+Euglgrac	Eukaryota;Discoba;Euglenozoa;Euglenida;Spirocuta;Euglenophyceae;Euglenales;Euglenaceae;Euglena;Euglena gracilis
+Eutrgymn	Eukaryota;Discoba;Euglenozoa;Euglenida;Spirocuta;Euglenophyceae;Eutreptiales;Eutreptiella;Eutreptiella gymnastica
+HeterBB2	Eukaryota;Discoba;Heterolobosea
+Jakolibe	Eukaryota;Discoba;Jakobida;Histionina;Jakobidae;Jakoba;Jakoba libera
+Pharkirb	Eukaryota;Discoba;Heterolobosea;Pharyngomonada;Pharyngomonas;Pharyngomonas kirbyi
+Reclamer	Eukaryota;Discoba;Jakobida;Histionina;Histionidae;Reclinomonas;Reclinomonas americana
+Tsukglob	Eukaryota;Discoba;Tsukubamonadida;Tsukubamonadidae;Tsukubamonas;Tsukubamonas globosa
+Gefiokel	Eukaryota;Malawimonadida;Malawimonadidae;Gefionella;Gefionella okellyi
+Malacali	Eukaryota;Malawimonadida;Malawimonadidae;Malawimonas;Malawimonas californiana
+Malajako	Eukaryota;Malawimonadida;Malawimonadidae;Malawimonas;Malawimonas jakobiformis
+Carpmemb	Eukaryota;Metamonada;Fornicata;Carpediemonas-like organisms;Carpediemonas;Carpediemonas membranifera
+Adunpalu	Eukaryota;Metamonada;Fornicata;Carpediemonas-like organisms;Aduncisulcus;Aduncisulcus paluster
+Ergocypr	Eukaryota;Metamonada;Fornicata;Carpediemonas-like organisms;Ergobibamus;Ergobibamus cyprinoides
+Giarlamb	Eukaryota;Metamonada;Fornicata;Diplomonadida;Hexamitidae;Giardiinae;Giardia;Giardia intestinalis
+Trimmari	Eukaryota;Metamonada;Preaxostyla;Trimastigidae;Trimastix;Trimastix marina
+Allomacr	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Blastocladiomycota;Blastocladiomycetes;Blastocladiales;Blastocladiaceae;Allomyces;Allomyces macrogynus
+Mancberm	Eukaryota;Apusozoa;Apusomonadida
+Amoepara	Eukaryota;Opisthokonta;Ichthyosporea;Ichthyophonida;Amoebidiaceae;Amoebidium;Amoebidium parasiticum
+Amphquee	Eukaryota;Opisthokonta;Metazoa;Porifera;Demospongiae;Heteroscleromorpha;Haplosclerida;Niphatidae;Amphimedon;Amphimedon queenslandica
+Apismell	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Protostomia;Ecdysozoa;Panarthropoda;Arthropoda;Mandibulata;Pancrustacea;Hexapoda;Insecta;Dicondylia;Pterygota;Neoptera;Endopterygota;Hymenoptera;Apocrita;Aculeata;Apoidea;Anthophila;Apidae;Apinae;Apini;Apis;Apis mellifera
+Aplycali	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Protostomia;Spiralia;Lophotrochozoa;Mollusca;Gastropoda;Heterobranchia;Euthyneura;Tectipleura;Aplysiida;Aplysioidea;Aplysiidae;Aplysia;Aplysia californica
+Aspefumi	Eukaryota;Opisthokonta;Fungi;Dikarya;Ascomycota;saccharomyceta;Pezizomycotina;leotiomyceta;Eurotiomycetes;Eurotiomycetidae;Eurotiales;Aspergillaceae;Aspergillus;Aspergillus subgen. Fumigati;Aspergillus fumigatus;Aspergillus fumigatus Af293
+Branflor	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Deuterostomia;Chordata;Cephalochordata;Leptocardii;Amphioxiformes;Branchiostomatidae;Branchiostoma;Branchiostoma floridae
+Brevanat	Eukaryota;Breviatea;Breviata;Breviata anathema
+Caeneleg	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Protostomia;Ecdysozoa;Nematoda;Chromadorea;Rhabditida;Rhabditina;Rhabditomorpha;Rhabditoidea;Rhabditidae;Peloderinae;Caenorhabditis;Caenorhabditis elegans
+Coprcine	Eukaryota;Opisthokonta;Fungi;Dikarya;Basidiomycota;Agaricomycotina;Agaricomycetes;Agaricomycetidae;Agaricales;Agaricineae;Psathyrellaceae;Coprinopsis;Coprinopsis cinerea
+Debahans	Eukaryota;Opisthokonta;Fungi;Dikarya;Ascomycota;saccharomyceta;Saccharomycotina;Saccharomycetes;Saccharomycetales;CUG-Ser1 clade;Debaryomycetaceae;Debaryomyces;Debaryomyces hansenii
+Drosmela	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Protostomia;Ecdysozoa;Panarthropoda;Arthropoda;Mandibulata;Pancrustacea;Hexapoda;Insecta;Dicondylia;Pterygota;Neoptera;Endopterygota;Diptera;Brachycera;Muscomorpha;Eremoneura;Cyclorrhapha;Schizophora;Acalyptratae;Ephydroidea;Drosophilidae;Drosophilinae;Drosophilini;Drosophila;Sophophora;melanogaster group;melanogaster subgroup;Drosophila melanogaster
+Fontalba	Eukaryota;Opisthokonta;Rotosphaerida;Fonticulaceae;Fonticula;Fonticula alba
+Gallgall	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Deuterostomia;Chordata;Craniata;Vertebrata;Gnathostomata;Teleostomi;Euteleostomi;Sarcopterygii;Dipnotetrapodomorpha;Tetrapoda;Amniota;Sauropsida;Sauria;Archelosauria;Archosauria;Dinosauria;Saurischia;Theropoda;Coelurosauria;Aves;Neognathae;Galloanserae;Galliformes;Phasianidae;Phasianinae;Gallus;Gallus gallus
+Lenilimo	Eukaryota;Breviatea;Lenisia;Lenisia limosa
+Minivibr	Eukaryota;Opisthokonta;Filasterea;Ministeria;Ministeria vibrans
+Multmedi	Eukaryota;Apusozoa;Apusomonadida;Apusomonadidae;Multimonas;Multimonas media
+Neurcras	Eukaryota;Opisthokonta;Fungi;Dikarya;Ascomycota;saccharomyceta;Pezizomycotina;leotiomyceta;sordariomyceta;Sordariomycetes;Sordariomycetidae;Sordariales;Sordariaceae;Neurospora;Neurospora crassa;Neurospora crassa OR74A
+Pygsbifo	Eukaryota;Breviatea;Pygsuia;Pygsuia biforma
+Rhizdele	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Mucoromycota;Mucoromycotina;Mucoromycetes;Mucorales;Mucorineae;Rhizopodaceae;Rhizopus;Rhizopus delemar
+Salprose	Eukaryota;Opisthokonta;Choanoflagellata;Craspedida;Salpingoecidae;Salpingoeca;Salpingoeca rosetta
+Schimans	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Protostomia;Spiralia;Lophotrochozoa;Platyhelminthes;Trematoda;Digenea;Strigeidida;Schistosomatoidea;Schistosomatidae;Schistosoma;Schistosoma mansoni
+Schizpom	Eukaryota;Opisthokonta;Fungi;Dikarya;Ascomycota;Taphrinomycotina;Schizosaccharomycetes;Schizosaccharomycetales;Schizosaccharomycetaceae;Schizosaccharomyces;Schizosaccharomyces pombe
+Sphaarct	Eukaryota;Opisthokonta;Ichthyosporea;Ichthyophonida;Sphaeroforma;Sphaeroforma arctica
+Spizpunc	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Chytridiomycota;Chytridiomycota incertae sedis;Chytridiomycetes;Spizellomycetales;Spizellomycetaceae;Spizellomyces;Spizellomyces punctatus
+Taensoli	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Protostomia;Spiralia;Lophotrochozoa;Platyhelminthes;Cestoda;Eucestoda;Cyclophyllidea;Taeniidae;Taenia;Taenia solium
+Thecoxon	Eukaryota;Apusozoa;Apusomonadida;Apusomonadidae;Mylnikovia;Mylnikovia oxoniensis
+Ustimayd	Eukaryota;Opisthokonta;Fungi;Dikarya;Basidiomycota;Ustilaginomycotina;Ustilaginomycetes;Ustilaginales;Ustilaginaceae;Ustilago;Ustilago maydis
+Guttvulg	Eukaryota;Sar;Rhizaria;Cercozoa;Sainouroidea;Guttulinopsidae;Guttulinopsis;Guttulinopsis vulgaris
+Calltube	Eukaryota;Rhodophyta;Florideophyceae;Corallinophycidae;Corallinales;Corallinaceae;Corallinoideae;Calliarthron;Calliarthron tuberculosum
+Protlace	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa;Opalinata;Proteromonadidae;Proteromonas;Proteromonas lacertae
+Rozeallo	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Cryptomycota;Cryptomycota incertae sedis;Rozella;Rozella allomycis
+Physpoly	Eukaryota;Amoebozoa;Evosea;Eumycetozoa;Myxogastria;Myxogastromycetidae;Physariida;Physaraceae;Physarum;Physarum polycephalum
+Dictdisc	Eukaryota;Amoebozoa;Evosea;Eumycetozoa;Dictyostelia;Dictyosteliales;Dictyosteliaceae;Dictyostelium;Dictyostelium discoideum
+Protfung	Eukaryota;Amoebozoa;Evosea;Variosea;Cavosteliida;Cavosteliaceae;Planoprotostelium;Planoprotostelium fungivorum
+Monoexil	Eukaryota;Metamonada;Preaxostyla;Oxymonadida;Polymastigidae;Monocercomonoides;Monocercomonoides exilis
+Parapyri	Eukaryota;Metamonada;Preaxostyla;Paratrimastigidae;Paratrimastix;Paratrimastix pyriformis
+Acancast	Eukaryota;Amoebozoa;Discosea;Longamoebia;Centramoebida;Acanthamoebidae;Acanthamoeba;Acanthamoeba castellanii
+Sacccere	Eukaryota;Opisthokonta;Fungi;Dikarya;Ascomycota;saccharomyceta;Saccharomycotina;Saccharomycetes;Saccharomycetales;Saccharomycetaceae;Saccharomyces;Saccharomyces cerevisiae
+Batrdend	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Chytridiomycota;Chytridiomycota incertae sedis;Chytridiomycetes;Rhizophydiales;Rhizophydiales incertae sedis;Batrachochytrium;Batrachochytrium dendrobatidis
+Gephhuxl	Eukaryota;Haptista;Haptophyta;Prymnesiophyceae;Isochrysidales;Noelaerhabdaceae;Emiliania;Emiliania huxleyi
+Calclept	Eukaryota;Haptista;Haptophyta;Prymnesiophyceae;Coccolithales;Calcidiscaceae;Calcidiscus;Calcidiscus leptoporus
+Phaeglob	Eukaryota;Haptista;Haptophyta;Prymnesiophyceae;Phaeocystales;Phaeocystaceae;Phaeocystis;Phaeocystis globosa
+Hemirufe	Eukaryota;Cryptophyceae;Cryptomonadales;Hemiselmidaceae;Hemiselmis;Hemiselmis rufescens
+Gemicryo	Eukaryota;Cryptophyceae;Pyrenomonadales;Geminigeraceae;Geminigera;Geminigera cryophila
+Guilthet	Eukaryota;Cryptophyceae;Pyrenomonadales;Geminigeraceae;Guillardia;Guillardia theta
+Galdphle	Eukaryota;Rhodophyta;Bangiophyceae;Galdieriales;Galdieriaceae;Galdieria;Galdieria phlegrea
+Porppurp	Eukaryota;Rhodophyta;Bangiophyceae;Bangiales;Bangiaceae;Porphyra;Porphyra purpurea
+Gracchor	Eukaryota;Rhodophyta;Florideophyceae;Rhodymeniophycidae;Gracilariales;Gracilariaceae;Gracilariopsis;Gracilariopsis chorda
+AcanthFB	Eukaryota;Haptista;Centroplasthelida
+Raphhete	Eukaryota;Haptista;Centroplasthelida;Pterocystida;Raphidista;Raphidiophryidae;Raphidiophrys;Raphidiophrys heterophryoidea
+Rainerin	Eukaryota;Haptista;Centroplasthelida;Pterocystida;Pterista;Pterocystidae;Raineriophrys;Raineriophrys erinaceoides
+ChoanoFB	Eukaryota;Haptista;Centroplasthelida
+Thectrah	Eukaryota;Apusozoa;Apusomonadida;Apusomonadidae;Thecamonas;Thecamonas trahens
+Goniavon	Eukaryota;Cryptophyceae;Cyathomonadacea;Goniomonadaceae;Goniomonas;Goniomonas avonlea
+SpirCILI	Bacteria;Spirochaetota;Spirochaetia;Spirochaetales;Spirochaetaceae;Entomospira
+Hemikukw	Eukaryota;Hemimastigophora;Spironemidae;Hemimastix;Hemimastix kukwesjijk
+TeloneP2	Eukaryota;Eukaryota incertae sedis;Telonemida;Telonema
+Telosubt	Eukaryota;Eukaryota incertae sedis;Telonemida;Telonema;Telonema subtile
+Mitodaph	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Microsporidia;Microsporidia incertae sedis;Mitosporidium;Mitosporidium daphniae
+Nemavect	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Cnidaria;Anthozoa;Hexacorallia;Actiniaria;Edwardsiidae;Nematostella;Nematostella vectensis
+Coralima	Eukaryota;Opisthokonta;Opisthokonta incertae sedis;Corallochytrium;Corallochytrium limacisporum
+Syssmult	Eukaryota;Opisthokonta;Opisthokonta incertae sedis;Syssomonas;Syssomonas multiformis
+Capsowcz	Eukaryota;Opisthokonta;Filasterea;Capsaspora;Capsaspora owczarzaki
+Sphadest	Eukaryota;Opisthokonta;Ichthyosporea;Dermocystida;Sphaerothecum;Sphaerothecum destruens
+Creofrag	Eukaryota;Opisthokonta;Ichthyosporea;Ichthyophonida;Creolimax;Creolimax fragrantissima
+Pigoviet	Eukaryota;Opisthokonta;Filasterea;Pigoraptor;Pigoraptor vietnamica
+Homosapi	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Bilateria;Deuterostomia;Chordata;Craniata;Vertebrata;Gnathostomata;Teleostomi;Euteleostomi;Sarcopterygii;Dipnotetrapodomorpha;Tetrapoda;Amniota;Mammalia;Theria;Eutheria;Boreoeutheria;Euarchontoglires;Primates;Haplorrhini;Simiiformes;Catarrhini;Hominoidea;Hominidae;Homininae;Homo;Homo sapiens
+Monobrev	Eukaryota;Opisthokonta;Choanoflagellata;Craspedida;Salpingoecidae;Monosiga;Monosiga brevicollis
+Tricvagi	Eukaryota;Metamonada;Parabasalia;Trichomonadida;Trichomonadidae;Trichomonas;Trichomonas vaginalis
+Parvatla	Eukaryota;Opisthokonta;Rotosphaerida;Parvularia;Parvularia atlantis
+Naeggrub	Eukaryota;Discoba;Heterolobosea;Tetramitia;Eutetramitia;Vahlkampfiidae;Naegleria;Naegleria gruberi
+Styginca	Eukaryota;Discoba;Jakobida;Andalucina;Stygiellidae;Stygiella;Stygiella incarcerata
+Andagodo	Eukaryota;Discoba;Jakobida;Andalucina;Andaluciidae;Andalucia;Andalucia godoyi
+Trypbruc	Eukaryota;Discoba;Euglenozoa;Kinetoplastea;Metakinetoplastina;Trypanosomatida;Trypanosomatidae;Trypanosoma;Trypanozoon;Trypanosoma brucei
+Leptpyrr	Eukaryota;Discoba;Euglenozoa;Kinetoplastea;Metakinetoplastina;Trypanosomatida;Trypanosomatidae;Leishmaniinae;Leptomonas;Leptomonas pyrrhocoris
+Leismajo	Eukaryota;Discoba;Euglenozoa;Kinetoplastea;Metakinetoplastina;Trypanosomatida;Trypanosomatidae;Leishmaniinae;Leishmania;Leishmania;Leishmania major species complex;Leishmania major
+Charbrau	Eukaryota;Viridiplantae;Streptophyta;Streptophytina;Charophyceae;Charales;Characeae;Chara;Chara braunii
+Prassing	Eukaryota;Viridiplantae;Prasinodermophyta;Prasinodermophyceae;Prasinodermales;Prasinodermaceae;Prasinoderma;Prasinoderma singulare
+Arabthal	Eukaryota;Viridiplantae;Streptophyta;Streptophytina;Embryophyta;Tracheophyta;Euphyllophyta;Spermatophyta;Magnoliopsida;Mesangiospermae;eudicotyledons;Gunneridae;Pentapetalae;rosids;malvids;Brassicales;Brassicaceae;Camelineae;Arabidopsis;Arabidopsis thaliana
+Pyrapark	Eukaryota;Viridiplantae;Chlorophyta;Pyramimonadophyceae;Pyramimonadales;Pyramimonadaceae;Pyramimonas;Pyramimonas subgen. Trichocystis;Pyramimonas parkeae
+Nephpyri	Eukaryota;Viridiplantae;Chlorophyta;Nephroselmidophyceae;Nephroselmidales;Nephroselmidaceae;Nephroselmis;Nephroselmis pyriformis
+Prascaps	Eukaryota;Viridiplantae;Chlorophyta;Palmophyllophyceae;Prasinococcales;Prasinococcaceae;Prasinococcus;Prasinococcus capsulatus
+Dunasali	Eukaryota;Viridiplantae;Chlorophyta;core chlorophytes;Chlorophyceae;CS clade;Chlamydomonadales;Dunaliellaceae;Dunaliella;Dunaliella salina
+Chlovari	Eukaryota;Viridiplantae;Chlorophyta;core chlorophytes;Trebouxiophyceae;Chlorellales;Chlorellaceae;Chlorella clade;Chlorella;Chlorella variabilis
+Chlarein	Eukaryota;Viridiplantae;Chlorophyta;core chlorophytes;Chlorophyceae;CS clade;Chlamydomonadales;Chlamydomonadaceae;Chlamydomonas;Chlamydomonas reinhardtii
+Tetrasti	Eukaryota;Viridiplantae;Chlorophyta;core chlorophytes;Chlorodendrophyceae;Chlorodendrales;Chlorodendraceae;Tetraselmis;Tetraselmis astigmatica
+Mesoviri	Eukaryota;Viridiplantae;Streptophyta;Mesostigmatophyceae;Mesostigmatales;Mesostigmataceae;Mesostigma;Mesostigma viride
+Thalpseu	Eukaryota;Sar;Stramenopiles;Ochrophyta;Bacillariophyta;Coscinodiscophyceae;Thalassiosirophycidae;Thalassiosirales;Thalassiosiraceae;Thalassiosira;Thalassiosira pseudonana
+EctocSP7	Eukaryota;Sar;Stramenopiles;Ochrophyta;PX clade;Phaeophyceae;Ectocarpales;Ectocarpaceae;Ectocarpus;unclassified Ectocarpus;Ectocarpus sp. 7
+MAST004E	Eukaryota;Sar;Stramenopiles;unclassified stramenopiles;Marine_stramenopiles_MASTs group;Stramenopiles sp. MAST-4E
+MAST04A2	Eukaryota;Sar;Stramenopiles;unclassified stramenopiles;Marine_stramenopiles_MASTs group;Stramenopiles sp. MAST-4A
+MAST004C	Eukaryota;Sar;Stramenopiles;unclassified stramenopiles;Marine_stramenopiles_MASTs group;Stramenopiles sp. MAST-4C-sp1
+BicoCB20	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa;Bicosoecida;unclassified Bicosoecida;Bicosoecida sp.
+ChrysoH1	Eukaryota;Sar;Stramenopiles;Ochrophyta;Chrysophyceae;unclassified Chrysophyceae;Chrysophyceae sp. TOSAG23-4
+ChrysoH2	Eukaryota;Sar;Stramenopiles;Ochrophyta;Chrysophyceae;unclassified Chrysophyceae;Chrysophyceae sp. TOSAG23-5
+Phytpara	Eukaryota;Sar;Stramenopiles;Oomycota;Peronosporales;Peronosporaceae;Phytophthora;Phytophthora parasitica
+Gregniph	Eukaryota;Sar;Alveolata;Apicomplexa
+Plasfalc	Eukaryota;Sar;Alveolata;Apicomplexa;Aconoidasida;Haemosporida;Plasmodiidae;Plasmodium;Plasmodium (Laverania);Plasmodium falciparum
+Lapoguse	Eukaryota;Sar;Rhizaria;Aquavolonida;Lapot;Lapot gusevi
+Leptvora	Eukaryota;Sar;Rhizaria;Endomyxa;Vampyrellida;Leptophryidae;Leptophrys;Leptophrys vorax
+Oxyrmari	Eukaryota;Sar;Alveolata;Dinophyceae;Oxyrrhinales;Oxyrrhinaceae;Oxyrrhis;Oxyrrhis marina
+Bigenata	Eukaryota;Sar;Rhizaria;Cercozoa;Chlorarachniophyceae;Bigelowiella;Bigelowiella natans
+Ammo1384	Eukaryota;Sar;Rhizaria;Retaria;Foraminifera;Rotaliida;Rotaliacea;Rotaliidae;Ammonia;unclassified Ammonia;Ammonia sp.
+Sori0191	Eukaryota;Sar;Rhizaria;Retaria;Foraminifera;Miliolida;Miliolina;Soritidae;Soritinae;Sorites;unclassified Sorites;Sorites sp.
+Aurisoli	Eukaryota;Sar;Rhizaria;Cercozoa;Glissomonadida;Pansomonadidae;Aurigamonas;Aurigamonas solis
+Paulchro	Eukaryota;Sar;Rhizaria;Cercozoa;Imbricatea;Silicofilosea;Euglyphida;Paulinellidae;Paulinella;Paulinella chromatophora
+Plasbras	Eukaryota;Sar;Rhizaria;Endomyxa;Phytomyxea;Plasmodiophorida;Plasmodiophoridae;Plasmodiophora;Plasmodiophora brassicae
+Stichzan	Eukaryota;Sar;Rhizaria;Retaria;Sticholonchida;Sticholonchidae;Sticholonche;Sticholonche zanclea
+Stencoer	Eukaryota;Sar;Alveolata;Ciliophora;Postciliodesmatophora;Heterotrichea;Heterotrichida;Stentoridae;Stentor;Stentor coeruleus
+Protadhe	Eukaryota;Sar;Alveolata;Ciliophora;Intramacronucleata;Spirotrichea;Protocruziidia;Protocruzia;Protocruzia adherens
+Platmacr	Eukaryota;Sar;Alveolata;Ciliophora;Intramacronucleata;Colpodea;Cyrtolophosidida;Platyophryidae;Platyophrya;Platyophrya macrostoma
+Ichtmult	Eukaryota;Sar;Alveolata;Ciliophora
+Tetrther	Eukaryota;Sar;Alveolata;Ciliophora;Intramacronucleata;Oligohymenophorea;Hymenostomatida;Tetrahymenina;Tetrahymenidae;Tetrahymena;Tetrahymena thermophila
+Paratetr	Eukaryota;Sar;Alveolata;Ciliophora;Intramacronucleata;Oligohymenophorea;Peniculida;Parameciidae;Paramecium;Paramecium tetraurelia
+Styllemn	Eukaryota;Sar;Alveolata;Ciliophora;Intramacronucleata;Spirotrichea;Stichotrichia;Sporadotrichida;Oxytrichidae;Stylonychinae;Stylonychia;Stylonychia lemnae
+Stroincl	Eukaryota;Sar;Alveolata;Ciliophora;Intramacronucleata;Spirotrichea;Oligotrichia;Strombidiidae;Strombidium;Strombidium inclinatum
+Vitrbras	Eukaryota;Sar;Alveolata;Colpodellida;Vitrellaceae;Vitrella;Vitrella brassicaformis
+Eimebrun	Eukaryota;Sar;Alveolata;Apicomplexa;Conoidasida;Coccidia;Eucoccidiorida;Eimeriorina;Eimeriidae;Eimeria;Eimeria brunetti
+Alphedax	Eukaryota;Sar;Alveolata;Colpodellida;Alphamonaceae;Alphamonas;Alphamonas edax
+Symbmicr	Eukaryota;Sar;Alveolata;Dinophyceae;Suessiales;Symbiodiniaceae;Symbiodinium;Symbiodinium microadriaticum
+Colpangu	Eukaryota;Sar;Alveolata;Colpodellida;Colpodellaceae;Colpodella;Colpodella angusta
+HemaVICK	Eukaryota;Sar;Alveolata;Dinophyceae;Syndiniales;Syndiniaceae;Hematodinium;unclassified Hematodinium;Hematodinium sp.
+Noctscin	Eukaryota;Sar;Alveolata;Dinophyceae;Noctilucales;Noctilucaceae;Noctiluca;Noctiluca scintillans
+MAST04A1	Eukaryota;Sar;Stramenopiles;unclassified stramenopiles;Marine_stramenopiles_MASTs group;Stramenopiles sp. MAST-4A
+Paraconf	Eukaryota;Discoba;Euglenozoa;Kinetoplastea;Metakinetoplastina;Trypanosomatida;Trypanosomatidae;Paratrypanosoma;Paratrypanosoma confusum
+MAST003A	Duplodnaviria;Heunggongvirae;Uroviricota;Caudoviricetes;Triavirus;Triavirus tv3a
+Spirsalm	Eukaryota;Metamonada;Fornicata;Diplomonadida;Hexamitidae;Hexamitinae;Spironucleus;Spironucleus salmonicida
+Kipfbial	Eukaryota;Metamonada;Fornicata;Carpediemonas-like organisms;Kipferlia;Kipferlia bialata
+TeloneP1	Eukaryota;Eukaryota incertae sedis;Telonemida;Telonema
+Retifilo	Eukaryota;Sar;Rhizaria;Retaria;Foraminifera;Monothalamids;Reticulomyxidae;Reticulomyxa;Reticulomyxa filosa
+Abolprol	Eukaryota;Sar;Rhizaria;Cercozoa;Imbricatea;Marimonadida;Abollifer;Abollifer prolabens
+Euglrotu	Eukaryota;Sar;Rhizaria;Cercozoa;Imbricatea;Silicofilosea;Euglyphida;Euglyphidae;Euglypha;Euglypha rotunda
+Parasacc	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Cryptomycota;Cryptomycota incertae sedis;Paramicrosporidium;Paramicrosporidium saccamoebae
+Gymn2014	Eukaryota;Sar;Rhizaria;Cercozoa;Chlorarachniophyceae;Gymnochlora;unclassified Gymnochlora;Gymnochlora sp. CCMP2014
+MAST003F	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa
+AmoeALEX	Eukaryota;Sar;Alveolata;Dinophyceae;Syndiniales;Amoebophryaceae;Amoebophrya;unclassified Amoebophrya;Amoebophrya sp. ex Alexandrium tamarense
+Cyangloe	Eukaryota;Glaucocystophyceae;Cyanoptyche;Cyanoptyche gloeocystis
+Pyroyezo	Eukaryota;Rhodophyta;Bangiophyceae;Bangiales;Bangiaceae;Neopyropia;Neopyropia yezoensis
+Cyanmero	Eukaryota;Rhodophyta;Bangiophyceae;Cyanidiales;Cyanidiaceae;Cyanidioschyzon;Cyanidioschyzon merolae
+Haloseos	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa;Bicosoecida;Bicosoecida incertae sedis;Halocafeteria;Halocafeteria seosinensis
+Caferoen	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa;Bicosoecida;Cafeteriaceae;Cafeteria;Cafeteria roenbergensis
+PlacCLAB	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa
+Wobbluna	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa;Placidida;Placidiaceae;Wobblia;Wobblia lunata
+BlasS7SB	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa;Opalinata;Blastocystidae;Blastocystis;Blastocystis sp. subtypes;Blastocystis sp. subtype 7;Blastocystis sp. subtype 7 strain B
+Cantmars	Eukaryota;Sar;Stramenopiles;Bigyra;Opalozoa;Opalozoa incertae sedis;Cantina;Cantina marsupialis
+Auralima	Eukaryota;Sar;Stramenopiles;Bigyra;Labyrinthulomycetes;Thraustochytrida;Thraustochytriaceae;Aurantiochytrium;Aurantiochytrium limacinum
+Aplakerg	Eukaryota;Sar;Stramenopiles;Bigyra;Labyrinthulomycetes;Thraustochytrida;Thraustochytriaceae;Aplanochytrium;Aplanochytrium kerguelense
+ThraLLF1	Eukaryota;Sar;Stramenopiles;Bigyra;Labyrinthulomycetes;Thraustochytrida;Thraustochytriaceae;Thraustochytrium;unclassified Thraustochytrium;Thraustochytrium sp.
+Schiaggr	Eukaryota;Sar;Stramenopiles;Bigyra;Labyrinthulomycetes;Thraustochytrida;Thraustochytriaceae;Schizochytrium;Schizochytrium aggregatum
+Albulaib	Eukaryota;Sar;Stramenopiles;Oomycota;Albuginales;Albuginaceae;Albugo;Albugo laibachii
+Pythirre	Eukaryota;Sar;Stramenopiles;Oomycota;Pythiales;Pythiaceae;Globisporangium;Globisporangium irregulare
+Saprdecl	Eukaryota;Sar;Stramenopiles;Oomycota;Saprolegniales;Saprolegniaceae;Saprolegnia;Saprolegnia diclina
+Octaspec	Eukaryota;Sar;Stramenopiles;Ochrophyta;Dictyochophyceae
+Flor1587	Eukaryota;Sar;Stramenopiles;Ochrophyta;Dictyochophyceae;Florenciellales;Florenciella;unclassified Florenciella;Florenciella sp.
+Rhiz1243	Eukaryota;Sar;Stramenopiles;Ochrophyta;Dictyochophyceae;Rhizochromulinales;Rhizochromulina;unclassified Rhizochromulina;Rhizochromulina sp. CCMP1243
+Pedi2098	Eukaryota;Sar;Stramenopiles;Ochrophyta;Dictyochophyceae;Pedinellales;unclassified Pedinellales;Pedinellales sp.
+Pseuelas	Eukaryota;Sar;Stramenopiles;Ochrophyta;Dictyochophyceae;Pedinellales;Pseudopedinella;Pseudopedinella elastica
+Paheparv	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pinguiophyceae;Pinguiochrysidales;Pinguiochrysidaceae;Phaeomonas;Phaeomonas parva
+Syncpusi	Eukaryota;Sar;Stramenopiles;Ochrophyta;Synchromophyceae
+Dino2267	Eukaryota;Sar;Stramenopiles;Ochrophyta;Chrysophyceae;Chromulinales;Dinobryaceae;Dinobryon;unclassified Dinobryon;Dinobryon sp.
+Ochr2298	Eukaryota;Sar;Stramenopiles;Ochrophyta;Synurophyceae;Ochromonadales;Ochromonadaceae;unclassified Ochromonadaceae;Ochromonadaceae sp. CCMP2298
+Pedoelon	Eukaryota;Sar;Stramenopiles;Ochrophyta;Chrysophyceae
+Paravest	Eukaryota;Sar;Stramenopiles;Ochrophyta;Chrysophyceae;Chromulinales;Paraphysomonadaceae;Paraphysomonas;Paraphysomonas vestita
+Mallmari	Eukaryota;Sar;Stramenopiles;Ochrophyta;Synurophyceae;Synurales;Mallomonadaceae;Mallomonas;Mallomonas marina
+Vauclito	Eukaryota;Sar;Stramenopiles;Ochrophyta;PX clade;Xanthophyceae;Vaucheriales;Vaucheriaceae;Vaucheria;Vaucheria litorea
+Agarclat	Eukaryota;Sar;Stramenopiles;Ochrophyta;PX clade;Phaeophyceae;Laminariales;Agaraceae;Agarum;Agarum clathratum
+Fucucera	Eukaryota;Sar;Stramenopiles;Ochrophyta;PX clade;Phaeophyceae;Fucales;Fucaceae;Fucus;Fucus ceranoides
+Chatsubs	Eukaryota;Sar;Stramenopiles;Ochrophyta;Raphidophyceae;Chattonellales;Chattonellaceae;Chattonella;Chattonella subsalsa
+Heteakas	Eukaryota;Sar;Stramenopiles;Ochrophyta;Raphidophyceae;Chattonellales;Chattonellaceae;Heterosigma;Heterosigma akashiwo
+Fibrjapo	Eukaryota;Sar;Stramenopiles;Ochrophyta;Raphidophyceae;Chattonellales;Chattonellaceae;Fibrocapsa;Fibrocapsa japonica
+Tripeleu	Eukaryota;Sar;Stramenopiles;Ochrophyta;Bolidophyceae;Parmales;Triparmaceae;Triparma;Triparma eleuthera
+Phaetric	Eukaryota;Sar;Stramenopiles;Ochrophyta;Bacillariophyta;Bacillariophyceae;Bacillariophycidae;Naviculales;Phaeodactylaceae;Phaeodactylum;Phaeodactylum tricornutum
+Psuemult	Eukaryota;Sar;Stramenopiles;Ochrophyta;Bacillariophyta;Bacillariophyceae;Bacillariophycidae;Bacillariales;Bacillariaceae;Pseudo-nitzschia;Pseudo-nitzschia multiseries
+Fragcyli	Eukaryota;Sar;Stramenopiles;Ochrophyta;Bacillariophyta;Bacillariophyceae;Bacillariophycidae;Bacillariales;Bacillariaceae;Fragilariopsis;Fragilariopsis cylindrus
+Aureanop	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pelagophyceae;Pelagomonadales;Aureococcus;Aureococcus anophagefferens
+Pelacalc	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pelagophyceae;Pelagomonadales;Pelagomonas;Pelagomonas calceolata
+Pelasubv	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pelagophyceae;Pelagomonadales;Pelagococcus;Pelagococcus subviridis
+Aurelagu	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pelagophyceae;Pelagomonadales;Aureoumbra;Aureoumbra lagunensis
+Chryfrag	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pelagophyceae;Sarcinochrysidales;Chrysocystaceae;Chrysocystis;Chrysocystis fragilis
+Pela2097	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pelagophyceae;unclassified Pelagophyceae;Pelagophyceae sp.
+Deveeleg	Eukaryota;Sar;Stramenopiles;Developea;Developayellaceae;Developayella;Developayella elegans
+Pirisoci	Eukaryota;Sar;Alveolata;Colpodellida;Vitrellaceae;Piridium;Piridium sociabile
+Karebrev	Eukaryota;Sar;Alveolata;Dinophyceae
+Perkmari	Eukaryota;Sar;Alveolata;Perkinsozoa;Perkinsea;Perkinsida;Perkinsidae;Perkinsus;Perkinsus marinus
+Toxogond	Eukaryota;Sar;Alveolata;Apicomplexa;Conoidasida;Coccidia;Eucoccidiorida;Eimeriorina;Sarcocystidae;Toxoplasma;Toxoplasma gondii
+Crypparv	Eukaryota;Sar;Alveolata;Apicomplexa;Conoidasida;Coccidia;Eucoccidiorida;Eimeriorina;Cryptosporidiidae;Cryptosporidium;Cryptosporidium parvum
+Chroveli	Eukaryota;Sar;Alveolata;Colpodellida;Chromeraceae;Chromera;Chromera velia
+Platviva	Eukaryota;Sar;Alveolata;Apicomplexa;Conoidasida;Gregarinasina;Archigregarinorida;Selenidiidae;Platyproteum;Platyproteum vivax
+Chlorept	Eukaryota;Sar;Rhizaria;Cercozoa;Chlorarachniophyceae;Chlorarachnion;Chlorarachnion reptans
+Brevmoto	Eukaryota;Sar;Rhizaria;Cercozoa;Cercomonadida;Cercomonadidae;Brevimastigomonas;Brevimastigomonas motovehiculus
+MatazaD1	Eukaryota;Sar;Rhizaria;Cercozoa;Thecofilosea;Thecofilosea incertae sedis;Mataza;unclassified Mataza;Mataza sp.
+Cyanpara	Eukaryota;Glaucocystophyceae;Cyanophoraceae;Cyanophora;Cyanophora paradoxa
+Gloewitr	Eukaryota;Glaucocystophyceae;Glaucocystales
+Diacluth	Eukaryota;Haptista;Haptophyta;Pavlovales;Pavlovaceae;Diacronema;Diacronema lutheri
+Pavl2436	Eukaryota;Haptista;Haptophyta;Pavlovales;unclassified Pavlovales;Pavlovales sp.
+Chrycart	Eukaryota;Haptista;Haptophyta;Prymnesiophyceae;Isochrysidales;Isochrysidaceae;Chrysotila;Chrysotila carterae
+Tisolute	Eukaryota;Haptista;Haptophyta;Prymnesiophyceae;Isochrysidales;Isochrysidaceae;Tisochrysis;Tisochrysis lutea
+Prymparv	Eukaryota;Haptista;Haptophyta;Prymnesiophyceae;Prymnesiales;Prymnesiaceae;Prymnesium;Prymnesium parvum
+Chryrota	Eukaryota;Haptista;Haptophyta;Prymnesiophyceae;Prymnesiales;Chrysochromulinaceae;Chrysochromulina;Chrysochromulina rotalis
+Rhodemar	Eukaryota;Rhodelphea;Rhodelphida;Rhodelphidae;Rhodelphis;Rhodelphis marinus
+Picosali	Eukaryota;Viridiplantae;Chlorophyta;Picocystophyceae;Picocystales;Picocystaceae;Picocystis;Picocystis salinarum
+Volvcart	Eukaryota;Viridiplantae;Chlorophyta;core chlorophytes;Chlorophyceae;CS clade;Chlamydomonadales;Volvocaceae;Volvox;Volvox carteri
+Oryzsati	Eukaryota;Viridiplantae;Streptophyta;Streptophytina;Embryophyta;Tracheophyta;Euphyllophyta;Spermatophyta;Magnoliopsida;Mesangiospermae;Liliopsida;Petrosaviidae;commelinids;Poales;Poaceae;BOP clade;Oryzoideae;Oryzeae;Oryzinae;Oryza;Oryza sativa
+Physpate	Eukaryota;Viridiplantae;Streptophyta;Streptophytina;Embryophyta;Bryophyta;Bryophytina;Bryopsida;Funariidae;Funariales;Funariaceae;Physcomitrium;Physcomitrium patens
+Micrpusl	Eukaryota;Viridiplantae;Chlorophyta;Mamiellophyceae;Mamiellales;Mamiellaceae;Micromonas;Micromonas pusilla
+Ostrtaur	Eukaryota;Viridiplantae;Chlorophyta;Mamiellophyceae;Mamiellales;Bathycoccaceae;Ostreococcus;Ostreococcus tauri
+Porpaeru	Eukaryota;Rhodophyta;Bangiophyceae;Porphyridiales;Porphyridiaceae;Porphyridium;Porphyridium aerugineum
+Compcoer	Eukaryota;Rhodophyta;Compsopogonophyceae;Compsopogonales;Compsopogonaceae;Compsopogon;Compsopogon caeruleus
+Rhodmacu	Eukaryota;Rhodophyta;Rhodellophyceae;Rhodellales;Rhodellaceae;Rhodella;Rhodella violacea
+Cerakond	Eukaryota;Rhodophyta;Florideophyceae;Rhodymeniophycidae;Ceramiales;Ceramiaceae;Ceramium;Ceramium kondoi
+Gratturu	Eukaryota;Rhodophyta;Florideophyceae;Rhodymeniophycidae;Halymeniales;Halymeniaceae;Grateloupia;Grateloupia turuturu
+Choncris	Eukaryota;Rhodophyta;Florideophyceae;Rhodymeniophycidae;Gigartinales;Gigartinaceae;Chondrus;Chondrus crispus
+Porpumbi	Eukaryota;Rhodophyta;Bangiophyceae;Bangiales;Bangiaceae;Porphyra;Porphyra umbilicalis
+Galdsulp	Eukaryota;Rhodophyta;Bangiophyceae;Galdieriales;Galdieriaceae;Galdieria;Galdieria sulphuraria
+Rhodmari	Eukaryota;Rhodophyta;Stylonematophyceae;Stylonematales;Stylonemataceae;Rhodosorus;Rhodosorus marinus
+Neobdesi	Eukaryota;Discoba;Euglenozoa;Kinetoplastea;Metakinetoplastina;Neobodonida;Neobodo;Neobodo designis
+Diplambu	Eukaryota;Discoba;Euglenozoa;Diplonemea;Diplonemidae;Diplonema;Diplonema ambulator
+Flecnera	Eukaryota;Discoba;Euglenozoa
+Palpbili	Eukaryota;Eukaryota incertae sedis;Palpitomonas;Palpitomonas bilix
+Cryppara	Eukaryota;Cryptophyceae;Cryptomonadales;Cryptomonadaceae;Cryptomonas;Cryptomonas paramecium
+Rhodsali	Eukaryota;Cryptophyceae;Pyrenomonadales;Pyrenomonadaceae;Rhodomonas;Rhodomonas salina
+Bafffrig	Eukaryota;Cryptophyceae;Cryptomonadales;Baffinellaceae;Baffinella;Baffinella frigidus
+Vannfimi	Eukaryota;Amoebozoa;Discosea
+Idiovort	Eukaryota;Amoebozoa;Evosea;Cutosea;Idionectidae;Idionectes;Idionectes vortex
+Ancytwis	Eukaryota;Provora;Nebulidia;Nebulidea;Nebulidida;Nebulidae;Ancoracysta;Ancoracysta twista
+Prympoly	Eukaryota;Haptista;Haptophyta
+Rhodlimn	Eukaryota;Rhodelphea;Rhodelphida;Rhodelphidae;Rhodelphis;Rhodelphis limneticus
+PoterBG1	Eukaryota;Sar;Stramenopiles;Ochrophyta;Chrysophyceae
+Tribgaya	Eukaryota;Sar;Stramenopiles;Ochrophyta;PX clade;Xanthophyceae;Tribonematales;Tribonemataceae;Tribonema;Tribonema gayanum
+Pingpyre	Eukaryota;Sar;Stramenopiles;Ochrophyta;Pinguiophyceae;Pinguiochrysidales;Pinguiochrysidaceae;Pinguiococcus;Pinguiococcus pyrenoidosus
+Roomtrun	Eukaryota;Cryptophyceae;Kathablepharidacea;Roombia;Roombia truncata
+Alexminu	Eukaryota;Sar;Alveolata;Dinophyceae;Gonyaulacales;Pyrocystaceae;Alexandrium;Alexandrium minutum
+PB58411a	Eukaryota;Eukaryota incertae sedis;Picozoa
+Hyphcate	Eukaryota;Sar;Stramenopiles;Hyphochytriomycetes;Hyphochytriaceae;Hyphochytrium;Hyphochytrium catenoides
+Micrgadi	Eukaryota;Sar;Stramenopiles;Ochrophyta;Eustigmatophyceae
+Glauincr	Eukaryota;Glaucocystophyceae;Glaucocystales;Glaucocystaceae;Glaucocystis;Glaucocystis incrassata
+Gromspha	Eukaryota;Sar;Rhizaria;Endomyxa;Gromiida;Gromiidae;Gromia;Gromia sphaerica
+Mnemleid	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Ctenophora;Tentaculata;Lobata;Bolinopsidae;Mnemiopsis;Mnemiopsis leidyi
+Eugllong	Eukaryota;Discoba;Euglenozoa;Euglenida;Spirocuta;Euglenophyceae;Euglenales;Euglenaceae;Euglena;Euglena longa
+Blasbrit	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Blastocladiomycota;Blastocladiomycetes;Blastocladiales;Blastocladiaceae;Blastocladiella;Blastocladiella britannica
+Tricadha	Eukaryota;Opisthokonta;Metazoa;Eumetazoa;Placozoa;Uniplacotomia;Trichoplacea;Trichoplacidae;Trichoplax;Trichoplax adhaerens
+Blasemer	Eukaryota;Opisthokonta;Fungi;Fungi incertae sedis;Blastocladiomycota;Blastocladiomycetes;Blastocladiales;Blastocladiaceae;Blastocladiella;Blastocladiella emersonii

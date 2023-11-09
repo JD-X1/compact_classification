@@ -1,0 +1,8 @@
+name: mb
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - compleasm
+prefix: /global/homes/j/jduque/.conda/envs/mb
