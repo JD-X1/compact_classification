@@ -32,8 +32,6 @@ import subprocess
 
 # get the path to the compleasm output directory
 path_to_compleasm_output_dir = sys.argv[1]
-comp_cores = sys.argv[2]
-working_set = sys.argv[3]
 
 # get the list of directories in the compleasm output directory
 dir_list = os.listdir(path_to_compleasm_output_dir)
@@ -54,7 +52,7 @@ df = pd.DataFrame(columns = ['Location',
 for dir in dir_list:
 
     # get the path to the proteome file
-    path_to_proteome_file = os.path.join(path_to_compleasm_output_dir,
+    path_to_proteome_file = os.path.join(path_to_compleasm_output_dir.lstrip("reosurces/"),
                                          dir,
                                          'eukaryota_odb10/')
     
@@ -110,25 +108,4 @@ df.to_csv("resources/input_metadata.tsv", sep = "\t", index = False)
 # check for for directory:
 if not os.path.exists("resources/PhyloFishScratch"):
     os.system("cp -r resources/PhyloFisherDatabase_v1.0/database resources/PhyloFishScratch")
-
-# run config.py command
-configuration_line = "config.py -d resources/PhyloFishScratch -i resources/input_metadata.tsv"
-
-subprocess.run(configuration_line)
-
-# run fisher.py command with the number of cores
-#fisher_line =  "fisher.py --output resources/fisher_out --threads " + comp_cores
-
-#os.system(fisher_line)
-
-# run the informant command
-
-#informant_line = "informant.py -i ./resources/fisher_out"
-#os.system(informant_line)
-
-# run the working database command
-
-#working_database_line = "working_dataset_constructor.py -i resources/fisher_out/ -o " + working_set
-
-#os.system(working_database_line)
 
