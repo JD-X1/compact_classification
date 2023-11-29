@@ -1,0 +1,177 @@
+--------------------------------------------------------------------------------
+ModelTest-NG v0.1.7
+
+Input data:
+  MSA:        resources/PhyloFishScratch/alignments/AGX.fas.aln
+  Tree:       Maximum likelihood
+    file:           -
+  #taxa:            221
+  #sites:           4544
+  #patterns:        2386
+  Max. thread mem:  1284 MB
+
+Output:
+  Log:           resources/trees/AGX/AGX.modeltest.log
+  Starting tree: resources/trees/AGX/AGX.modeltest.tree
+  Results:       resources/trees/AGX/AGX.modeltest.out
+
+Selection options:
+  # protein matrices: 4
+  # protein models:   32
+  include model parameters:
+    Uniform:         true
+    p-inv (+I):      true
+    gamma (+G):      true
+    both (+I+G):     true
+    free rates (+R): false
+    fixed freqs:     true
+    estimated freqs: false
+    #categories:     4
+  gamma rates mode:   mean
+  asc bias:           none
+  epsilon (opt):      0.01
+  epsilon (par):      0.05
+  keep branches:      false
+
+Additional options:
+  verbosity:        very low
+  threads:          22/12
+  RNG seed:         12345
+  subtree repeats:  enabled
+--------------------------------------------------------------------------------
+
+BIC       model              K            lnL          score          delta    weight
+--------------------------------------------------------------------------------
+       1  LG+I+G4+F         21   -182065.5530    368005.0250         0.0000    1.0000
+       2  LG+I+G4            2   -182174.3097    368062.5287        57.5036    0.0000
+       3  LG+G4+F           20   -182198.6654    368262.8283       257.8032    0.0000
+       4  LG+G4              1   -182283.9076    368273.3028       268.2778    0.0000
+       5  WAG+I+G4+F        21   -182736.5864    369347.0918      1342.0667    0.0000
+       6  WAG+I+G4           2   -182846.0708    369406.0508      1401.0258    0.0000
+       7  WAG+G4             1   -182943.2114    369591.9105      1586.8854    0.0000
+       8  WAG+G4+F          20   -182894.6957    369654.8888      1649.8638    0.0000
+       9  JTT+I+G4           2   -184864.3212    373442.5517      5437.5267    0.0000
+      10  JTT+I+G4+F        21   -184905.5687    373685.0563      5680.0313    0.0000
+--------------------------------------------------------------------------------
+Best model according to BIC
+---------------------------
+Model:              LG+I+G4+F
+lnL:                -182065.5530
+Frequencies:        0.0909 0.0443 0.0398 0.0542 0.0189 0.0387 0.0709 0.0785 0.0233 0.0494 0.0907 0.0648 0.0199 0.0479 0.0500 0.0669 0.0462 0.0073 0.0271 0.0705
+Inv. sites prop:    0.0212
+Gamma shape:        1.0317
+Score:              368005.0250
+Weight:             1.0000
+---------------------------
+Parameter importances
+---------------------------
+P.Inv:              -
+Gamma:              0.0000
+Gamma-Inv:          1.0000
+Frequencies:        1.0000
+---------------------------
+Model averaged estimates
+---------------------------
+P.Inv:              -
+Alpha:              1.0000
+Alpha-P.Inv:        1.0317
+P.Inv-Alpha:        0.0212
+Frequencies:        0.0909 0.0443 0.0398 0.0542 0.0189 0.0387 0.0709 0.0785 0.0233 0.0494 0.0907 0.0648 0.0199 0.0479 0.0500 0.0669 0.0462 0.0073 0.0271 0.0705 
+
+Commands:
+  > phyml  -i resources/PhyloFishScratch/alignments/AGX.fas.aln -d aa -m LG -f e -v e -a e -c 4 -o tlr
+  > raxmlHPC-SSE3 -s resources/PhyloFishScratch/alignments/AGX.fas.aln -m PROTGAMMAILGF -n EXEC_NAME -p PARSIMONY_SEED
+  > raxml-ng --msa resources/PhyloFishScratch/alignments/AGX.fas.aln --model LG+I+G4+F
+  > paup -s resources/PhyloFishScratch/alignments/AGX.fas.aln
+  > iqtree -s resources/PhyloFishScratch/alignments/AGX.fas.aln -m LG+I+G4+F
+
+AIC       model              K            lnL          score          delta    weight
+--------------------------------------------------------------------------------
+       1  LG+I+G4+F         21   -182065.5530    365051.1061         0.0000    1.0000
+       2  LG+I+G4            2   -182174.3097    365230.6194       179.5133    0.0000
+       3  LG+G4+F           20   -182198.6654    365315.3309       264.2248    0.0000
+       4  LG+G4              1   -182283.9076    365447.8151       396.7091    0.0000
+       5  WAG+I+G4+F        21   -182736.5864    366393.1728      1342.0667    0.0000
+       6  WAG+I+G4           2   -182846.0708    366574.1416      1523.0355    0.0000
+       7  WAG+G4+F          20   -182894.6957    366707.3914      1656.2853    0.0000
+       8  WAG+G4             1   -182943.2114    366766.4228      1715.3167    0.0000
+       9  JTT+I+G4           2   -184864.3212    370610.6425      5559.5364    0.0000
+      10  JTT+I+G4+F        21   -184905.5687    370731.1374      5680.0313    0.0000
+--------------------------------------------------------------------------------
+Best model according to AIC
+---------------------------
+Model:              LG+I+G4+F
+lnL:                -182065.5530
+Frequencies:        0.0909 0.0443 0.0398 0.0542 0.0189 0.0387 0.0709 0.0785 0.0233 0.0494 0.0907 0.0648 0.0199 0.0479 0.0500 0.0669 0.0462 0.0073 0.0271 0.0705
+Inv. sites prop:    0.0212
+Gamma shape:        1.0317
+Score:              365051.1061
+Weight:             1.0000
+---------------------------
+Parameter importances
+---------------------------
+P.Inv:              -
+Gamma:              0.0000
+Gamma-Inv:          1.0000
+Frequencies:        1.0000
+---------------------------
+Model averaged estimates
+---------------------------
+P.Inv:              -
+Alpha:              1.0000
+Alpha-P.Inv:        1.0317
+P.Inv-Alpha:        0.0212
+Frequencies:        0.0909 0.0443 0.0398 0.0542 0.0189 0.0387 0.0709 0.0785 0.0233 0.0494 0.0907 0.0648 0.0199 0.0479 0.0500 0.0669 0.0462 0.0073 0.0271 0.0705 
+
+Commands:
+  > phyml  -i resources/PhyloFishScratch/alignments/AGX.fas.aln -d aa -m LG -f e -v e -a e -c 4 -o tlr
+  > raxmlHPC-SSE3 -s resources/PhyloFishScratch/alignments/AGX.fas.aln -m PROTGAMMAILGF -n EXEC_NAME -p PARSIMONY_SEED
+  > raxml-ng --msa resources/PhyloFishScratch/alignments/AGX.fas.aln --model LG+I+G4+F
+  > paup -s resources/PhyloFishScratch/alignments/AGX.fas.aln
+  > iqtree -s resources/PhyloFishScratch/alignments/AGX.fas.aln -m LG+I+G4+F
+
+AICc      model              K            lnL          score          delta    weight
+--------------------------------------------------------------------------------
+       1  LG+I+G4+F         21   -182065.5530    365154.1061         0.0000    1.0000
+       2  LG+I+G4            2   -182174.3097    365325.6194       171.5133    0.0000
+       3  LG+G4+F           20   -182198.6654    365418.3309       264.2248    0.0000
+       4  LG+G4              1   -182283.9076    365541.8151       387.7091    0.0000
+       5  WAG+I+G4+F        21   -182736.5864    366496.1728      1342.0667    0.0000
+       6  WAG+I+G4           2   -182846.0708    366669.1416      1515.0355    0.0000
+       7  WAG+G4+F          20   -182894.6957    366810.3914      1656.2853    0.0000
+       8  WAG+G4             1   -182943.2114    366860.4228      1706.3167    0.0000
+       9  JTT+I+G4           2   -184864.3212    370705.6425      5551.5364    0.0000
+      10  JTT+I+G4+F        21   -184905.5687    370834.1374      5680.0313    0.0000
+--------------------------------------------------------------------------------
+Best model according to AICc
+---------------------------
+Model:              LG+I+G4+F
+lnL:                -182065.5530
+Frequencies:        0.0909 0.0443 0.0398 0.0542 0.0189 0.0387 0.0709 0.0785 0.0233 0.0494 0.0907 0.0648 0.0199 0.0479 0.0500 0.0669 0.0462 0.0073 0.0271 0.0705
+Inv. sites prop:    0.0212
+Gamma shape:        1.0317
+Score:              365154.1061
+Weight:             1.0000
+---------------------------
+Parameter importances
+---------------------------
+P.Inv:              -
+Gamma:              0.0000
+Gamma-Inv:          1.0000
+Frequencies:        1.0000
+---------------------------
+Model averaged estimates
+---------------------------
+P.Inv:              -
+Alpha:              1.0000
+Alpha-P.Inv:        1.0317
+P.Inv-Alpha:        0.0212
+Frequencies:        0.0909 0.0443 0.0398 0.0542 0.0189 0.0387 0.0709 0.0785 0.0233 0.0494 0.0907 0.0648 0.0199 0.0479 0.0500 0.0669 0.0462 0.0073 0.0271 0.0705 
+
+Commands:
+  > phyml  -i resources/PhyloFishScratch/alignments/AGX.fas.aln -d aa -m LG -f e -v e -a e -c 4 -o tlr
+  > raxmlHPC-SSE3 -s resources/PhyloFishScratch/alignments/AGX.fas.aln -m PROTGAMMAILGF -n EXEC_NAME -p PARSIMONY_SEED
+  > raxml-ng --msa resources/PhyloFishScratch/alignments/AGX.fas.aln --model LG+I+G4+F
+  > paup -s resources/PhyloFishScratch/alignments/AGX.fas.aln
+  > iqtree -s resources/PhyloFishScratch/alignments/AGX.fas.aln -m LG+I+G4+F
+Done

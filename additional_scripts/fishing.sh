@@ -43,7 +43,7 @@ Input=$(basename $Input)
 config.py -d PhyloFishScratch -i $Input
 echo "Configuration of PhyloFisher Modules Complete"
 echo "Waiting for the Fish to Bite"
-fisher.py --threads $TCores -o fish_out 1> ../logs/FishingLogs/fisher.log 2> ../logs/FishingLogs/fisher.log
+fisher.py --threads $TCores -n 1 -o fish_out 1> ../logs/FishingLogs/fisher.log 2> ../logs/FishingLogs/fisher.log
 echo "Fish Caught"
 informant.py -i fish_out --orthologs_only 1> ../logs/FishingLogs/informant.log 2> ../logs/FishingLogs/informant.logs
 echo "Informant Complete"

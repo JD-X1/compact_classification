@@ -1,0 +1,41 @@
+--------------------------------------------------------------------------------
+ModelTest-NG v0.1.7
+
+Input data:
+  MSA:        resources/PhyloFishScratch/alignments/ALG11.fas.aln
+  Tree:       Maximum likelihood
+    file:           -
+  #taxa:            212
+  #sites:           4233
+  #patterns:        2416
+  Max. thread mem:  1246 MB
+
+Output:
+  Log:           resources/trees/ALG11/ALG11.modeltest.log
+  Starting tree: resources/trees/ALG11/ALG11.modeltest.tree
+  Results:       resources/trees/ALG11/ALG11.modeltest.out
+
+Selection options:
+  # protein matrices: 4
+  # protein models:   32
+  include model parameters:
+    Uniform:         true
+    p-inv (+I):      true
+    gamma (+G):      true
+    both (+I+G):     true
+    free rates (+R): false
+    fixed freqs:     true
+    estimated freqs: false
+    #categories:     4
+  gamma rates mode:   mean
+  asc bias:           none
+  epsilon (opt):      0.01
+  epsilon (par):      0.05
+  keep branches:      false
+
+Additional options:
+  verbosity:        very low
+  threads:          22/12
+  RNG seed:         12345
+  subtree repeats:  enabled
+--------------------------------------------------------------------------------

@@ -1,0 +1,247 @@
+Physical cores: 12
+Logical cores:  24
+Memory:         125GB
+Extensions:     AVX
+
+WARNING: Partition DATA: There are undetermined columns in the alignment (only gaps)
+WARNING: Partition DATA: There are undetermined columns in the alignment (only gaps)
+WARNING: MSA has not enough sites to infer reliable results
+Creating new checkpoint file: resources/trees/AP4S1/AP4S1.modeltest.ckp
+--------------------------------------------------------------------------------
+ModelTest-NG v0.1.7
+
+Input data:
+  MSA:        resources/PhyloFishScratch/alignments/AP4S1.fas.aln
+  Tree:       Maximum likelihood
+    file:           -
+  #taxa:            206
+  #sites:           1636
+  #patterns:        826
+  Max. thread mem:  414 MB
+
+Output:
+  Log:           resources/trees/AP4S1/AP4S1.modeltest.log
+  Starting tree: resources/trees/AP4S1/AP4S1.modeltest.tree
+  Results:       resources/trees/AP4S1/AP4S1.modeltest.out
+
+Selection options:
+  # protein matrices: 4
+  # protein models:   32
+  include model parameters:
+    Uniform:         true
+    p-inv (+I):      true
+    gamma (+G):      true
+    both (+I+G):     true
+    free rates (+R): false
+    fixed freqs:     true
+    estimated freqs: false
+    #categories:     4
+  gamma rates mode:   mean
+  asc bias:           none
+  epsilon (opt):      0.01
+  epsilon (par):      0.05
+  keep branches:      false
+
+Additional options:
+  verbosity:        very low
+  threads:          22/12
+  RNG seed:         12345
+  subtree repeats:  enabled
+--------------------------------------------------------------------------------
+modeltest-ng was called as follows: 
+>> modeltest-ng --input resources/PhyloFishScratch/alignments/AP4S1.fas.aln -d aa -t ml -m LG,JTT,WAG,DAYHOFF -p 22 -o resources/trees/AP4S1/AP4S1.modeltest 
+
+
+Partition 1/1
+
+ ----ID---  ----MODEL---- ---Time--- -Elapsed--- -------LnL------- -Alpha- -P-inv-
+
+Computation of likelihood scores completed. It took 0h:40:40
+
+BIC       model              K            lnL          score          delta    weight
+--------------------------------------------------------------------------------
+       1  LG+I+G4            2    -36846.6155     76734.6349         0.0000    1.0000
+       2  LG+G4              1    -36877.3684     76788.7407        54.1058    0.0000
+       3  JTT+G4             1    -37095.6625     77225.3288       490.6939    0.0000
+       4  WAG+G4             1    -37179.9308     77393.8656       659.2307    0.0000
+       5  WAG+I+G4           2    -37206.9109     77455.2257       720.5908    0.0000
+       6  JTT+I+G4           2    -37229.3743     77500.1525       765.5176    0.0000
+       7  LG+G4+F           20    -37285.3928     77745.3896      1010.7548    0.0000
+       8  LG+I+G4+F         21    -37295.4690     77772.9421      1038.3072    0.0000
+       9  DAYHOFF+I+G4       2    -37408.8821     77859.1681      1124.5333    0.0000
+      10  JTT+G4+F          20    -37431.6544     78037.9128      1303.2780    0.0000
+--------------------------------------------------------------------------------
+Best model according to BIC
+---------------------------
+Model:              LG+I+G4
+lnL:                -36846.6155
+Frequencies:        0.0791 0.0559 0.0420 0.0531 0.0129 0.0408 0.0716 0.0573 0.0224 0.0622 0.0991 0.0646 0.0230 0.0423 0.0440 0.0612 0.0533 0.0121 0.0342 0.0691
+Inv. sites prop:    0.0214
+Gamma shape:        0.8100
+Score:              76734.6349
+Weight:             1.0000
+---------------------------
+Parameter importances
+---------------------------
+P.Inv:              -
+Gamma:              0.0000
+Gamma-Inv:          1.0000
+Frequencies:        0.0000
+---------------------------
+Model averaged estimates
+---------------------------
+P.Inv:              -
+Alpha:              0.8100
+Alpha-P.Inv:        0.8100
+P.Inv-Alpha:        0.0214
+Frequencies:        0.0550 0.0621 0.0494 0.0461 0.0263 0.0366 0.0978 0.0402 0.0245 0.0744 0.1054 0.0500 0.0395 0.0565 0.0159 0.0535 0.0406 0.0039 0.0452 0.0769 
+
+Commands:
+  > phyml  -i resources/PhyloFishScratch/alignments/AP4S1.fas.aln -d aa -m LG -f m -v e -a e -c 4 -o tlr
+  > raxmlHPC-SSE3 -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln -m PROTGAMMAILG -n EXEC_NAME -p PARSIMONY_SEED
+  > raxml-ng --msa resources/PhyloFishScratch/alignments/AP4S1.fas.aln --model LG+I+G4
+  > paup -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln
+  > iqtree -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln -m LG+I+G4
+
+AIC       model              K            lnL          score          delta    weight
+--------------------------------------------------------------------------------
+       1  LG+I+G4            2    -36846.6155     74515.2310         0.0000    1.0000
+       2  LG+G4              1    -36877.3684     74574.7368        59.5058    0.0000
+       3  JTT+G4             1    -37095.6625     75011.3249       496.0940    0.0000
+       4  WAG+G4             1    -37179.9308     75179.8617       664.6307    0.0000
+       5  WAG+I+G4           2    -37206.9109     75235.8218       720.5908    0.0000
+       6  JTT+I+G4           2    -37229.3743     75280.7486       765.5176    0.0000
+       7  LG+G4+F           20    -37285.3928     75428.7856       913.5546    0.0000
+       8  LG+I+G4+F         21    -37295.4690     75450.9380       935.7070    0.0000
+       9  DAYHOFF+I+G4       2    -37408.8821     75639.7642      1124.5333    0.0000
+      10  JTT+G4+F          20    -37431.6544     75721.3087      1206.0778    0.0000
+--------------------------------------------------------------------------------
+Best model according to AIC
+---------------------------
+Model:              LG+I+G4
+lnL:                -36846.6155
+Frequencies:        0.0791 0.0559 0.0420 0.0531 0.0129 0.0408 0.0716 0.0573 0.0224 0.0622 0.0991 0.0646 0.0230 0.0423 0.0440 0.0612 0.0533 0.0121 0.0342 0.0691
+Inv. sites prop:    0.0214
+Gamma shape:        0.8100
+Score:              74515.2310
+Weight:             1.0000
+---------------------------
+Parameter importances
+---------------------------
+P.Inv:              -
+Gamma:              0.0000
+Gamma-Inv:          1.0000
+Frequencies:        0.0000
+---------------------------
+Model averaged estimates
+---------------------------
+P.Inv:              -
+Alpha:              0.8100
+Alpha-P.Inv:        0.8100
+P.Inv-Alpha:        0.0214
+Frequencies:        0.0550 0.0621 0.0494 0.0461 0.0263 0.0366 0.0978 0.0402 0.0245 0.0744 0.1054 0.0500 0.0395 0.0565 0.0159 0.0535 0.0406 0.0039 0.0452 0.0769 
+
+Commands:
+  > phyml  -i resources/PhyloFishScratch/alignments/AP4S1.fas.aln -d aa -m LG -f m -v e -a e -c 4 -o tlr
+  > raxmlHPC-SSE3 -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln -m PROTGAMMAILG -n EXEC_NAME -p PARSIMONY_SEED
+  > raxml-ng --msa resources/PhyloFishScratch/alignments/AP4S1.fas.aln --model LG+I+G4
+  > paup -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln
+  > iqtree -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln -m LG+I+G4
+
+AICc      model              K            lnL          score          delta    weight
+--------------------------------------------------------------------------------
+       1  LG+I+G4            2    -36846.6155     74791.2310         0.0000    1.0000
+       2  LG+G4              1    -36877.3684     74849.7368        58.5058    0.0000
+       3  JTT+G4             1    -37095.6625     75286.3249       495.0940    0.0000
+       4  WAG+G4             1    -37179.9308     75454.8617       663.6307    0.0000
+       5  WAG+I+G4           2    -37206.9109     75511.8218       720.5908    0.0000
+       6  JTT+I+G4           2    -37229.3743     75556.7486       765.5176    0.0000
+       7  LG+G4+F           20    -37285.3928     75733.7856       942.5546    0.0000
+       8  LG+I+G4+F         21    -37295.4690     75757.9380       966.7070    0.0000
+       9  DAYHOFF+I+G4       2    -37408.8821     75915.7642      1124.5333    0.0000
+      10  JTT+G4+F          20    -37431.6544     76026.3087      1235.0778    0.0000
+--------------------------------------------------------------------------------
+Best model according to AICc
+---------------------------
+Model:              LG+I+G4
+lnL:                -36846.6155
+Frequencies:        0.0791 0.0559 0.0420 0.0531 0.0129 0.0408 0.0716 0.0573 0.0224 0.0622 0.0991 0.0646 0.0230 0.0423 0.0440 0.0612 0.0533 0.0121 0.0342 0.0691
+Inv. sites prop:    0.0214
+Gamma shape:        0.8100
+Score:              74791.2310
+Weight:             1.0000
+---------------------------
+Parameter importances
+---------------------------
+P.Inv:              -
+Gamma:              0.0000
+Gamma-Inv:          1.0000
+Frequencies:        0.0000
+---------------------------
+Model averaged estimates
+---------------------------
+P.Inv:              -
+Alpha:              0.8100
+Alpha-P.Inv:        0.8100
+P.Inv-Alpha:        0.0214
+Frequencies:        0.0550 0.0621 0.0494 0.0461 0.0263 0.0366 0.0978 0.0402 0.0245 0.0744 0.1054 0.0500 0.0395 0.0565 0.0159 0.0535 0.0406 0.0039 0.0452 0.0769 
+
+Commands:
+  > phyml  -i resources/PhyloFishScratch/alignments/AP4S1.fas.aln -d aa -m LG -f m -v e -a e -c 4 -o tlr
+  > raxmlHPC-SSE3 -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln -m PROTGAMMAILG -n EXEC_NAME -p PARSIMONY_SEED
+  > raxml-ng --msa resources/PhyloFishScratch/alignments/AP4S1.fas.aln --model LG+I+G4
+  > paup -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln
+  > iqtree -s resources/PhyloFishScratch/alignments/AP4S1.fas.aln -m LG+I+G4
+
+There are 32 different topologies
+Topologies written to resources/trees/AP4S1/AP4S1.modeltest.topos
+
+topo_id   models_count   bic_support   aic_support   aicc_support
+-----------------------------------------------------------------
+     10              1       1.00000       1.00000       1.00000
+     20              1       0.00000       0.00000       0.00000
+     18              1       0.00000       0.00000       0.00000
+     17              1       0.00000       0.00000       0.00000
+     12              1       0.00000       0.00000       0.00000
+     11              1       0.00000       0.00000       0.00000
+      5              1       0.00000       0.00000       0.00000
+      3              1       0.00000       0.00000       0.00000
+      9              1       0.00000       0.00000       0.00000
+      7              1       0.00000       0.00000       0.00000
+      2              1       0.00000       0.00000       0.00000
+     19              1       0.00000       0.00000       0.00000
+     22              1       0.00000       0.00000       0.00000
+     32              1       0.00000       0.00000       0.00000
+     31              1       0.00000       0.00000       0.00000
+     30              1       0.00000       0.00000       0.00000
+     29              1       0.00000       0.00000       0.00000
+     28              1       0.00000       0.00000       0.00000
+     27              1       0.00000       0.00000       0.00000
+     26              1       0.00000       0.00000       0.00000
+     25              1       0.00000       0.00000       0.00000
+     24              1       0.00000       0.00000       0.00000
+     23              1       0.00000       0.00000       0.00000
+      8              1       0.00000       0.00000       0.00000
+     21              1       0.00000       0.00000       0.00000
+      1              1       0.00000       0.00000       0.00000
+      4              1       0.00000       0.00000       0.00000
+      6              1       0.00000       0.00000       0.00000
+     16              1       0.00000       0.00000       0.00000
+     15              1       0.00000       0.00000       0.00000
+     14              1       0.00000       0.00000       0.00000
+     13              1       0.00000       0.00000       0.00000
+
+extended majority-rule consensus: ((Cuneruss,(Gocefonb,Endozona)[1.00000])[1.00000],(((((Nemavect,(Homosapi,Gallgall)[1.00000])[1.00000],(Tricadha,Branflor)[1.00000])[1.00000],(Hetepall,Dictdisc)[1.00000])[1.00000],((Tricvagi,((Crypparv,(BlasS7SB,Echibisp)[1.00000])[1.00000],(Parvatla,Capsowcz)[1.00000])[1.00000])[1.00000],(Pigoviet,(Syssmult,Minivibr)[1.00000])[1.00000])[1.00000])[1.00000],((((Aplycali,((Batrdend,Thectrah)[1.00000],(Squajapo,Phalsoli)[1.00000])[1.00000])[1.00000],(Amoeprot,Coprprot)[1.00000])[1.00000],(Monoexil,(Protfung,(Cavoapop,Schivulg)[1.00000])[1.00000])[1.00000])[1.00000],((Gregniph,(Vannfimi,(Rhizelon,(Idiovort,((Fontalba,Masteilh)[1.00000],(Mnemleid,(ThecSK13,Sapppeda)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],((((Roomtrun,((Acancast,Goniavon)[1.00000],(Cryppara,(Hemirufe,(Guilthet,(Gemicryo,(Bafffrig,Rhodsali)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Ancytwis,Gefiokel)[1.00000])[1.00000],((((Ancysigm,(Rhiz1243,(Pseuelas,Pedi2098)[1.00000])[1.00000])[1.00000],(((Fabotrop,(Nutohowe,Nutolong)[1.00000])[1.00000],(((Tetrasti,Nephpyri)[1.00000],(Prassing,(Ostrtaur,Micrpusl)[1.00000])[1.00000])[1.00000],(Mesoviri,(Physpate,(Pyrapark,(Charbrau,(Oryzsati,Arabthal)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Guttvulg,Mantplas)[1.00000])[1.00000])[1.00000],(Tsukglob,(HeterBB2,(Naeggrub,((Bodosalt,(Paraconf,(Diplambu,Flecnera)[1.00000])[1.00000])[1.00000],(Leptpyrr,(Trypbruc,(Euglgrac,Eugllong)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],((((Palpbili,(Chlovari,(Dunasali,(Volvcart,Chlarein)[1.00000])[1.00000])[1.00000])[1.00000],(Hemikukw,(Reclamer,(Andagodo,Styginca)[1.00000])[1.00000])[1.00000])[1.00000],((((Cantmars,((Telosubt,TeloneP2)[1.00000],(Rigiramo,Diphrota)[1.00000])[1.00000])[1.00000],((((Aplakerg,((Haloseos,Caferoen)[1.00000],(Auralima,(ThraLLF1,Schiaggr)[1.00000])[1.00000])[1.00000])[1.00000],((Micrgadi,((Tripeleu,(Thalpseu,(Phaetric,(Fragcyli,Psuemult)[1.00000])[1.00000])[1.00000])[1.00000],((Vauclito,(Tribgaya,(Agarclat,(Fucucera,EctocSP7)[1.00000])[1.00000])[1.00000])[1.00000],(Heteakas,(Syncpusi,(Pedoelon,(ChrysoH1,Ochr2298)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Deveeleg,(Pelacalc,(Pela2097,(Chryfrag,(Pelasubv,Aureanop)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(BicoCB20,(Flor1587,((Pythirre,Phytpara)[1.00000],(Albulaib,(Saprdecl,Hyphcate)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(((Toxogond,(Vitrbras,(Chroveli,(Colpangu,Platviva)[1.00000])[1.00000])[1.00000])[1.00000],(Alphedax,((Oxyrmari,(Luaphula,(Pygsbifo,Plasfalc)[1.00000])[1.00000])[1.00000],((Karebrev,(Noctscin,Symbmicr)[1.00000])[1.00000],((Perkmari,(Protadhe,(((Styllemn,Stencoer)[1.00000],(Paratetr,(Platmacr,(Tetrther,Ichtmult)[1.00000])[1.00000])[1.00000])[1.00000],(Rainerin,(Raphhete,(AcanthFB,ChoanoFB)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],((Lapoguse,(Leptvora,(Retifilo,(Sori0191,Ammo1384)[1.00000])[1.00000])[1.00000])[1.00000],((Paulchro,((Aurisoli,(Chlorept,(Bigenata,Gymn2014)[1.00000])[1.00000])[1.00000],(MatazaD1,Brevmoto)[1.00000])[1.00000])[1.00000],(Plasbras,(Salprose,Monobrev)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Pirisoci,(MAST004E,(MAST004C,(MAST04A2,MAST04A1)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Physpoly,(Protlace,(Wobbluna,PlacCLAB)[1.00000])[1.00000])[1.00000])[1.00000],(((Calclept,(Mancberm,Tisolute)[1.00000])[1.00000],(Phaeglob,(Prymparv,Chryrota)[1.00000])[1.00000])[1.00000],(Diacluth,Pavl2436)[1.00000])[1.00000])[1.00000])[1.00000],(Veximinu,(Rhodlimn,Rhodemar)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Pharkirb,(Prascaps,(Trimmari,Parapyri)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],((Ovaldese,(Arcevulg,NolaAFSM)[1.00000])[1.00000],(Cochminu,(Stensten,(Sphadest,((MicrA134,(Vermverm,Echiexud)[1.00000])[1.00000],(Soliirre,(Rhizsaxo,Flabcita)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000]);
+strict consensus: ((Tsukglob,(HeterBB2,(Naeggrub,((Bodosalt,(Paraconf,(Diplambu,Flecnera)[1.00000])[1.00000])[1.00000],(Leptpyrr,(Trypbruc,(Euglgrac,Eugllong)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],Flor1587,Acancast,Prascaps,Tricvagi,Sphadest,Soliirre,Idiovort,Mancberm,Gregniph,Tricadha,Rhizelon,Crypparv,Ancytwis,Goniavon,BlasS7SB,Cantmars,Branflor,Luaphula,Pharkirb,Rhizsaxo,Flabcita,Echibisp,Guttvulg,Ancysigm,Syssmult,Mantplas,Veximinu,Gefiokel,Parvatla,Minivibr,Nemavect,Pigoviet,Physpoly,Cuneruss,Capsowcz,Vannfimi,Stensten,Cochminu,Perkmari,Protadhe,Oxyrmari,Alphedax,Deveeleg,Aplakerg,Pelacalc,Pela2097,BicoCB20,Tisolute,Calclept,Lapoguse,Leptvora,Roomtrun,Protlace,(Saprdecl,Albulaib,Hyphcate,(Pythirre,Phytpara)[1.00000])[1.00000],((Styllemn,Stencoer)[1.00000],(Platmacr,Paratetr,(Tetrther,Ichtmult)[1.00000])[1.00000])[1.00000],(Toxogond,(Chroveli,Vitrbras,(Colpangu,Platviva)[1.00000])[1.00000])[1.00000],(Diacluth,Pavl2436)[1.00000],(Rhiz1243,(Pseuelas,Pedi2098)[1.00000])[1.00000],(Rhodlimn,Rhodemar)[1.00000],(Fontalba,Masteilh)[1.00000],(Fabotrop,(Nutohowe,Nutolong)[1.00000])[1.00000],(Wobbluna,PlacCLAB)[1.00000],(Karebrev,(Noctscin,Symbmicr)[1.00000])[1.00000],(Telosubt,TeloneP2)[1.00000],(Gocefonb,Endozona)[1.00000],(Haloseos,Caferoen)[1.00000],(MicrA134,Vermverm,Echiexud)[1.00000],(Syncpusi,Heteakas,Micrgadi,(Vauclito,(Tribgaya,(Agarclat,(Fucucera,EctocSP7)[1.00000])[1.00000])[1.00000])[1.00000],(Pedoelon,(ChrysoH1,Ochr2298)[1.00000])[1.00000],(Tripeleu,(Thalpseu,(Phaetric,(Fragcyli,Psuemult)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Auralima,(ThraLLF1,Schiaggr)[1.00000])[1.00000],(Ovaldese,(Arcevulg,NolaAFSM)[1.00000])[1.00000],(Retifilo,(Sori0191,Ammo1384)[1.00000])[1.00000],(Mesoviri,(Physpate,(Pyrapark,(Charbrau,(Oryzsati,Arabthal)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Prassing,(Ostrtaur,Micrpusl)[1.00000])[1.00000],(Pygsbifo,Plasfalc)[1.00000],(Aplycali,Monoexil,(Amoeprot,Coprprot)[1.00000],((Batrdend,Thectrah)[1.00000],(Squajapo,Phalsoli)[1.00000])[1.00000],(Protfung,(Cavoapop,Schivulg)[1.00000])[1.00000])[1.00000],(AcanthFB,ChoanoFB,Raphhete,Rainerin)[1.00000],(Cryppara,(Hemirufe,(Guilthet,(Gemicryo,(Bafffrig,Rhodsali)[1.00000])[1.00000])[1.00000])[1.00000])[1.00000],(Trimmari,Parapyri)[1.00000],(Palpbili,(Chlovari,(Dunasali,(Volvcart,Chlarein)[1.00000])[1.00000])[1.00000])[1.00000],(Chryfrag,(Pelasubv,Aureanop)[1.00000])[1.00000],(Hemikukw,(Reclamer,(Andagodo,Styginca)[1.00000])[1.00000])[1.00000],((Paulchro,((Aurisoli,(Chlorept,(Bigenata,Gymn2014)[1.00000])[1.00000])[1.00000],(MatazaD1,Brevmoto)[1.00000])[1.00000])[1.00000],(Plasbras,(Salprose,Monobrev)[1.00000])[1.00000])[1.00000],(Pirisoci,(MAST004E,(MAST004C,(MAST04A2,MAST04A1)[1.00000])[1.00000])[1.00000])[1.00000],(Hetepall,Dictdisc)[1.00000],(Phaeglob,(Prymparv,Chryrota)[1.00000])[1.00000],(Homosapi,Gallgall)[1.00000],(Tetrasti,Nephpyri)[1.00000],(Rigiramo,Diphrota)[1.00000],(Mnemleid,(ThecSK13,Sapppeda)[1.00000])[1.00000]);
+
+Summary:
+
+Partition 1/1:
+                         Model         Score        Weight
+----------------------------------------------------------
+       BIC             LG+I+G4    76734.6349        1.0000
+       AIC             LG+I+G4    74515.2310        1.0000
+      AICc             LG+I+G4    74791.2310        1.0000
+
+Execution results written to resources/trees/AP4S1/AP4S1.modeltest.out
+Starting tree written to resources/trees/AP4S1/AP4S1.modeltest.tree
