@@ -39,20 +39,21 @@ output_fasta = args.output
 # read in the Unique ID column 
 # from input_metadata.tsv
 # store as a list
-metadata = pd.read_csv("resources/input_metadata.tsv", sep="\t")
-mag_names = metadata["Unique ID"].tolist()
+mag_names = []
+
+mag_f = os.listdir("resources/mags/")
+mag_f = [f for f in mag_f if f.endswith(".fna")]
+
+# get mag names
+for f in mag_f:
+    # get mag name
+    mag = f.strip(".fna")
+    # append to list
+    mag_names.append(mag)
 
 """
-turn the below into a function
-# read in the fasta file as a dictionary
-
 fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
 
-# loop through our mag names
-# and from the sequence dictionary
-# extract all sequences that contain
-# the Unique ID in their name
-# write these all out to the output file
 with open(output_fasta, "w") as out:
     for mag in mag_names:
         for key, value in fasta_dict.items():
@@ -67,11 +68,13 @@ def splitter(input_fasta, output_fasta, mag_names):
     fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
     with open(output_fasta, "w") as out:
         for mag in mag_names:
+            leonard = 0
             for key, value in fasta_dict.items():
                 if mag in key:
-                    value.id = mag
+                    value.id = mag + "_" + str(leonard)
                     value.description = mag
                     SeqIO.write(value, out, "fasta")
+                    leonard += 1
 
 splitter(input_fasta, output_fasta, mag_names)
 

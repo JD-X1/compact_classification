@@ -9,39 +9,61 @@ import pandas as pd
 # resources queries/
 # files names are formated as gene.q.fas
 
-def get_genes_from_goneFishing():
-    # Get the output directory from the checkpoint
-    checkpoint_output = checkpoints.goneFishing.get().output[0]
-
-    # List files in the output directory
-    files = os.listdir(checkpoint_output)
+def get_genes_from_goneFishing(mag):
+    # Assuming the directory structure under the checkpoint is consistent and known
+    checkpoint_output = f"resources/{mag}_working_dataset"
 
     # Initialize an empty list to store genes with corresponding trees
     valid_genes = []
 
-    # Check each file to see if a corresponding tree file exists
-    for f in files:
-        if f.endswith('.fas'):
-            gene_name = os.path.splitext(f)[0]
-            tree_file = os.path.join("resources/ref_trees", gene_name, gene_name + ".raxml.support")
-            if os.path.exists(tree_file):
-                valid_genes.append(gene_name)
+    # Check if the checkpoint output directory exists to handle cases where it might not
+    if os.path.exists(checkpoint_output):
+        # List files in the output directory
+        files = os.listdir(checkpoint_output)
+
+        # Check each file to see if a corresponding tree file exists
+        for f in files:
+            if f.endswith('.fas'):
+                gene_name = os.path.splitext(f)[0]
+                tree_file = os.path.join("resources/ref_trees", gene_name, gene_name + ".raxml.support")
+                if os.path.exists(tree_file):
+                    valid_genes.append(gene_name)
 
     return valid_genes
 
 
-def all_input(wildcards):
-    # Get the list of genes after the checkpoint
-    genes = get_genes_from_goneFishing()
-
-    # Return the expanded list of inputs
-    return expand("resources/busco_out/{mag}/summary.txt", mag=mags) + \
-           ["resources/input_metadata.tsv",
+def all_input():
+    # Initialize an empty list to collect all inputs
+    all_inputs = []
+    
+    # Iterate over each MAG to generate inputs
+    for mag in mags:
+        # Dynamically get genes for the current MAG after goneFishing
+        # Check if the checkpoint directory for this MAG exists to infer completion
+        checkpoint_dir = f"resources/{mag}_working_dataset"
+        mag_inputs = [
+            f"resources/busco_out/{mag}/summary.txt",
+            f"resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta",
+            f"resources/{mag}_input_metadata.tsv",
             "resources/PhyloFishScratch/",
-            "resources/working_dataset"] + \
-           expand('resources/q_frags/{gene}.fas' , gene=genes) + \
-           expand("resources/mafft_out/{gene}.aln", gene=genes) + \
-           expand("resources/epa_out/{gene}/RAxML_portableTree.epa.jplace", gene=genes)
+            checkpoint_dir  # This implicitly checks for its existence
+        ]
+
+        # Check if the checkpoint has completed by checking the existence of its output directory
+        if os.path.exists(checkpoint_dir):
+            # Assuming get_genes_from_goneFishing is adjusted to accept a mag parameter
+            genes = get_genes_from_goneFishing(mag)
+            for gene in genes:
+                mag_inputs.extend([
+                    f"resources/{mag}_q_frags/{gene}.fas",
+                    f"resources/{mag}_mafft_out/{gene}.aln",
+                    f"resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace"
+                ])
+        
+        # Add the MAG-specific inputs to the overall list
+        all_inputs.extend(mag_inputs)
+    
+    return all_inputs
 
 
 mag_f = os.listdir("resources/mags/")
@@ -57,43 +79,41 @@ for f in mag_f:
 
 rule all:
     input:
-        all_input
+        all_input()
 
     
 rule run_busco:
     input: 
         "resources/mags/{mag}.fna"
     output:
-        directory("resources/busco_out/{mag}"),
-        "resources/busco_out/{mag}/summary.txt"
+       "resources/busco_out/{mag}/summary.txt",
+       "resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta"
     conda:
         "../envs/mb.yaml"
     threads: 22
     log:
         "logs/busco/{mag}.log"
     shell:
-        "compleasm run -a {input} -t {threads} -l eukaryota -L resources/mb_downloads/ -o resources/busco_out/{wildcards.mag} 1> {log} 2> {log}"
+        """
+        compleasm run -a {input} -t {threads} -l eukaryota -L resources/mb_downloads/ -o resources/busco_out/{wildcards.mag} 1> {log} 2> {log}
+        """
 
-
-rule fishing_configurations:
+rule fishing_meta:
     input:
-        "resources/busco_out/"
+        "resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta"
     output:
-        "resources/input_metadata.tsv",
-        directory("resources/PhyloFishScratch/")
+        "resources/{mag}_input_metadata.tsv"
     conda:
-        "../envs/fisher.yaml"
-    threads: 22
+        "../envs/raxml-ng.yaml"
     shell:
-        "python ./additional_scripts/fishing_meta.py {input}"
-
+        "python ./additional_scripts/fishing_meta.py {input} >> {output}"
 
 
 checkpoint goneFishing:
     input:
-        "resources/input_metadata.tsv"
+        "resources/{mag}_input_metadata.tsv"
     output:
-        directory("resources/working_dataset")
+        directory("resources/{mag}_working_dataset")
     conda:
         "../envs/fisher.yaml"
     threads: 22
@@ -104,10 +124,10 @@ checkpoint goneFishing:
 
 rule splitter:
     input:
-        dir="resources/working_dataset/",
-        tar="resources/working_dataset/{gene}.fas"
+        dir="resources/{mag}_working_dataset/",
+        tar="resources/{mag}_working_dataset/{gene}.fas"
     output:
-       "resources/q_frags/{gene}.fas"
+       "resources/{mag}_q_frags/{gene}.fas"
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
@@ -117,10 +137,10 @@ rule splitter:
 
 rule mafft:
     input:
-        query="resources/q_frags/{gene}.fas",
+        query="resources/{mag}_q_frags/{gene}.fas",
         reference="resources/PhyloFishScratch/alignments/{gene}.fas.aln"
     output:
-        "resources/mafft_out/{gene}.aln"
+        "resources/{mag}_mafft_out/{gene}.aln"
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
@@ -129,17 +149,30 @@ rule mafft:
 
 rule raxml_epa:
     input:
-        q_aln="resources/mafft_out/{gene}.aln",
+        q_aln="resources/{mag}_mafft_out/{gene}.aln",
         ref_tree="resources/ref_trees/{gene}/{gene}.raxml.support"
     output:
-        "resources/epa_out/{gene}/RAxML_portableTree.epa.jplace"
+        "resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace"
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
     shell:
         """
-        mkdir -p resources/epa_out/{wildcards.gene}
-        cd resources/epa_out/{wildcards.gene}
-        raxmlHPC-PTHREADS -f v -T {threads} -s ../../../{input.q_aln} -t ../../../{input.ref_tree} -m PROTGAMMAJTT -n epa
-        cp {wildcards.gene}.jplace ../
+        # Ensure the output directory exists
+        mkdir -p resources/{wildcards.mag}_epa_out/{wildcards.gene}
+
+        # Run RAxML. Note that we change to the desired output directory first
+        cd resources/{wildcards.mag}_epa_out/{wildcards.gene}
+
+        # Execute RAxML with the correct path to the alignment and tree files,
+        # specifying only a run name for the output (not a path).
+        raxmlHPC-PTHREADS -f v -T {threads} \
+          -s ../../../{input.q_aln} \
+          -t ../../../{input.ref_tree} \
+          -m PROTGAMMAJTT -n epa
+
+        # The actual output file is named according to the RAxML naming convention,
+        # incorporating the run name. Ensure this matches your output specification.
         """
+
+#rule gappa:
