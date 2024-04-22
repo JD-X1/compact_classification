@@ -46,6 +46,8 @@ def all_input():
             f"resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta",
             f"resources/{mag}_input_metadata.tsv",
             "resources/PhyloFishScratch/",
+            f"resources/{mag}_epa_out/profile_summary.tsv",
+            f"{mag}_summary.csv",
             checkpoint_dir  # This implicitly checks for its existence
         ]
 
@@ -57,7 +59,8 @@ def all_input():
                 mag_inputs.extend([
                     f"resources/{mag}_q_frags/{gene}.fas",
                     f"resources/{mag}_mafft_out/{gene}.aln",
-                    f"resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace"
+                    f"resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace",
+                    f"resources/{mag}_epa_out/{gene}/profile.tsv"
                 ])
         
         # Add the MAG-specific inputs to the overall list
@@ -161,7 +164,7 @@ rule raxml_epa:
         # Ensure the output directory exists
         mkdir -p resources/{wildcards.mag}_epa_out/{wildcards.gene}
 
-        # Run RAxML. Note that we change to the desired output directory first
+        # Run RAxML
         cd resources/{wildcards.mag}_epa_out/{wildcards.gene}
 
         # Execute RAxML with the correct path to the alignment and tree files,
@@ -175,4 +178,33 @@ rule raxml_epa:
         # incorporating the run name. Ensure this matches your output specification.
         """
 
-#rule gappa:
+rule gappa:
+    input:
+        "resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace"
+    output:
+        "resources/{mag}_epa_out/{gene}/profile.tsv"
+    conda:
+        "../envs/raxml-ng.yaml"
+    threads: 22
+    shell:
+        """
+        gappa examine assign \
+            --jplace-path {input} \
+            --taxon-file resources/tax_tree.txt \
+            --out-dir resources/{wildcards.mag}_epa_out/{wildcards.gene} \
+            --allow-file-overwriting --best-hit --verbose
+        """
+
+
+rule gappa_summary:
+    output:
+        o1="resources/{mag}_epa_out/profile_summary.tsv",
+        o2="{mag}_summary.csv"
+    conda:
+        "../envs/raxml-ng.yaml"
+    threads: 22
+    shell:
+        """
+        cat resources/{wildcards.mag}_epa_out/*/profile.tsv > {output.o1}
+        python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
+        """
