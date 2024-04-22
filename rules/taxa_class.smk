@@ -3,17 +3,13 @@
 import os
 import pandas as pd
 
-# read in all single gene alignments and extract
-# gene names for snakemake rule all. Alignments
-# are in fasta format and are in the directory
-# resources queries/
-# files names are formated as gene.q.fas
+
+# resources mags/
 
 def get_genes_from_goneFishing(mag):
-    # Assuming the directory structure under the checkpoint is consistent and known
     checkpoint_output = f"resources/{mag}_working_dataset"
 
-    # Initialize an empty list to store genes with corresponding trees
+    # Init an empty list to store genes with corresponding trees
     valid_genes = []
 
     # Check if the checkpoint output directory exists to handle cases where it might not
