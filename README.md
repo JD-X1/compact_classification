@@ -2,7 +2,7 @@
 
 ## Instructions
 
-compact_class is designed to classify newly generated MAGs useing multiple single gene phylogenetic placement. 
+compact_class is designed to classify newly generated MAGs using multiple single gene phylogenetic placement. 
 
 ### Step 0: Download PhyloFisherDB
 
@@ -23,6 +23,8 @@ Current behavior is implemented to allow me to control which files in a folder I
 ```
 
 ### Step 2: Run pipeline
+
+Be aware no clean up options have been implemented quite yet. As a result this will produce quite a few intermediary directories and steps in the resources directory.
 
 ```
 sh comp_class.sh -m [directory containing MAGs]
