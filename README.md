@@ -1,6 +1,6 @@
 # compact_class
 
-## Instuctions
+## Instructions
 
 compact_class is designed to classify newly generated MAGs useing multiple single gene phylogenetic placement. 
 
