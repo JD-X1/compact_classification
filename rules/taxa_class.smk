@@ -65,7 +65,7 @@ def all_input():
     return all_inputs
 
 
-mag_f = os.listdir("resources/mags/")
+mag_f = os.listdir(config["mag_dir"])
 mag_f = [f for f in mag_f if f.endswith(".fna")]
 
 # get mag names
@@ -83,7 +83,7 @@ rule all:
     
 rule run_busco:
     input: 
-        "resources/mags/{mag}.fna"
+        config["mag_dir"] + "{mag}.fna"
     output:
        "resources/busco_out/{mag}/summary.txt",
        "resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta"
