@@ -4,6 +4,8 @@
 
 compact_class is designed to classify newly generated MAGs using multiple single gene phylogenetic placement. 
 
+**Aware of issue on local test runs. Adjusting.** 
+
 ### Step 0: Download PhyloFisherDB
 
 ```

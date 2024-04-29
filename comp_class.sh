@@ -34,7 +34,6 @@ snakemake -s rules/taxa_class.smk \
     --rerun-incomplete \
     --conda-frontend mamba 
 
-wait
 
 snakemake -s rules/taxa_class.smk \
     --cores $SLURM_NTASKS_PER_NODE \
