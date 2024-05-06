@@ -29,8 +29,8 @@ args = parser.parse_args()
 
 # check if directory resources/q_frags/
 # exists, if not create it
-if not os.path.exists("resources/q_frags/"):
-    os.makedirs("resources/q_frags/")
+#if not os.path.exists("resources/q_frags/"):
+#    os.makedirs("resources/q_frags/")
 
 # read in the input fasta file
 input_fasta = args.input
@@ -48,6 +48,8 @@ mag_f = [f for f in mag_f if f.endswith(".fna")]
 for f in mag_f:
     # get mag name
     mag = f.strip(".fna")
+    mag = mag.replace("_", "")
+    print(mag)
     # append to list
     mag_names.append(mag)
 
@@ -70,7 +72,8 @@ def splitter(input_fasta, output_fasta, mag_names):
         for mag in mag_names:
             leonard = 0
             for key, value in fasta_dict.items():
-                if mag in key:
+                if mag.strip("_") in key:
+                    print("clear")
                     value.id = mag + "_" + str(leonard)
                     value.description = mag
                     SeqIO.write(value, out, "fasta")

@@ -4,7 +4,7 @@
 
 compact_class is designed to classify newly generated MAGs using multiple single gene phylogenetic placement. 
 
-**Aware of issue on local test runs. Adjusting.** 
+**Be Aware of MAG naming conventions** 
 
 ### Step 0: Download PhyloFisherDB
 
@@ -22,6 +22,18 @@ Current behavior is implemented to allow me to control which files in a folder I
 
 ```
 [mag_name].fna # different fasta file extensions will not be detected 
+```
+
+Also avoid the following symbols in the name as certain tools in this pipeline do not interact well with them.
+
+```
+
+'_'
+'@'
+'..'
+'whitespace'
+'*'
+
 ```
 
 ### Step 2: Run pipeline
