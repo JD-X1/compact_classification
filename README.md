@@ -21,7 +21,7 @@ cd ..
 Current behavior is implemented to allow me to control which files in a folder I want to be put through the pipeline without having to delete/move files. 
 
 ```
-[mag_name].fna # different fasta file extensions will not be detected 
+[MAGname].fna # different fasta file extensions will not be detected 
 ```
 
 Also avoid the following symbols in the name as certain tools in this pipeline do not interact well with them.
