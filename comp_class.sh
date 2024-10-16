@@ -25,7 +25,9 @@ if [ ! -d resources/PhyloFishScratch ]; then
     cp -r resources/PhyloFisherDatabase_v1.0/database resources/PhyloFishScratch
 fi
 
+### Check for Snakemake installation
 
+###
 
 snakemake -s rules/taxa_class.smk \
     --cores $SLURM_NTASKS_PER_NODE \

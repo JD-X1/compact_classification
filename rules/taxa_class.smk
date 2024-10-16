@@ -201,6 +201,6 @@ rule gappa_summary:
     threads: 22
     shell:
         """
-        cat resources/{wildcards.mag}_epa_out/*/profile.tsv > {output.o1}
+        cat resources/{wildcards.mag}_epa_out/*/profile.tsv | grep -v "LWR" > {output.o1}
         python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
         """
