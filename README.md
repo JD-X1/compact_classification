@@ -36,10 +36,24 @@ Also avoid the following symbols in the name as certain tools in this pipeline d
 
 ```
 
-### Step 2: Run pipeline
+### Step 2: Install Mamba + Snakemake
+
+The pipleine is designed to manage the packages for the pipeline through Mamba. I recommend the miniforge installation. 
+
+For unix-like platforms:
+```
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash Miniforge3-$(uname)-$(uname -m).sh
+conda init
+mamba create -c conda-forge -c bioconda -n snakemake snakemake
+
+```
+
+### Step 3: Run pipeline
 
 Be aware no clean up options have been implemented quite yet. As a result this will produce quite a few intermediary directories and steps in the resources directory.
 
 ```
+mamba activate snakemake
 sh comp_class.sh -m [directory containing MAGs]
 ```
