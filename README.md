@@ -62,7 +62,7 @@ mamba create -c conda-forge -c bioconda -n snakemake snakemake
 
 Be aware no clean up options have been implemented quite yet. As a result this will produce quite a few intermediary directories and steps in the resources directory.
 ```
-mamba activate raxml-ng
+mamba activate snakemake
 
 sh test_pf.sh
 ```
