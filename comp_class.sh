@@ -3,7 +3,7 @@
 # arguement -m is location of target mag files
 # arguement -d is ref_alignment filepath PF vs EP
 
-while getopts m: flag
+while getopts m:d: flag
 do
     case "${flag}" in
         m) mag_dir=${OPTARG};;
@@ -30,8 +30,7 @@ fi
 
 ### 
 
-if [ $db_type == "PF" ]; then
-    snakemake -s rules/taxa_class_pf.smk \
+snakemake -s rules/taxa_class_pf.smk \
     --cores $SLURM_NTASKS_PER_NODE \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
@@ -39,30 +38,11 @@ if [ $db_type == "PF" ]; then
     --conda-frontend mamba 
 
 
-    snakemake -s rules/taxa_class_pf.smk \
-    --cores $SLURM_NTASKS_PER_NODE \
-    --config mag_dir=$mag_dir \
-    --use-conda -p --keep-going \
-    --rerun-incomplete \
-    --conda-frontend mamba
-elif [ $db_type == "EP" ]; then
-    snakemake -s rules/taxa_class_ep.smk \
+snakemake -s rules/taxa_class_pf.smk \
     --cores $SLURM_NTASKS_PER_NODE \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
     --rerun-incomplete \
-    --conda-frontend mamba 
-
-
-    snakemake -s rules/taxa_class_ep.smk \
-    --cores $SLURM_NTASKS_PER_NODE \
-    --config mag_dir=$mag_dir \
-    --use-conda -p --keep-going \
-    --rerun-incomplete \
     --conda-frontend mamba
-else
-    echo "Invalid database type. Please use PF or EP"
-    exit 1
-fi
 
 
