@@ -53,6 +53,8 @@ For unix-like platforms:
 ```
 curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
 bash Miniforge3-$(uname)-$(uname -m).sh
+bash Miniforge3.sh -b -p "${HOME}/conda"
+source "${HOME}/conda/etc/profile.d/mamba.sh"
 conda init
 mamba create -c conda-forge -c bioconda -n snakemake snakemake
 
