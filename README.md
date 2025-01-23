@@ -18,7 +18,7 @@ git clone git@github.com:JD-X1/compact_classification.git
 ### Step 1: Download PhyloFisherDB
 
 ```
-cd resources
+cd compact_classification/resources
 wget https://ndownloader.figshare.com/files/29093409
 tar -xzvf 29093409
 rm 29093409
