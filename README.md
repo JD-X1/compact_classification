@@ -2,7 +2,7 @@
 
 ## Instructions
 
-compact_class is designed to classify newly generated MAGs using multiple single gene phylogenetic placement. 
+compact_class is designed to classify newly generated Metagenome Assembled Genomes (MAGs) using multiple single gene phylogenetic placement. 
 
 **Be Aware of MAG naming conventions** 
 
@@ -49,11 +49,11 @@ mamba create -c conda-forge -c bioconda -n snakemake snakemake
 
 ```
 
-### Step 3: Run pipeline
+### Step 3: Run pipeline Test
 
 Be aware no clean up options have been implemented quite yet. As a result this will produce quite a few intermediary directories and steps in the resources directory.
-
 ```
-mamba activate snakemake
-sh comp_class.sh -m [directory containing MAGs]
+mamba activate raxml-ng
+
+sh test_pf.sh
 ```
