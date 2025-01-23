@@ -6,7 +6,16 @@ compact_class is designed to classify newly generated Metagenome Assembled Genom
 
 **Be Aware of MAG naming conventions** 
 
-### Step 0: Download PhyloFisherDB
+### Step 0: Clone Repo
+```
+git clone git@github.com:JD-X1/compact_classification.git
+
+```
+
+
+
+
+### Step 1: Download PhyloFisherDB
 
 ```
 cd resources
