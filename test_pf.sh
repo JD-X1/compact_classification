@@ -14,5 +14,13 @@
 #                   Test Script                   #
 ###################################################
 
+# ADD core management flag
+sh comp_class.sh -m resources/test/ -d PF -t 2
 
-sh comp_class.sh -m resources/test/ -d PF
+# check for any ouput
+# throw loud error if no
+# output is found
+if [ ! -d ./ThalassiothrixantarticaTestCase_summary.txt]; then
+    echo "Pipeline Failed Check Logs For Errors"
+    exit 1
+fi
