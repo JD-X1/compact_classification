@@ -66,20 +66,28 @@ def all_input():
 
 
 mag_f = os.listdir(config["mag_dir"])
+print(mag_f)
+#### CHANGE THE FILE EXTENSION
+#### Swap out this check for file extension
+#### with a test to check that the MAG files
+#### are actually nucliec acid fastas. 
 mag_f = [f for f in mag_f if f.endswith(".fna")]
+if mag_f == []:
+    raise ValueError("#################\nNo MAGs found in the specified directory.\n#################\n")
 
 # get mag names
 mags = []
 for f in mag_f:
     # get mag name
-    mag = f.strip(".fna")
+    mag = f.split(".")[0]
     # append to list
     mags.append(mag)
 
+print(mags)
 rule all:
     input:
         all_input()
-
+print(all_input())
     
 rule run_busco:
     input: 

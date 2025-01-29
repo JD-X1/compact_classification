@@ -43,7 +43,7 @@ echo "Casting Lines"
 cd resources
 # extract basename of input file
 Input=$(basename $Input)
-
+echo $Input
 
 # get file basename
 

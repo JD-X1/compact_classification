@@ -43,7 +43,7 @@ snakemake -s rules/taxa_class_pf.smk \
 
 
 snakemake -s rules/taxa_class_pf.smk \
-    --cores ${threads} \ 
+    --cores ${threads} \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
     --rerun-incomplete \

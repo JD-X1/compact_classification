@@ -15,7 +15,7 @@
 ###################################################
 
 # ADD core management flag
-sh comp_class.sh -m resources/test/ -d PF -t 2
+sh comp_class.sh -m resources/test/ -d PF -t 22
 
 # check for any ouput
 # throw loud error if no
