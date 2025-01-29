@@ -3,11 +3,15 @@
 # arguement -m is location of target mag files
 # arguement -d is ref_alignment filepath PF vs EP
 
-while getopts m:d: flag
+# arguement -t is number of threads that defaults to 1
+threads=1
+db_type=PF
+while getopts m:d:t: flag
 do
     case "${flag}" in
         m) mag_dir=${OPTARG};;
         d) db_type=${OPTARG};;
+        t) threads=${OPTARG};;
     esac
 done
 
@@ -31,7 +35,7 @@ fi
 ### 
 
 snakemake -s rules/taxa_class_pf.smk \
-    --cores $SLURM_NTASKS_PER_NODE \
+    --cores ${threads} \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
     --rerun-incomplete \
@@ -39,7 +43,7 @@ snakemake -s rules/taxa_class_pf.smk \
 
 
 snakemake -s rules/taxa_class_pf.smk \
-    --cores $SLURM_NTASKS_PER_NODE \
+    --cores ${threads} \ 
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
     --rerun-incomplete \
