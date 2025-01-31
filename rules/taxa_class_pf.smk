@@ -83,11 +83,9 @@ for f in mag_f:
     # append to list
     mags.append(mag)
 
-print(mags)
 rule all:
     input:
         all_input()
-print(all_input())
     
 rule run_busco:
     input: 
@@ -145,7 +143,7 @@ rule splitter:
 rule mafft:
     input:
         query="resources/{mag}_q_frags/{gene}.fas",
-        reference=config["mode"] + "/{gene}.fas.aln"
+        reference="resources/PhyloFishScratch/alignments/{gene}.fas.aln"
     output:
         "resources/{mag}_mafft_out/{gene}.aln"
     conda:
