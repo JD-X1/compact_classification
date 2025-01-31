@@ -136,8 +136,10 @@ rule splitter:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    log:
+        "logs/splitter/{mag}_{gene}.log"
     shell:
-        "python ./additional_scripts/splitter.py -i {input.tar} -o {output}"
+        "python ./additional_scripts/splitter.py -i {input.tar} -o {output} 1> {log} 2> {log}"
 
 
 rule mafft:
