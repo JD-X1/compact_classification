@@ -24,12 +24,13 @@ where necessary.
 # get the input and output file names
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="input fasta file")
+parser.add_argument("-d", "--directory", help="directory containing mag files")
 parser.add_argument("-o", "--output", help="outputfasta file name and path")
 args = parser.parse_args()
 
 # check if directory resources/q_frags/
 # exists, if not create it
-#if not os.path.exists("resources/q_frags/"):
+# if not os.path.exists("resources/q_frags/"):
 #    os.makedirs("resources/q_frags/")
 
 # read in the input fasta file
@@ -41,8 +42,8 @@ output_fasta = args.output
 # store as a list
 mag_names = []
 
-mag_f = os.listdir("resources/mags/")
-mag_f = [f for f in mag_f if f.endswith(".fna")]
+mag_f = os.listdir(str(args.directory))
+#mag_f = [f for f in mag_f if f.endswith(".fna")]
 
 # get mag names
 for f in mag_f:
