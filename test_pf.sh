@@ -20,7 +20,7 @@ sh comp_class.sh -m resources/test/ -d PF -t 22
 # check for any ouput
 # throw loud error if no
 # output is found
-if [ ! -d ./ThalassiothrixantarticaTestCase_summary.txt]; then
+if [ ! -d ./Lenisialimosa_summary.csv]; then
     echo "Pipeline Failed Check Logs For Errors"
     exit 1
 fi
