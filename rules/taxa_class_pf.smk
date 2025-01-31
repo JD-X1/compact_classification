@@ -130,7 +130,8 @@ checkpoint goneFishing:
 rule splitter:
     input:
         dir="resources/{mag}_working_dataset/",
-        tar="resources/{mag}_working_dataset/{gene}.fas"
+        tar="resources/{mag}_working_dataset/{gene}.fas",
+        mag_dir=config["mag_dir"]
     output:
        "resources/{mag}_q_frags/{gene}.fas"
     conda:
@@ -139,7 +140,7 @@ rule splitter:
     log:
         "logs/splitter/{mag}_{gene}.log"
     shell:
-        "python ./additional_scripts/splitter.py -i {input.tar} -o {output} 1> {log} 2> {log}"
+        "python ./additional_scripts/splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
 
 
 rule mafft:
