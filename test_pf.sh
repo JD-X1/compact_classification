@@ -24,3 +24,7 @@ if [ ! -d ./Lenisialimosa_summary.csv]; then
     echo "Pipeline Failed Check Logs For Errors"
     exit 1
 fi
+
+rm -r resources/Lenisialimosa_*
+rm -r resources/Lenisialimosa_input_metadata.tsv
+

@@ -25,13 +25,8 @@ rm 29093409
 cd ..
 ```
 
-### Step 1: Ensure MAGS end in extension '.fna'
+### Step 1: Ensure only fasta formated MAGs are in the target directory
 
-Current behavior is implemented to allow me to control which files in a folder I want to be put through the pipeline without having to delete/move files. 
-
-```
-[MAGname].fna # different fasta file extensions will not be detected 
-```
 
 Also avoid the following symbols in the name as certain tools in this pipeline do not interact well with them.
 
@@ -47,16 +42,13 @@ Also avoid the following symbols in the name as certain tools in this pipeline d
 
 ### Step 2: Install Mamba + Snakemake
 
-The pipleine is designed to manage the packages for the pipeline through Mamba. I recommend the miniforge installation. 
+The pipleine is designed to manage the packages for the pipeline through mamba.
+For mamba install instructions please see:
+
+
 
 For unix-like platforms:
 ```
-curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-bash Miniforge3-$(uname)-$(uname -m).sh
-bash Miniforge3.sh -b -p "${HOME}/conda"
-source "${HOME}/conda/etc/profile.d/mamba.sh"
-conda init
-##
 mamba create -c conda-forge -c bioconda -n snakemake snakemake
 
 ```
