@@ -2,6 +2,7 @@ name: raxml-ng
 channels:
   - conda-forge
   - bioconda
+  - defaults
 dependencies:
   - raxml-ng
   - biopython
