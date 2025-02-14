@@ -152,6 +152,8 @@ rule mafft:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    log:
+        "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
     shell:
         "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output}"
 
@@ -165,6 +167,8 @@ rule raxml_epa:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    log:
+        "logs/raxml_epa/{mag}/{gene}.log"
     shell:
         """
         # Ensure the output directory exists
@@ -178,7 +182,7 @@ rule raxml_epa:
         raxmlHPC-PTHREADS -f v -T {threads} \
           -s ../../../{input.q_aln} \
           -t ../../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n epa
+          -m PROTGAMMAJTT -n epa 1> {log} 2> {log}
 
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
@@ -192,13 +196,15 @@ rule gappa:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    log:
+        "logs/gappa/{mag}/{gene}.log"
     shell:
         """
         gappa examine assign \
             --jplace-path {input} \
             --taxon-file resources/tax_tree.txt \
             --out-dir resources/{wildcards.mag}_epa_out/{wildcards.gene} \
-            --allow-file-overwriting --best-hit --verbose
+            --allow-file-overwriting --best-hit --verbose 1> {log} 2> {log}
         """
 
 
