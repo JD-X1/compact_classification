@@ -50,11 +50,11 @@ Input=$(basename $Input)
 config.py -d ${file}_PhyloFishScratch -i $Input
 echo "Configuration of PhyloFisher Modules Complete"
 echo "Waiting for the Fish to Bite"
-fisher.py --threads $TCores -o ${file}_fish_out 1> ../logs/FishingLogs/fisher.log 2> ../logs/FishingLogs/fisher.log
+fisher.py --threads $TCores -o ${file}_fish_out 1> ../logs/FishingLogs/${file}_fisher.log 2> ../logs/FishingLogs/${file}_fisher.log
 echo "Fish Caught"
-informant.py -i ${file}_fish_out --orthologs_only 1> ../logs/FishingLogs/informant.log 2> ../logs/FishingLogs/informant.log
+informant.py -i ${file}_fish_out --orthologs_only 1> ../logs/FishingLogs/${file}_informant.log 2> ../logs/FishingLogs/${file}_informant.log
 echo "Informant Complete"
 echo "Choosing the best fish"
-working_dataset_constructor.py -i ${file}_fish_out -o ${file}_working_dataset 1> ../logs/FishingLogs/working_dataset_constructor.log 2> ../logs/FishingLogs/working_dataset_constructor.log
+working_dataset_constructor.py -i ${file}_fish_out -o ${file}_working_dataset 1> ../logs/FishingLogs/${file}_working_dataset_constructor.log 2> ../logs/FishingLogs/${file}_working_dataset_constructor.log
 echo "Fish on the grill"
 cd ..
