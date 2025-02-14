@@ -14,6 +14,8 @@ do
     esac
 done
 
+
+
 echo "Checking for PhyloFisherDatabase_v1.0"
 if [ ! -d resources/PhyloFisherDatabase_v1.0 ]; then
     echo "PhyloFisherDatabase_v1.0 not found. Please download and extract the database to resources/PhyloFisherDatabase_v1.0"
