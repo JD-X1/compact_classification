@@ -13,7 +13,8 @@ import unittest
 
 class TestSummaryLength(unittest.TestCase):
     def test_summary_length(self):
-        jplace_files = [f for f in listdir("resources/Lenisialimosa_epa_out/" + gene) if isfile(join("resources/Lenisialimosa_epa_out/" + gene, f)) and f.endswith(".jplace")]
+        jplace_files = listdir("resources/Lenisialimosa_epa_out/")
+        print("Jplace files: ")
         print(jplace_files)
         summary_file = "Lenisialimosa_summary.csv"
         gene_count = 0
