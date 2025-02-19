@@ -173,7 +173,7 @@ rule raxml_epa:
         """
         # Ensure the output directory exists
         mkdir -p resources/{wildcards.mag}_epa_out/{wildcards.gene}
-
+        mkdir -p logs/raxml_epa/{wildcards.mag}
         # Run RAxML
         cd resources/{wildcards.mag}_epa_out/{wildcards.gene}
 
@@ -182,7 +182,7 @@ rule raxml_epa:
         raxmlHPC-PTHREADS -f v -T {threads} \
           -s ../../../{input.q_aln} \
           -t ../../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n epa 1> {log} 2> {log}
+          -m PROTGAMMAJTT -n epa
 
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
@@ -217,6 +217,6 @@ rule gappa_summary:
     threads: 22
     shell:
         """
-        cat resources/{wildcards.mag}_epa_out/*/profile.tsv | grep -v "LWR" > {output.o1}
+        cat resources/{wildcards.mag}_epa_out/*/profile.tsv | grep -v "LWR" >> {output.o1}
         python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
         """
