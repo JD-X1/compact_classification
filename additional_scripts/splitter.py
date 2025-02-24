@@ -4,6 +4,8 @@ import os
 import argparse
 import pandas as pd
 from Bio import SeqIO
+from Bio import SearchIO
+
 """
 Usage:
 python ./additional_scripts/splitter.py -i {input} -o {output}"
@@ -65,6 +67,18 @@ with open(output_fasta, "w") as out:
                 value.description = mag
                 SeqIO.write(value, out, "fasta")
 """
+
+def eval_filter(hits_path):
+    hits = SearchIO.read(hits_path, "hmmer3-text")
+    best_hit_id = hits[0].id
+    best_hit_iter = 0
+    for i in range(1, len(hits)):
+        if ADK2[i].evalue < hits[best_hit_iter].evalue:
+            best_hit_iter = i
+            best_hit_id = hits[i].id
+    print("Best Hit Iterator: " + "\t" + str(best_hit_iter))
+    print("Best Hit ID: " + "\t" + best_hit_id)
+    return best_hit_id
 
 def splitter(input_fasta, output_fasta, mag_names):
     print(input_fasta)

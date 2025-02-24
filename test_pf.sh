@@ -25,6 +25,6 @@ if [ ! -d ./Lenisialimosa_summary.csv]; then
     exit 1
 fi
 
-rm -r resources/Lenisialimosa_*
-rm -r resources/Lenisialimosa_input_metadata.tsv
+#rm -r resources/Lenisialimosa_*
+#rm -r resources/Lenisialimosa_input_metadata.tsv
 
