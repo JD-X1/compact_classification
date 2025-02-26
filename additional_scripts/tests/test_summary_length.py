@@ -28,6 +28,12 @@ class TestSummaryLength(unittest.TestCase):
                 gene_count += int(count)
             print(gene_count)
             self.assertEqual(gene_count, len(jplace_files))
+    def test_pipeline_geneCount_check(self):
+        working_dataset_list = listdir("resources/Lenisialimosa_working_dataset/")
+        spitter_dataset_list = listdir("resources/Lenisialimosa_q_frags/")
+        mafft_dataset_list = listdir("resources/Lenisialimosa_mafft_out/")
+        self.assertEqual(len(working_dataset_list), len(spitter_data_list))
+        self.assertEqual(len(splitter_dataset_list), len(mafft_data_list))
 
         
 if __name__ == '__main__':
