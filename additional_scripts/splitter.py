@@ -47,35 +47,46 @@ print("HMM Path: " + hits_path)
 # read in the Unique ID column 
 # from input_metadata.tsv
 # store as a list
-mag_names = []
 
-mag_f = os.listdir(str(args.directory))
+def get_valid_keys(input_fasta):
+    fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
+    valid_keys = []
+    for key, value in fasta_dict.items():
+        if species in key:
+            valid_keys.append(key.split("_HMM_")[0])
+    return valid_keys
 
-def eval_filter(hits_path):
+def eval_filter(hits_path, input_fasta):
     hits = SearchIO.read(hits_path, "hmmer3-text")
-    best_hit_id = hits[0].id
+    valid_keys = get_valid_keys(input_fasta)
+    best_hit_id = valid_keys[0]
     best_hit_iter = 0
     for i in range(1, len(hits)):
         if hits[i].evalue < hits[best_hit_iter].evalue:
-            best_hit_iter = i
-            best_hit_id = hits[i].id
+            if any(hits[i].id in vkey for vkey in valid_keys):
+                best_hit_iter = i
+                best_hit_id = hits[i].id
     print("Best Hit Iterator: " + "\t" + str(best_hit_iter))
     print("Best Hit ID: " + "\t" + best_hit_id)
     return best_hit_id
 
-def splitter(input_fasta, output_fasta, mag_names, species, best_hit):
-    print(input_fasta)
+def splitter(input_fasta, output_fasta, species, best_hit):
     fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
+    valid_keys = get_valid_keys(input_fasta)
+    print("Valid Keys: ")
+    print(valid_keys)
     with open(output_fasta, "w") as out:
         for key, value in fasta_dict.items():
             if best_hit in key:
-                print(key + " best hit is clear !!")
-                value.id = species
-                value.description = species
-                SeqIO.write(value, out, "fasta")
+                if any(best_hit in vkey for vkey in valid_keys):
+                    print(key + " best hit is clear !!")
+                    value.id = species
+                    value.description = species
+                    SeqIO.write(value, out, "fasta")
 
 
-best_hit = eval_filter(hits_path)
+
+best_hit = eval_filter(hits_path, input_fasta)
 print("Best Hit: " + best_hit)
 
-splitter(input_fasta, output_fasta, mag_names, species, best_hit)
+splitter(input_fasta, output_fasta, species, best_hit)
