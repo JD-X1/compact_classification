@@ -155,7 +155,7 @@ rule mafft:
     log:
         "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
     shell:
-        "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output}"
+        "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
 
 rule raxml_epa:
     input:
@@ -182,7 +182,7 @@ rule raxml_epa:
         raxmlHPC-PTHREADS -f v -T {threads} \
           -s ../../../{input.q_aln} \
           -t ../../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n epa
+          -m PROTGAMMAJTT -n epa 
 
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
