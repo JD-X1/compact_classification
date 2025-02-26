@@ -96,6 +96,7 @@ rule run_busco:
     conda:
         "../envs/mb.yaml"
     threads: 22
+    priority: 0
     log:
         "logs/busco/{mag}.log"
     shell:
@@ -110,6 +111,7 @@ rule fishing_meta:
         "resources/{mag}_input_metadata.tsv"
     conda:
         "../envs/raxml-ng.yaml"
+    priority: 0
     shell:
         "python ./additional_scripts/fishing_meta.py {input} >> {output}"
 
@@ -122,6 +124,7 @@ checkpoint goneFishing:
     conda:
         "../envs/fisher.yaml"
     threads: 22
+    priority: 0
     shell:
         "sh ./additional_scripts/fishing.sh -t {threads} -i {input}"
 
@@ -137,6 +140,7 @@ rule splitter:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    priority: 0
     log:
         "logs/splitter/{mag}_{gene}.log"
     shell:
@@ -152,6 +156,7 @@ rule mafft:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    priority: 0
     log:
         "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
     shell:
@@ -167,6 +172,7 @@ rule raxml_epa:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    priority: 0
     log:
         "logs/raxml_epa/{mag}/{gene}.log"
     shell:
@@ -196,6 +202,7 @@ rule gappa:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    priority: 0
     log:
         "logs/gappa/{mag}/{gene}.log"
     shell:
@@ -215,6 +222,7 @@ rule gappa_summary:
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
+    priority: 1
     shell:
         """
         cat resources/{wildcards.mag}_epa_out/*/profile.tsv | grep -v "LWR" >> {output.o1}
