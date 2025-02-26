@@ -37,7 +37,12 @@ args = parser.parse_args()
 
 # read in the input fasta file
 input_fasta = args.input
+gene = input_fasta.split("/")[-1].split(".")[0]
+print("Gene: " + gene)
 output_fasta = args.output
+species = str(args.input).split("/")[1].replace("_working_dataset", "")
+hits_path = "resources/" + species + "_fish_out/tmp/" + species + "/" + gene + ".hmmout"
+print("HMM Path: " + hits_path)
 
 # read in the Unique ID column 
 # from input_metadata.tsv
@@ -45,53 +50,32 @@ output_fasta = args.output
 mag_names = []
 
 mag_f = os.listdir(str(args.directory))
-#mag_f = [f for f in mag_f if f.endswith(".fna")]
-
-# get mag names
-for f in mag_f:
-    # get mag name
-    mag = f.strip(".fna")
-    mag = mag.replace("_", "")
-    print(mag)
-    # append to list
-    mag_names.append(mag)
-
-"""
-fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
-
-with open(output_fasta, "w") as out:
-    for mag in mag_names:
-        for key, value in fasta_dict.items():
-            if mag in key:
-                value.id = mag
-                value.description = mag
-                SeqIO.write(value, out, "fasta")
-"""
 
 def eval_filter(hits_path):
     hits = SearchIO.read(hits_path, "hmmer3-text")
     best_hit_id = hits[0].id
     best_hit_iter = 0
     for i in range(1, len(hits)):
-        if ADK2[i].evalue < hits[best_hit_iter].evalue:
+        if hits[i].evalue < hits[best_hit_iter].evalue:
             best_hit_iter = i
             best_hit_id = hits[i].id
     print("Best Hit Iterator: " + "\t" + str(best_hit_iter))
     print("Best Hit ID: " + "\t" + best_hit_id)
     return best_hit_id
 
-def splitter(input_fasta, output_fasta, mag_names):
+def splitter(input_fasta, output_fasta, mag_names, species, best_hit):
     print(input_fasta)
     fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
     with open(output_fasta, "w") as out:
-        for mag in mag_names:
-            leonard = 0
-            for key, value in fasta_dict.items():
-                if mag.strip("_") in key:
-                    print("clear")
-                    value.id = mag + "_" + str(leonard)
-                    value.description = mag
-                    SeqIO.write(value, out, "fasta")
-                    leonard += 1
+        for key, value in fasta_dict.items():
+            if best_hit in key:
+                print(key + " best hit is clear !!")
+                value.id = species
+                value.description = species
+                SeqIO.write(value, out, "fasta")
 
-splitter(input_fasta, output_fasta, mag_names)
+
+best_hit = eval_filter(hits_path)
+print("Best Hit: " + best_hit)
+
+splitter(input_fasta, output_fasta, mag_names, species, best_hit)
