@@ -58,6 +58,7 @@ def get_valid_keys(input_fasta):
 
 def eval_filter(hits_path, input_fasta):
     hits = SearchIO.read(hits_path, "hmmer3-text")
+    print(hits.id)
     valid_keys = get_valid_keys(input_fasta)
     best_hit_id = valid_keys[0]
     best_hit_iter = 0
