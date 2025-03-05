@@ -1,6 +1,6 @@
 # compact_class
 
-## Instructions
+# Instructions
 
 compact_class is designed to classify newly generated Metagenome Assembled Genomes (MAGs) using multiple single gene phylogenetic placement. 
 
@@ -9,10 +9,7 @@ compact_class is designed to classify newly generated Metagenome Assembled Genom
 git clone git@github.com:JD-X1/compact_classification.git
 ```
 
-
-
-
-### Step 1: Download PhyloFisherDB
+### Download PhyloFisherDB
 
 ```
 cd compact_classification/resources
