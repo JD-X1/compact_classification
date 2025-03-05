@@ -31,7 +31,8 @@ conda
 
 If you already have conda installed simply make a new environment w/ snakemake installed. To create a conda  environment w/ snakemake:
 ```
-conda create -n snakemake snakemake
+conda create -c conda-forge -c bioconda -n snakemake snakemake
+
 ```
 
 ### Test Your Installation
