@@ -48,3 +48,6 @@ snakemake -s rules/taxa_class_pf.smk \
     --use-conda -p --keep-going \
     --rerun-incomplete \
     --conda-frontend mamba
+
+
+    
