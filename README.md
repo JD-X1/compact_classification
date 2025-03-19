@@ -33,6 +33,9 @@ Assuming you are using the PhyloFisher database, you should first place all your
 sh comp_class.sh -m [directory containing MAGs] -d df -t [threads count]
 ```
 
+[Include something they can run]
+
+
 ### Required Flags
 
 ```
@@ -93,3 +96,5 @@ Also avoid the following symbols in the name as certain tools in this pipeline d
 '*'
 
 ```
+## Expanded Dependencies List 
+
