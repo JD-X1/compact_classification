@@ -1,6 +1,6 @@
 # compact_class
 
-compact_class is a pipeline designed to classify newly generated eukaryotic Metagenome Assembled Genomes (MAGs) using phylogenetic placements of highly conserved single genes using RAxML-EPA. It is currently designed to do this using the PhyloFisher [need a link] database. (WARNING: this pipeline has not be tested outside of HPCC environments, it is not reccomended to run this pipeline locally.)
+compact_class is a pipeline designed to classify newly generated eukaryotic Metagenome Assembled Genomes (MAGs) using phylogenetic placements of highly conserved single genes using RAxML-EPA. It is currently designed to do this using the PhyloFisher [need a link] database. (WARNING: this pipeline has not been tested outside of HPCC environments, it is not reccomended to run this pipeline locally)
 
 ## Installation and Dependencies
 1. To use compact_class, first clone the repo into your working directory. 
@@ -16,7 +16,13 @@ conda create -c conda-forge -c bioconda -n snakemake snakemake
 
 ```
 
+Remember to activate the conda environment before attempting to run:
+```
+conda activate snakemake
+```
+
 3. Lastly, if you intend to use PhyloFisherDB as your database (only option currently available) be sure to place the directory in the resources directory. You can download the database into the correct location by running the following lines of code from inside the compact_classification directory.
+
 ```
 cd resources
 wget https://ndownloader.figshare.com/files/29093409
@@ -30,10 +36,14 @@ cd ..
 Assuming you are using the PhyloFisher database, you should first place all your query MAGs into a single directory. You can then run the following:
 
 ```
+conda activate snakemake
+
 sh comp_class.sh -m [directory containing MAGs] -d df -t [threads count]
 ```
 
 [Include something they can run]
+
+NOTE: Running compact_class will take a little longer on the first time you run it due to multiple downloads for required dependencies. Subsequent runs will not repeat these downloads.
 
 
 ### Required Flags
@@ -58,6 +68,7 @@ In the resources directory you will find an number of directories containing int
 ```
 - resources/[MAG_NAME]_epa_out/[GENE]/
 ```
+
 Contains the output from RAxML EPA including the placements in 'jplace' format. As well as the output for gappa's 'assign' command which reports highest likelihood placement in the event that multiple placements were reported. 
 
 
@@ -96,5 +107,29 @@ Also avoid the following symbols in the name as certain tools in this pipeline d
 '*'
 
 ```
-## Expanded Dependencies List 
+## Expanded Dependencies List
+
+Going to have to check dependencies to see if conflicting environment still conflicts. 
+
+```
+ENV1 - raxml-ng.yaml
+  - raxml-ng
+  - biopython
+  - epa-ng
+  - ca-certificates
+  - openssl
+  - mafft
+  - hmmer
+  - boost
+  - gappa
+  - raxml
+  - pandas
+  - bio
+
+ENV2 - mb.yaml
+  -phylofisher
+
+ENV3 - fisher.yaml
+  -compleasm
+```
 
