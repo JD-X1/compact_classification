@@ -1,7 +1,7 @@
 name: mb
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - compleasm
