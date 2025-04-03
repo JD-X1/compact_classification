@@ -51,7 +51,7 @@ def all_input():
             f"resources/busco_out/{mag}/summary.txt",
             f"resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta",
             f"resources/{mag}_input_metadata.tsv",
-            f"{mag}_summary.csv",
+            #f"{mag}_summary.csv",
             f"{mag}_SuperMatrix.fas",
             f"resources/{mag}_epa_out/RAxML_portableTree.epa.jplace",
             f"resources/{mag}_epa_out/profile.tsv",
@@ -173,20 +173,32 @@ rule mafft:
         "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
 
 superMatrix_targets = get_superMatrix_targets(mag)
+print(len(superMatrix_targets))
 
 rule concat:
     input:
-        expand("resources/{mag}_mafft_out/{gene}.aln", gene=genes)
+        expand("resources/{mag}_mafft_out/{gene}.aln", gene=superMatrix_targets, mag=mags)
     output:
         "{mag}_SuperMatrix.fas"
     conda:
-        "../envs/raxml-ng.yaml"
+        "../envs/pythas_two.yaml"
     threads: 1
     priority: 0
     log:
         "logs/concat/{mag}.log"
     shell:
-        "python additional_scripts/geneStitcher.py -in {input}"
+        """
+        FIXED_ALNS=()
+        for i in $(realpath resources/{wildcards.mag}_mafft_out/*aln)
+        do
+        prot=$(basename ${{i}} .fas)
+        python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -o resources/{wildcards.mag}_labeled/${{prot}}.fas
+        FIXED_ALNS+=("resources/{wildcards.mag}_labeled/${{prot}}.fas")
+        done
+
+        python2 additional_scripts/geneStitcher.py -in ${{FIXED_ALNS[@]}} 
+        mv SuperMatrix.fas {output}
+        """
 
 rule raxml_epa:
     input:
@@ -210,10 +222,12 @@ rule raxml_epa:
 
         # Execute RAxML with the correct path to the alignment and tree files,
         # specifying only a run name for the output (not a path).
-        raxmlHPC-PTHREADS -f v -T {threads} \
-          -s ../../{input.q_aln} \
+        ulimit -n 65536
+        ulimit -s unlimited
+        raxmlHPC-PTHREADS -f V -T {threads} \
+          -s ../../{input.q_aln}.reduced \
           -t ../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n {wildcards.mag}epa 
+          -m PROTGAMMALG -n {wildcards.mag}_epa 
 
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
@@ -236,7 +250,7 @@ rule gappa:
             --jplace-path {input} \
             --taxon-file resources/tax_tree.txt \
             --out-dir resources/{wildcards.mag}_epa_out \
-            --allow-file-overwriting --best-hit --verbose 1> {log} 2> {log}
+            --allow-file-overwriting --best-hit --verbose > {log}
         """
 
 
