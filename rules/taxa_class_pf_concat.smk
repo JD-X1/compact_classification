@@ -228,7 +228,7 @@ rule raxml_epa:
         raxmlHPC-PTHREADS -f V -T {threads} \
           -s ../../{input.q_aln} \
           -t ../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n {wildcards.mag}_epa 
+          -m PROTGAMMAJTT -n {wildcards.mag}_epa >> {log} 
 
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.

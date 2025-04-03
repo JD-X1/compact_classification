@@ -38,16 +38,13 @@ snakemake -s rules/taxa_class_pf_concat.smk \
     --cores ${threads} \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
-    --rerun-incomplete \
-    --conda-frontend mamba 
+    --rerun-incomplete
 
 
 snakemake -s rules/taxa_class_pf_concat.smk \
     --cores ${threads} \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
-    --rerun-incomplete \
-    --conda-frontend mamba
-
+    --rerun-incomplete
 
     
