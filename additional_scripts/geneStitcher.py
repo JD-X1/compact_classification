@@ -2,11 +2,12 @@
  
 import argparse
 import re
+import os
 from sys import argv
 from partBreaker import WritePresAb
 
-# From: https://github.com/ballesterus/Utensils
-# 
+# Moddified From: https://github.com/ballesterus/Utensils
+
 
 #print arguments
 
@@ -108,23 +109,17 @@ def Write_Fasta(Dict):
         SuperMatrix.write(Sequence)
     SuperMatrix.close()
 
-def WritePresAb(paDic, outfile):
-    """Writes the presence absence matrix (paDic) to a text file"""
-    with open(outfile, 'w') as out:
-        for k in paDic.keys():
-            if k != 'loci':
-                out.write('%s\t%s\n' %(k, ' '.join(paDic[k])))
-        out.write('\nList of loci:\n%s' % ' '.join(paDic['loci']))
             
 # Concatenate Alignments
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='This script is  a simple script for concatenate alignments in FASTA format.')
     parser.add_argument('-d', action= 'store', dest = 'delimiter', default = '|', type =str,  help='Specify field delimiter in fasta identifier. First element is considered to be OTU name and should be identical in the different alignments.')
     parser.add_argument('-in', dest = 'alignments', type = str, nargs= '+',  help = 'Files to process(FASTA alignment)')
-
+    
     arguments = parser.parse_args()
     Delim = arguments.delimiter
     Targets = arguments.alignments
+
     Log = open('StitcherLog.out', 'w+')
     Part = open('Partition.txt', 'w+')
     
