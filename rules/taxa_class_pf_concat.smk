@@ -192,7 +192,7 @@ rule concat:
         mkdir -p resources/{wildcards.mag}_relabeled
         for i in $(realpath resources/{wildcards.mag}_mafft_out/*aln)
         do
-        prot=$(basename ${{i}} .fas)
+        prot=$(basename ${{i}} .aln)
         python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o resources/{wildcards.mag}_relabeled/${{prot}}.fas
         FIXED_ALNS+=("resources/{wildcards.mag}_relabeled/${{prot}}.fas")
         done
@@ -226,9 +226,9 @@ rule raxml_epa:
         ulimit -n 65536
         ulimit -s unlimited
         raxmlHPC-PTHREADS -f V -T {threads} \
-          -s ../../{input.q_aln}.reduced \
+          -s ../../{input.q_aln} \
           -t ../../{input.ref_tree} \
-          -m PROTGAMMALG -n {wildcards.mag}_epa 
+          -m PROTGAMMAJTT -n {wildcards.mag}_epa 
 
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
