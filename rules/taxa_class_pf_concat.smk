@@ -189,11 +189,12 @@ rule concat:
     shell:
         """
         FIXED_ALNS=()
+        mkdir -p resources/{wildcards.mag}_relabeled
         for i in $(realpath resources/{wildcards.mag}_mafft_out/*aln)
         do
         prot=$(basename ${{i}} .fas)
-        python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -o resources/{wildcards.mag}_labeled/${{prot}}.fas
-        FIXED_ALNS+=("resources/{wildcards.mag}_labeled/${{prot}}.fas")
+        python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o resources/{wildcards.mag}_relabeled/${{prot}}.fas
+        FIXED_ALNS+=("resources/{wildcards.mag}_relabeled/${{prot}}.fas")
         done
 
         python2 additional_scripts/geneStitcher.py -in ${{FIXED_ALNS[@]}} 
