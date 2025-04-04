@@ -1,0 +1,12 @@
+name: trimal
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - libgcc=14.2.0=h767d61c_2
+  - libgomp=14.2.0=h767d61c_2
+  - libstdcxx=14.2.0=h8f9b012_2
+  - trimal=1.5.0=h9948957_2
+prefix: /home/jduque2/miniforge3/envs/trimal

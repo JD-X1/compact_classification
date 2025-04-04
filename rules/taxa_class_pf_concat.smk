@@ -175,9 +175,40 @@ rule mafft:
 superMatrix_targets = get_superMatrix_targets(mag)
 print(len(superMatrix_targets))
 
+rule divvier:
+    input:
+        "resources/{mag}_mafft_out/{gene}.aln"
+    output:
+        "resources/{mag}_mafft_out/{gene}.aln.partial.fas",
+        "resources/{mag}_mafft_out/{gene}.aln.PP"
+    log:
+        "logs/divvier/{mag}/{mag}_{gene}_divvier.log"
+    conda:
+        "../envs/div.yaml"
+    threads: 1
+    shell:
+        """
+        divvier -mincol 4 -partial -divvygap {input} > {log} 2> {log}
+        """
+
+rule trimal:
+    input:
+        "resources/{mag}_mafft_out/{gene}.aln.partial.fas"
+    output:
+        "resources/{mag}_mafft_out/{gene}.trimal"
+    log:
+        "logs/trimal/{mag}/{mag}_{gene}_trimal.log"
+    conda:
+        "../envs/trimal.yaml"
+    threads: 1
+    shell:
+        """
+        trimal -in {input} -gt 0.8 -out {output} > {log} 2> {log}
+        """
+
 rule concat:
     input:
-        expand("resources/{mag}_mafft_out/{gene}.aln", gene=superMatrix_targets, mag=mags)
+        expand("resources/{mag}_mafft_out/{gene}.trimal", gene=superMatrix_targets, mag=mags)
     output:
         "{mag}_SuperMatrix.fas"
     conda:
@@ -190,9 +221,9 @@ rule concat:
         """
         FIXED_ALNS=()
         mkdir -p resources/{wildcards.mag}_relabeled
-        for i in $(realpath resources/{wildcards.mag}_mafft_out/*aln)
+        for i in $(realpath resources/{wildcards.mag}_mafft_out/*trimal)
         do
-        prot=$(basename ${{i}} .aln)
+        prot=$(basename ${{i}} .trimal)
         python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o resources/{wildcards.mag}_relabeled/${{prot}}.fas
         FIXED_ALNS+=("resources/{wildcards.mag}_relabeled/${{prot}}.fas")
         done
@@ -226,9 +257,9 @@ rule raxml_epa:
         ulimit -n 65536
         ulimit -s unlimited
         raxmlHPC-PTHREADS -f V -T {threads} \
-          -s ../../{input.q_aln} \
+          -s ../../{input.q_aln}.reduced \
           -t ../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n {wildcards.mag}_epa >> {log} 
+          -m PROTGAMMAJTT -n {wildcards.mag}_epa 
 
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
