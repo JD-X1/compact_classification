@@ -19,5 +19,7 @@ def add_gene_name_to_fasta(input_fasta, gene_name, output_fasta):
             record.description =  record.description + "_" + gene_name
     SeqIO.write(records, output_fasta, "fasta")
 
-
-add_gene_name_to_fasta(args.alignment, args.gene, args.output)
+if __name__ == "__main__":
+    # arg parsing
+    args = parser.parse_args()
+    add_gene_name_to_fasta(args.alignment, args.gene, args.output)

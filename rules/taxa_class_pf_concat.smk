@@ -89,7 +89,7 @@ mags = []
 genes = []
 for f in mag_f:
     # get mag name
-    mag = f.split(".")[0]
+    mag = f.strip(".fna")
     # append to list
     mags.append(mag)
 
@@ -227,7 +227,6 @@ rule concat:
         python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o resources/{wildcards.mag}_relabeled/${{prot}}.fas
         FIXED_ALNS+=("resources/{wildcards.mag}_relabeled/${{prot}}.fas")
         done
-
         python2 additional_scripts/geneStitcher.py -in ${{FIXED_ALNS[@]}} 
         mv SuperMatrix.fas {output}
         """
