@@ -34,6 +34,12 @@ fi
 
 ### 
 
+### Check if mag directory has files ending with fna
+if [ -z "$(ls $mag_dir/*.fna 2>/dev/null)" ]; then
+    echo "No .fna files found in $mag_dir"
+    exit 1
+fi
+
 snakemake -s rules/taxa_class_pf_concat.smk \
     --cores ${threads} \
     --config mag_dir=$mag_dir mode=$db_type\
