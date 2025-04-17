@@ -39,7 +39,7 @@ def all_input():
         checkpoint_dir = f"resources/{mag}_working_dataset"
         mag_inputs = [
             f"resources/busco_out/{mag}/summary.txt",
-            f"resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta",
+            f"resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta",
             f"resources/{mag}_input_metadata.tsv",
             "resources/PhyloFishScratch/",
             f"resources/{mag}_epa_out/profile_summary.tsv",
@@ -92,7 +92,7 @@ rule run_busco:
         config["mag_dir"] + "{mag}.fna"
     output:
        "resources/busco_out/{mag}/summary.txt",
-       "resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta"
+       "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     conda:
         "../envs/mb.yaml"
     threads: 22
@@ -106,7 +106,7 @@ rule run_busco:
 
 rule fishing_meta:
     input:
-        "resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta"
+        "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     output:
         "resources/{mag}_input_metadata.tsv"
     conda:
