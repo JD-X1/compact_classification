@@ -32,22 +32,24 @@ if [ ! -d resources/PhyloFishScratch ]; then
     cp -r resources/PhyloFisherDatabase_v1.0/database resources/PhyloFishScratch
 fi
 
-### 
+if [ -z "$(ls $mag_dir/*.fna 2>/dev/null)" ]; then
+    echo "No .fna files found in $mag_dir"
+    exit 1
+fi
 
-snakemake -s rules/taxa_class_pf.smk \
+
+snakemake -s rules/taxa_class_${db_type}.smk \
     --cores ${threads} \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
-    --rerun-incomplete \
-    --conda-frontend mamba 
+    --rerun-incomplete
 
 
-snakemake -s rules/taxa_class_pf.smk \
+snakemake -s rules/taxa_class_${db_type}.smk \
     --cores ${threads} \
     --config mag_dir=$mag_dir mode=$db_type\
     --use-conda -p --keep-going \
-    --rerun-incomplete \
-    --conda-frontend mamba
+    --rerun-incomplete
 
 
     
