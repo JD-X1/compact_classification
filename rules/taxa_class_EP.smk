@@ -39,17 +39,17 @@ def all_input():
         checkpoint_dir = f"resources/{mag}_working_dataset"
         mag_inputs = [
             f"resources/busco_out/{mag}/summary.txt",
-            f"resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta",
+            f"resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta",
             f"resources/{mag}_input_metadata.tsv",
             "resources/PhyloFishScratch/",
             f"resources/{mag}_epa_out/profile_summary.tsv",
-            f"{mag}_summary.csv",
             checkpoint_dir  # This implicitly checks for its existence
         ]
 
         # Check if the checkpoint has completed by checking the existence of its output directory
         if os.path.exists(checkpoint_dir):
             # Assuming get_genes_from_goneFishing is adjusted to accept a mag parameter
+            mag_inputs.append(f"{mag}_summary.csv")
             genes = get_genes_from_goneFishing(mag)
             for gene in genes:
                 mag_inputs.extend([
@@ -77,11 +77,13 @@ if mag_f == []:
 
 # get mag names
 mags = []
+genes = []
 for f in mag_f:
     # get mag name
     mag = f.split(".")[0]
     # append to list
     mags.append(mag)
+print(config["mag_dir"] + "{mag}.fna")
 
 rule all:
     input:
@@ -92,7 +94,7 @@ rule run_busco:
         config["mag_dir"] + "{mag}.fna"
     output:
        "resources/busco_out/{mag}/summary.txt",
-       "resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta"
+       "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     conda:
         "../envs/mb.yaml"
     threads: 22
@@ -106,7 +108,7 @@ rule run_busco:
 
 rule fishing_meta:
     input:
-        "resources/busco_out/{mag}/eukaryota_odb10/translated_protein.fasta"
+        "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     output:
         "resources/{mag}_input_metadata.tsv"
     conda:
@@ -215,15 +217,17 @@ rule gappa:
 
 
 rule gappa_summary:
+    input:
+        "resources/{mag}_epa_out/{gene}/profile.tsv"
     output:
         o1="resources/{mag}_epa_out/profile_summary.tsv",
         o2="{mag}_summary.csv"
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
-    priority: 1
+    priority: 0
     shell:
         """
-        cat resources/{wildcards.mag}_epa_out/*/profile.tsv | grep -v "LWR" >> {output.o1}
+        cat {input} | grep -v "LWR" >> {output.o1}
         python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
         """
