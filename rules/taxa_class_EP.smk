@@ -39,7 +39,7 @@ def all_input():
         checkpoint_dir = f"resources/{mag}_working_dataset"
         mag_inputs = [
             f"resources/busco_out/{mag}/summary.txt",
-            f"resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta",
+            f"resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta", # need to make this persistent across newer verisions of this db
             f"resources/{mag}_input_metadata.tsv",
             "resources/PhyloFishScratch/",
             f"resources/{mag}_epa_out/profile_summary.tsv",
@@ -141,7 +141,7 @@ rule splitter:
        "resources/{mag}_q_frags/{gene}.fas"
     conda:
         "../envs/raxml-ng.yaml"
-    threads: 22
+    threads: 1
     priority: 0
     log:
         "logs/splitter/{mag}_{gene}.log"
