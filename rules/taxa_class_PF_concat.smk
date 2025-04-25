@@ -53,7 +53,9 @@ def all_input():
             f"resources/{mag}_input_metadata.tsv",
             #f"{mag}_summary.csv",
             f"{mag}_SuperMatrix.fas",
-            f"resources/{mag}_epa_out/RAxML_portableTree.epa.jplace",
+            f"{mag}_q.aln",
+            f"{mag}_ref.aln",
+            f"resources/{mag}_epa_out/{mag}_epa_out.jplace",
             f"resources/{mag}_epa_out/profile.tsv",
             checkpoint_dir  # This implicitly checks for its existence
         ]
@@ -231,18 +233,35 @@ rule concat:
         mv SuperMatrix.fas {output}
         """
 
+rule alignment_splitter:
+    input:
+        "{mag}_SuperMatrix.fas"
+    output:
+        "{mag}_q.aln"
+        "{mag}_ref.aln"
+    conda:
+        "../envs/raxml-ng.yaml"
+    threads: 1
+    priority: 0
+    log:
+        "logs/alignment_splitter/{mag}.log"
+    shell:
+        "python alignment_splitter.py -a {input} -t {wildcards.mag}"
+
+
 rule raxml_epa:
     input:
-        q_aln="{mag}_SuperMatrix.fas",
-        ref_tree="resources/ref_concat.tre"
+        q_aln="{mag}_q.fas",
+        ref_aln="{mag}_ref.fas",
+        ref_tree="resources/ref_concat_PF.tre"
     output:
-        "resources/{mag}_epa_out/RAxML_portableTree.epa.jplace"
+        "resources/{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
     priority: 0
     log:
-        "logs/raxml_epa/{mag}.log"
+        "logs/raxml_epa/{mag}_epa.log"
     shell:
         """
         # Ensure the output directory exists
@@ -255,18 +274,19 @@ rule raxml_epa:
         # specifying only a run name for the output (not a path).
         ulimit -n 65536
         ulimit -s unlimited
-        raxmlHPC-PTHREADS -f V -T {threads} \
-          -s ../../{input.q_aln}.reduced \
-          -t ../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n {wildcards.mag}_epa 
-
+        epa-ng --ref-msa {mag}_ref.aln \
+         --tree resources/ref_concat_pruned.tre \
+         --query {mag}_q.aln \
+         --model LG -T {threads}
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
+        mv epa_result.jplace {output}
+        mv epa_info.log {log}
         """
 
 rule gappa:
     input:
-        "resources/{mag}_epa_out/RAxML_portableTree.epa.jplace"
+        "resources/{mag}_epa_out/{mag}_epa_out.jplace"
     output:
         "resources/{mag}_epa_out/profile.tsv"
     conda:
@@ -283,18 +303,3 @@ rule gappa:
             --out-dir resources/{wildcards.mag}_epa_out \
             --allow-file-overwriting --best-hit --verbose > {log}
         """
-
-
-#rule gappa_summary:
-#    output:
-#        o1="resources/{mag}_epa_out/profile_summary.tsv",
-#        o2="{mag}_summary.csv"
-#    conda:
-#        "../envs/raxml-ng.yaml"
-#    threads: 22
-#    priority: 1
-#    shell:
-#        """
-#        cat resources/{wildcards.mag}_epa_out/*/profile.tsv | grep -v "LWR" >> {output.o1}
-#        python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
-#        """

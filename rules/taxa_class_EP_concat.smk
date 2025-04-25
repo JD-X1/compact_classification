@@ -53,7 +53,9 @@ def all_input():
             f"resources/{mag}_input_metadata.tsv",
             #f"{mag}_summary.csv",
             f"{mag}_SuperMatrix.fas",
-            f"resources/{mag}_epa_out/RAxML_portableTree.epa.jplace",
+            f"{mag}_q.aln",
+            f"{mag}_ref.aln",
+            f"resources/{mag}_epa_out/{mag}_epa_out.jplace",
             f"resources/{mag}_epa_out/profile.tsv",
             checkpoint_dir  # This implicitly checks for its existence
         ]
@@ -249,16 +251,17 @@ rule alignment_splitter:
 
 rule raxml_epa:
     input:
-        q_aln="{mag}_SuperMatrix.fas",
+        q_aln="{mag}_q.aln",
+        ref_aln="{mag}_ref.aln",
         ref_tree="resources/ref_concat.tre"
     output:
-        "resources/{mag}_epa_out/RAxML_portableTree.epa.jplace"
+        "resources/{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
         "../envs/raxml-ng.yaml"
     threads: 22
     priority: 0
     log:
-        "logs/raxml_epa/{mag}.log"
+        "logs/raxml_epa/{mag}_epa.log"
     shell:
         """
         # Ensure the output directory exists
@@ -283,7 +286,7 @@ rule raxml_epa:
 
 rule gappa:
     input:
-        "resources/{mag}_epa_out/RAxML_portableTree.epa.jplace"
+        "resources/{mag}_epa_out/{mag}_epa_out.jplace"
     output:
         "resources/{mag}_epa_out/profile.tsv"
     conda:
