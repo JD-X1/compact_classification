@@ -165,8 +165,7 @@ rule mafft:
 rule raxml_epa:
     input:
         q_aln="resources/{mag}_mafft_out/{gene}.aln",
-        #ref_tree="resources/ref_trees/{gene}/{gene}.initial.treefile" #rename this once final tree files available
-        ref_tree="resources/ref_trees/{gene}/{gene}.raxml.support" #rename this once final tree files available
+        ref_tree="resources/ref_trees_PF/{gene}/{gene}.raxml.support" #rename this once final tree files available
     output:
         "resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace"
     conda:
