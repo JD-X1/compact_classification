@@ -106,16 +106,15 @@ All output is saved in the `resources/` directory with each individual MAG in yo
 
 ## Running your own data
 
-To run your own data place all query mags into single directory and ensure each file uses the ".fna" extension. Assuming the necessary databases are available you can run the following:
+To run your own data place all query mags into single directory and ensure each file uses the ".fna" extension. Assuming the necessary databases are available you can run the following from within the compact_classification directory:
 
 ```
 conda activate snakemake
 
 snakemake -s rules/taxa_class_EP_concat.smk \
     --cores [available threads] --use-conda \
-    --config  mag_dir=[MY_DIRECTORY] mode=EP\
+    --config  mag_dir=[MY_DIRECTORY] mode=EP \
     -p --keep-going --rerun-incomplete
-
 ```
 
 ## Getting help
