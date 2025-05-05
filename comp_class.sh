@@ -51,6 +51,6 @@ fi
 
 snakemake -s rules/taxa_class_${db_type}${placement_method}.smk \
     --cores ${threads} \
-    --config mag_dir=$mag_dir mode=$db_type\
+    --config mag_dir=${mag_dir} mode=${db_type} \
     --use-conda -p --keep-going \
     --rerun-incomplete

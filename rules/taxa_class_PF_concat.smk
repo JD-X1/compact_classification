@@ -246,7 +246,7 @@ rule alignment_splitter:
     log:
         "logs/alignment_splitter/{mag}.log"
     shell:
-        "python alignment_splitter.py -a {input} -t {wildcards.mag}"
+        "python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}"
 
 
 rule raxml_epa:
