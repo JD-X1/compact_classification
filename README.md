@@ -7,8 +7,6 @@
  - [Example data](#example-data)
  - [Input](#input)
  - [Output](#output)
- - [Filtering contaminants](#filtering-contaminants)
- - [Assembly and annotation only](#assembly-and-annotation-only)
  - [Running your own data](#running-your-own-data)
  - [Getting help](#getting-help)
  - [Citations](#citations)
