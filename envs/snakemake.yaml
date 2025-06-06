@@ -1,0 +1,7 @@
+name: snakemake
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - snakemake
+prefix: /home/jduque2/miniforge3/envs/snakemake
