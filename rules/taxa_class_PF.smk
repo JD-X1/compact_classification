@@ -27,6 +27,16 @@ def get_genes_from_goneFishing(mag):
 
     return valid_genes
 
+def get_superMatrix_targets(wildcards):
+    ckpt_out = checkpoints.goneFishing.get(mag=wildcards.mag).output[0]
+    genes = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
+    return genes
+
+def get_superMatrix_targets_for_mag(mag):
+    ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
+    return glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
+
+
 
 def all_input():
     # Initialize an empty list to collect all inputs
@@ -42,12 +52,16 @@ def all_input():
             f"resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta",
             f"resources/{mag}_input_metadata.tsv",
             "resources/PhyloFishScratch/",
-            f"resources/{mag}_epa_out/profile_summary.tsv",
             checkpoint_dir  # This implicitly checks for its existence
-        ]
+            ]
 
         # Check if the checkpoint has completed by checking the existence of its output directory
         if os.path.exists(checkpoint_dir):
+            print("################# Checkpoint completed")
+            print("################# Checkpoint completed")
+            print("################# Checkpoint completed")
+            print("################# Checkpoint completed")
+
             # Assuming get_genes_from_goneFishing is adjusted to accept a mag parameter
             genes = get_genes_from_goneFishing(mag)
             for gene in genes:
@@ -57,7 +71,10 @@ def all_input():
                     f"resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace",
                     f"resources/{mag}_epa_out/{gene}/profile.tsv"
                 ])
-            mag_inputs.extend([f"{mag}_summary.csv"])
+            mag_inputs.extend([
+                f"{mag}_summary.csv", 
+                f"resources/{mag}_epa_out/profile_summary.tsv",
+                ])
         # Add the MAG-specific inputs to the overall list
         all_inputs.extend(mag_inputs)
     
@@ -84,7 +101,19 @@ for f in mag_f:
 
 rule all:
     input:
-        all_input()
+        expand("resources/{mag}_epa_out/profile_summary.tsv", mag=mags),
+        expand("{mag}_summary.csv", mag=mags),
+        expand(
+            "resources/{mag}_mafft_out/{gene}.aln",
+            mag=mags,
+            gene=lambda wildcards: [
+                gene
+                for mag in mags
+                for gene in get_superMatrix_targets_for_mag(mag)
+            ]
+        )
+
+
     
 rule run_busco:
     input: 
@@ -123,7 +152,6 @@ checkpoint goneFishing:
     threads: 22
     shell:
         "sh ./additional_scripts/fishing.sh -t {threads} -i {input}"
-
 
 
 rule splitter:
@@ -207,6 +235,12 @@ rule gappa:
 
 
 rule gappa_summary:
+    input:
+        lambda wildcards: expand(
+            "resources/{mag}_epa_out/{gene}/profile.tsv",
+            mag=[wildcards.mag],
+            gene=get_superMatrix_targets
+        )
     output:
         o1="resources/{mag}_epa_out/profile_summary.tsv",
         o2="{mag}_summary.csv"
@@ -215,6 +249,6 @@ rule gappa_summary:
     threads: 22
     shell:
         """
-        cat resources/{wildcards.mag}_epa_out/*/profile.tsv | grep -v "LWR" >> {output.o1}
+        cat {input} | grep -v "LWR" >> {output.o1}
         python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
         """
