@@ -122,7 +122,7 @@ rule run_busco:
        "resources/busco_out/{mag}/summary.txt",
        "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     conda:
-        "../envs/mb.yaml"
+        "../envs/pline_max.yaml"
     threads: 22
     log:
         "logs/busco/{mag}.log"
@@ -137,7 +137,7 @@ rule fishing_meta:
     output:
         "resources/{mag}_input_metadata.tsv"
     conda:
-        "../envs/raxml-ng.yaml"
+        "../envs/pline_max.yaml"
     shell:
         "python ./additional_scripts/fishing_meta.py {input} >> {output}"
 
@@ -162,7 +162,7 @@ rule splitter:
     output:
        "resources/{mag}_q_frags/{gene}.fas"
     conda:
-        "../envs/raxml-ng.yaml"
+        "../envs/pline_max.yaml"
     threads: 22
     log:
         "logs/splitter/{mag}_{gene}.log"
@@ -177,41 +177,66 @@ rule mafft:
     output:
         "resources/{mag}_mafft_out/{gene}.aln"
     conda:
-        "../envs/raxml-ng.yaml"
+        "../envs/pline_max.yaml"
     threads: 22
     log:
         "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
     shell:
         "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
 
-rule raxml_epa:
+rule split_aln:
     input:
-        q_aln="resources/{mag}_mafft_out/{gene}.aln",
-        ref_tree="resources/ref_trees_PF/{gene}/{gene}.raxml.support" #rename this once final tree files available
+        "resources/{mag}_mafft_out/{gene}.aln"
     output:
-        "resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace"
+        query="resources/{mag}_mafft_out/{gene}/{gene}_q.aln",
+        ref="resources/{mag}_mafft_out/{gene}/{gene}_ref.aln"
     conda:
-        "../envs/raxml-ng.yaml"
-    threads: 22
+        "../envs/pline_max.yaml"
+    threads: 1
     log:
-        "logs/raxml_epa/{mag}/{gene}.log"
+        "logs/split_aln/{mag}/{gene}.log"
     shell:
         """
-        # Ensure the output directory exists
+        mkdir -p resources/{wildcards.mag}_mafft_out/{wildcards.gene}
+        cd resources/{wildcards.mag}_mafft_out/wildcards.gene
+        "python additional_scripts/alignment_splitter.py -a ../{input} -t {wildcards.mag}
+        mv {wildcards.mag}_q.aln {wildcards.gene}_q.aln
+        mv {wildcards.mag}_ref.aln {wildcards.gene}_ref.aln
+        cd 
+        """
+
+rule raxml_epa:
+    input:
+        q_aln="resources/{mag}_mafft_out/{gene}/{gene}_q.aln",
+        ref_aln="resources/{mag}_mafft_out/{gene}/{gene}_ref.aln",
+        ref_tree="resources/ref_trees_PF/{gene}/{gene}.raxml.support" #rename this once final tree files available
+    output:
+        "resources/{mag}_epa_out/{gene}/{mag}_epa_out.jplace"
+    conda:
+        "../envs/pline_max.yaml"
+    threads: 22
+    log:
+        "logs/epa/{mag}/{gene}.log"
+    shell:
+        """
+         # Ensure the output directory exists
         mkdir -p resources/{wildcards.mag}_epa_out/{wildcards.gene}
-        mkdir -p logs/raxml_epa/{wildcards.mag}
+        mkdir -p logs/epa/{wildcards.mag}
         # Run RAxML
-        cd resources/{wildcards.mag}_epa_out/{wildcards.gene}
+        cd resources/{wildcards.mag}_epa_out/
 
         # Execute RAxML with the correct path to the alignment and tree files,
         # specifying only a run name for the output (not a path).
-        raxmlHPC-PTHREADS -f v -T {threads} \
-          -s ../../../{input.q_aln} \
-          -t ../../../{input.ref_tree} \
-          -m PROTGAMMAJTT -n epa 
-
+        ulimit -n 65536
+        ulimit -s unlimited
+        epa-ng --ref-msa {input.ref_aln} \
+         --tree {input.ref_tree} \
+         --query {input.q_aln} \
+         --model LG -T {threads}
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
+        mv epa_result.jplace {output}
+        mv epa_info.log {log}
         """
 
 rule gappa:
@@ -220,7 +245,7 @@ rule gappa:
     output:
         "resources/{mag}_epa_out/{gene}/profile.tsv"
     conda:
-        "../envs/raxml-ng.yaml"
+        "../envs/pline_max.yaml"
     threads: 22
     log:
         "logs/gappa/{mag}/{gene}.log"
@@ -245,7 +270,7 @@ rule gappa_summary:
         o1="resources/{mag}_epa_out/profile_summary.tsv",
         o2="{mag}_summary.csv"
     conda:
-        "../envs/raxml-ng.yaml"
+        "../envs/pline_max.yaml"
     threads: 22
     shell:
         """
