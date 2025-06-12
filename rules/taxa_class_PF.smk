@@ -241,7 +241,7 @@ rule raxml_epa:
 
 rule gappa:
     input:
-        "resources/{mag}_epa_out/{gene}/RAxML_portableTree.epa.jplace"
+        "resources/{mag}_epa_out/{gene}/{mag}_epa_out.jplace"
     output:
         "resources/{mag}_epa_out/{gene}/profile.tsv"
     conda:
