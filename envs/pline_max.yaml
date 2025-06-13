@@ -1,0 +1,17 @@
+name: pline_max
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - compleasm
+  - mafft
+  - hmmer
+  - boost
+  - gappa
+  - epa-ng
+  - ca-certificates
+  - openssl
+  - biopython
+  - trimal
+  - divvier
+prefix: /home/jduque2/miniforge3/envs/pline_max
