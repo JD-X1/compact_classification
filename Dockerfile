@@ -23,12 +23,13 @@ RUN conda env create -f envs/snakemake.yaml
 RUN conda env create -f envs/pline_max.yaml
 RUN conda env create -f envs/fisher.yaml
 # change odb arguement if using other different versions of ODB
-RUN conda run -n pline_max /bin/bash -c compleasm download eukaryota --odb odb12 \
+RUN conda activate pline_max \
+    && compleasm download eukaryota \
     && mv mb_downloads resources/
 # Make RUN commands use the new environment
 SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
 
 # Final Configuration
 EXPOSE 8000
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "snakemake", "snakemake", "-s", "rules/taxa_class_PF_concat.smk", "--use-conda", "-p", "--keep-going", "--rerun-incomplete"]
-CMD ["--cores", "1", "--config", "mag_dir=resources/test", "mode=CONCAT"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "snakemake", "snakemake", "--use-conda", "-p", "--keep-going", "--rerun-incomplete"]
+CMD ["-s", "rules/taxa_class_PF.smk", "--cores", "1", "--config", "mag_dir=resources/test", "mode=CONCAT"]
