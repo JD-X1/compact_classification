@@ -9,6 +9,7 @@ SHELL ["/bin/bash", "--login", "-c"]
 # Install Dependencies
 COPY envs/ envs/
 RUN conda env create -f envs/snakemake.yaml
+RUN conda env 
 
 # Make RUN commands use the new environment
 SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
