@@ -20,7 +20,8 @@ RUN wget https://ndownloader.figshare.com/files/29093409 \
 RUN conda env create -f envs/snakemake.yaml
 RUN conda env create -f envs/pline_max.yaml
 RUN conda env create -f envs/fisher.yaml
-RUN conda run -n pline_max /bin/bash -c compleasm download eukaryota \
+# change odb arguement if using other different versions of ODB
+RUN conda run -n pline_max /bin/bash -c compleasm download eukaryota --odb odb12 \
     && mv mb_downloads resources/
 # Make RUN commands use the new environment
 SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
