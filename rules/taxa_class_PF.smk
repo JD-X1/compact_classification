@@ -122,7 +122,7 @@ rule run_busco:
        "resources/busco_out/{mag}/summary.txt",
        "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     threads: 22
     log:
         "logs/busco/{mag}.log"
@@ -137,7 +137,7 @@ rule fishing_meta:
     output:
         "resources/{mag}_input_metadata.tsv"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     shell:
         "python ./additional_scripts/fishing_meta.py {input} >> {output}"
 
@@ -148,7 +148,7 @@ checkpoint goneFishing:
     output:
         directory("resources/{mag}_working_dataset")
     conda:
-        "../envs/fisher.yaml"
+        "fisher"
     threads: 22
     shell:
         "sh ./additional_scripts/fishing.sh -t {threads} -i {input}"
@@ -162,7 +162,7 @@ rule splitter:
     output:
        "resources/{mag}_q_frags/{gene}.fas"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     threads: 22
     log:
         "logs/splitter/{mag}_{gene}.log"
@@ -177,7 +177,7 @@ rule mafft:
     output:
         "resources/{mag}_mafft_out/{gene}.aln"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     threads: 22
     log:
         "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
@@ -191,7 +191,7 @@ rule split_aln:
         query="resources/{mag}_mafft_out/{gene}/{gene}_q.aln",
         ref="resources/{mag}_mafft_out/{gene}/{gene}_ref.aln"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     threads: 1
     log:
         "logs/split_aln/{mag}/{gene}.log"
@@ -212,7 +212,7 @@ rule raxml_epa:
     output:
         "resources/{mag}_epa_out/{gene}/{mag}_epa_out.jplace"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     threads: 22
     log:
         "logs/epa/{mag}/{gene}.log"
@@ -236,7 +236,7 @@ rule gappa:
     output:
         "resources/{mag}_epa_out/{gene}/profile.tsv"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     threads: 22
     log:
         "logs/gappa/{mag}/{gene}.log"
@@ -261,7 +261,7 @@ rule gappa_summary:
         o1="resources/{mag}_epa_out/profile_summary.tsv",
         o2="{mag}_summary.csv"
     conda:
-        "../envs/pline_max.yaml"
+        "pline_max"
     threads: 22
     shell:
         """
