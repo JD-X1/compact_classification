@@ -10,10 +10,12 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 # Install Dependencies
 COPY envs/ envs/
+COPY rules/ rules/
+COPY additional_scripts/ additional_scripts/
+COPY resources/ resources/
 RUN wget https://ndownloader.figshare.com/files/29093409 \
-    && mv 29903409 resources/ \
-    && cd resources \
     && tar -xzvf 29093409 \
+    && cp -r PhyloFisherDatabase_v1.0 resources/. \
     && rm 29093409 \
     && cd ..
 
@@ -25,15 +27,6 @@ RUN conda run -n pline_max /bin/bash -c compleasm download eukaryota --odb odb12
     && mv mb_downloads resources/
 # Make RUN commands use the new environment
 SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
-
-
-# Install App (COPY code)
-
-COPY rules/ rules/
-COPY additional_scripts/ additional_scripts/
-COPY resources/ resources/
-
-
 
 # Final Configuration
 EXPOSE 8000
