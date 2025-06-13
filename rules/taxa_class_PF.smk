@@ -198,12 +198,12 @@ rule split_aln:
     shell:
         """
         mkdir -p resources/{wildcards.mag}_mafft_out/{wildcards.gene}
-        python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} > {log}
-        mv {wildcards.mag}_q.aln {output.query}
-        mv {wildcards.mag}_ref.aln {output.ref}
+        python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} -g {wildcards.gene}> {log}
+        mv {wildcards.gene}_q.aln {output.query}
+        mv {wildcards.gene}_ref.aln {output.ref}
         """
 
-
+ 
 rule raxml_epa:
     input:
         q_aln="resources/{mag}_mafft_out/{gene}/{gene}_q.aln",
@@ -218,22 +218,14 @@ rule raxml_epa:
         "logs/epa/{mag}/{gene}.log"
     shell:
         """
-         # Ensure the output directory exists
         mkdir -p resources/{wildcards.mag}_epa_out/{wildcards.gene}
         mkdir -p logs/epa/{wildcards.mag}
-        # Run RAxML
-        cd resources/{wildcards.mag}_epa_out/
-
-        # Execute RAxML with the correct path to the alignment and tree files,
-        # specifying only a run name for the output (not a path).
         ulimit -n 65536
         ulimit -s unlimited
-        epa-ng --ref-msa ../../{input.ref_aln} \
-         --tree ../../{input.ref_tree} \
-         --query ../../{input.q_aln} \
-         --model LG -T {threads}
-        # The actual output file is named according to the RAxML naming convention,
-        # incorporating the run name. Ensure this matches your output specification.
+        epa-ng --redo --ref-msa {input.ref_aln} \
+         --tree {input.ref_tree} \
+         --query {input.q_aln} \
+         --model LG -T {threads} > {log} 2> {log}
         mv epa_result.jplace {output}
         mv epa_info.log {log}
         """
