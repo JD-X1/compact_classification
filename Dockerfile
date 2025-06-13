@@ -9,8 +9,8 @@ SHELL ["/bin/bash", "--login", "-c"]
 # Install Dependencies
 COPY envs/ envs/
 RUN conda env create -f envs/snakemake.yaml
-RUN conda env create -g envs/pline_max.yaml
-RUN conda env create -g envs/fisher.yaml
+RUN conda env create -f envs/pline_max.yaml
+RUN conda env create -f envs/fisher.yaml
 
 # Make RUN commands use the new environment
 SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
