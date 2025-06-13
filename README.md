@@ -55,8 +55,6 @@ rm 29093409
 cd ..
 ```
 
-
-
 ## Example data
 
 To test the pipeline, you can run the included example.
