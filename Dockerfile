@@ -22,6 +22,10 @@ COPY additional_scripts/ additional_scripts/
 COPY resources/ resources/
 
 
+# wget and mv resources
+
+
+
 # Final Configuration
 EXPOSE 8000
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "snakemake", "snakemake", "-s", "rules/taxa_class_PF_concat.smk", "--use-conda", "-p", "--keep-going", "--rerun-incomplete"]
