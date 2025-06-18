@@ -113,7 +113,6 @@ rule all:
             ]
         )
 
-
     
 rule run_busco:
     input: 
@@ -268,3 +267,4 @@ rule gappa_summary:
         cat {input} | grep -v "LWR" >> {output.o1}
         python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
         """
+

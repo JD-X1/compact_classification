@@ -18,19 +18,25 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 
 # Install Dependencies
+
+conda env create -f envs/snakemake.yaml
+conda env create -f envs/pline_max.yaml
+conda env create -f envs/fisher.yaml
+conda env create -f envs/mb.yaml
+# change odb arguement if using other different versions of ODB
+conda activate mb \
+&& compleasm download eukaryota --odb odb10 \
+&& mv mb_downloads resources/
+
+
 wget https://ndownloader.figshare.com/files/29093409 \
 && tar -xzvf 29093409 \
 && cp -r PhyloFisherDatabase_v1.0 resources/. \
 && rm 29093409 \
 && cd ..
 
-conda env create -f envs/snakemake.yaml
-conda env create -f envs/pline_max.yaml
-conda env create -f envs/fisher.yaml
-# change odb arguement if using other different versions of ODB
-conda activate pline_max \
-&& compleasm download eukaryota \
-&& mv mb_downloads resources/
+
+
 # Make RUN commands use the new environment
 SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
 

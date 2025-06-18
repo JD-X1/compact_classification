@@ -13,19 +13,25 @@ COPY envs/ envs/
 COPY rules/ rules/
 COPY additional_scripts/ additional_scripts/
 COPY resources/ resources/
+
+RUN conda env create -f envs/snakemake.yaml
+RUN conda env create -f envs/pline_max.yaml
+RUN conda env create -f envs/fisher.yaml
+RUN conda env create -f envs/mb.yaml
+# change odb arguement if using other different versions of ODB
+RUN conda activate mb \
+    && compleasm download eukaryota --odb odb10 \
+    && mv mb_downloads resources/
+
+
 RUN wget https://ndownloader.figshare.com/files/29093409 \
     && tar -xzvf 29093409 \
     && cp -r PhyloFisherDatabase_v1.0 resources/. \
     && rm 29093409 \
     && cd ..
 
-RUN conda env create -f envs/snakemake.yaml
-RUN conda env create -f envs/pline_max.yaml
-RUN conda env create -f envs/fisher.yaml
-# change odb arguement if using other different versions of ODB
-RUN conda activate pline_max \
-    && compleasm download eukaryota \
-    && mv mb_downloads resources/
+
+
 # Make RUN commands use the new environment
 SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
 
