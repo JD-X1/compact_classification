@@ -1,0 +1,42 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+Stage: spython-base
+
+%files
+envs/ envs/
+rules/ rules/
+additional_scripts/ additional_scripts/
+resources/ resources/
+%post
+# syntax=docker/dockerfile:1
+
+
+# Make RUN commands use 'bash --login'
+
+SHELL ["/bin/bash", "--login", "-c"]
+
+
+
+# Install Dependencies
+wget https://ndownloader.figshare.com/files/29093409 \
+&& tar -xzvf 29093409 \
+&& cp -r PhyloFisherDatabase_v1.0 resources/. \
+&& rm 29093409 \
+&& cd ..
+
+conda env create -f envs/snakemake.yaml
+conda env create -f envs/pline_max.yaml
+conda env create -f envs/fisher.yaml
+# change odb arguement if using other different versions of ODB
+conda activate pline_max \
+&& compleasm download eukaryota \
+&& mv mb_downloads resources/
+# Make RUN commands use the new environment
+SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
+
+# Final Configuration
+# EXPOSE 8000
+%runscript
+exec conda run --no-capture-output -n snakemake snakemake --use-conda -p --keep-going --rerun-incomplete -s rules/taxa_class_PF.smk --cores 1 --config mag_dir=resources/test mode=CONCAT "$@"
+%startscript
+exec conda run --no-capture-output -n snakemake snakemake --use-conda -p --keep-going --rerun-incomplete -s rules/taxa_class_PF.smk --cores 1 --config mag_dir=resources/test mode=CONCAT "$@"
