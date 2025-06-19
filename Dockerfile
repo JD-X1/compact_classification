@@ -18,9 +18,10 @@ RUN conda env create -f envs/snakemake.yaml
 RUN conda env create -f envs/pline_max.yaml
 RUN conda env create -f envs/fisher.yaml
 RUN conda env create -f envs/mb.yaml
+RUN conda env create -f envs/compleasm.yaml
 # change odb arguement if using other different versions of ODB
-RUN conda activate mb \
-    && compleasm download eukaryota --odb odb10 \
+RUN conda activate compleasm \
+    && compleasm download eukaryota \
     && mv mb_downloads resources/
 
 

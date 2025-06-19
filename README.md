@@ -55,9 +55,34 @@ rm 29093409
 cd ..
 ```
 
-## Building your own Docker Image
+## Building your own Docker Image (Under)
 
+1. Make sure you have [Docker installed](https://www.docker.com/products/docker-desktop) according to your operating system.
 
+2. To pull the Docker build of Extensiphy, run this command.
+
+```bash
+docker pull ????
+```
+
+3. We'll build your Extensiphy Docker container using this command.
+* `-i` makes the container interactive.
+* `-t` specifies the image to use as a template.
+* `--name` specifies the container name.
+```bash
+docker run --name ep_container -i -t mctavishlab/extensiphy bash
+```
+Your command line prompt should change to indicate that you are now working
+inside your Extensiphy container.
+
+You can exit the docker container by typing `exit`.
+
+To restart it and return to interactive analyses, run:
+
+```bash
+docker container restart ep_container
+docker exec -it ep_container bash
+```
 
 ## Example data
 

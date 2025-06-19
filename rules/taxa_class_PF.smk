@@ -121,7 +121,7 @@ rule run_busco:
        "resources/busco_out/{mag}/summary.txt",
        "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     conda:
-        "pline_max"
+        "compleasm"
     threads: 22
     log:
         "logs/busco/{mag}.log"

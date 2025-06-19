@@ -3,10 +3,10 @@ From: continuumio/miniconda3
 Stage: spython-base
 
 %files
-envs/ envs/
-rules/ rules/
-additional_scripts/ additional_scripts/
-resources/ resources/
+./envs/ envs/
+./rules/ rules/
+./additional_scripts/ additional_scripts/
+./resources/ resources/
 %post
 # syntax=docker/dockerfile:1
 

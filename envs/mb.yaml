@@ -4,5 +4,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - compleasm
+  - busco=5.8.2
 prefix: /global/homes/j/jduque/.conda/envs/mb
