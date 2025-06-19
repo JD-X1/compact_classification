@@ -1,0 +1,8 @@
+name: compleasm
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - compleasm
+prefix: /global/homes/j/jduque/.conda/envs/mb
