@@ -32,10 +32,13 @@ def get_superMatrix_targets(wildcards):
     genes = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
     return genes
 
+def sanitize_gene_name(name):
+    return name.replace("/", "_").replace(" ", "_").replace("\\", "_")
+
 def get_superMatrix_targets_for_mag(mag):
     ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
-    return glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
-
+    gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
+    return [sanitize_gene_name(gene) for gene in gene_files]
 
 
 def all_input():
@@ -103,6 +106,16 @@ rule all:
     input:
         expand("resources/{mag}_epa_out/profile_summary.tsv", mag=mags),
         expand("{mag}_summary.csv", mag=mags),
+        expand("resources/{mag}_working_dataset", mag=mags),
+        expand(
+            "resources/{mag}_q_frags/{gene}.fas",
+            mag=mags,
+            gene=lambda wildcards: [
+                gene
+                for mag in mags
+                for gene in get_superMatrix_targets_for_mag(mag)
+            ]
+        ),
         expand(
             "resources/{mag}_mafft_out/{gene}.aln",
             mag=mags,
@@ -112,7 +125,6 @@ rule all:
                 for gene in get_superMatrix_targets_for_mag(mag)
             ]
         )
-
     
 rule run_busco:
     input: 
@@ -172,7 +184,7 @@ rule splitter:
 rule mafft:
     input:
         query="resources/{mag}_q_frags/{gene}.fas",
-        reference="resources/PhyloFishScratch/alignments/{gene}.fas.aln"
+        reference="resources/{mag}_PhyloFishScratch/alignments/{gene}.fas.aln"
     output:
         "resources/{mag}_mafft_out/{gene}.aln"
     conda:
@@ -267,4 +279,3 @@ rule gappa_summary:
         cat {input} | grep -v "LWR" >> {output.o1}
         python additional_scripts/gappa_parse.py -i {output.o1} -o {output.o2}
         """
-
