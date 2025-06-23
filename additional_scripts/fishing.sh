@@ -1,4 +1,4 @@
-#!usr/bin/bash -l
+#!usr/bin/bash --login
 
 # only two arguments are required:
 # -t <number of threads>
@@ -12,6 +12,9 @@ do
         i) Input=${OPTARG};;
     esac
 done
+
+conda activate fisher
+
 
 # get the file basename
 mag=$(basename ${Input} _input_metadata.tsv)

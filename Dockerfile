@@ -20,16 +20,16 @@ RUN conda env create -f envs/fisher.yaml
 RUN conda env create -f envs/mb.yaml
 RUN conda env create -f envs/compleasm.yaml
 # change odb arguement if using other different versions of ODB
-RUN conda activate compleasm \
-    && compleasm download eukaryota \
-    && mv mb_downloads resources/
+# RUN conda activate compleasm \
+#     && compleasm download eukaryota \
+#     && mv mb_downloads resources/
 
 
-RUN wget https://ndownloader.figshare.com/files/29093409 \
-    && tar -xzvf 29093409 \
-    && cp -r PhyloFisherDatabase_v1.0 resources/. \
-    && rm 29093409 \
-    && cd ..
+# RUN wget https://ndownloader.figshare.com/files/29093409 \
+#     && tar -xzvf 29093409 \
+#     && cp -r PhyloFisherDatabase_v1.0 resources/. \
+#     && rm 29093409 \
+#     && cd ..
 
 
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 
 # arguement -m is location of target mag files
 # arguement -d is ref_alignment filepath PF vs EP

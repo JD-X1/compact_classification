@@ -104,8 +104,6 @@ for f in mag_f:
 
 rule all:
     input:
-        expand("resources/{mag}_epa_out/profile_summary.tsv", mag=mags),
-        expand("{mag}_summary.csv", mag=mags),
         expand("resources/{mag}_working_dataset", mag=mags),
         expand(
             "resources/{mag}_q_frags/{gene}.fas",
@@ -124,7 +122,9 @@ rule all:
                 for mag in mags
                 for gene in get_superMatrix_targets_for_mag(mag)
             ]
-        )
+        ),
+        expand("resources/{mag}_epa_out/profile_summary.tsv", mag=mags),
+        expand("{mag}_summary.csv", mag=mags)
     
 rule run_busco:
     input: 
@@ -134,6 +134,7 @@ rule run_busco:
        "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     conda:
         "compleasm"
+    
     threads: 22
     log:
         "logs/busco/{mag}.log"
@@ -158,6 +159,8 @@ checkpoint goneFishing:
         "resources/{mag}_input_metadata.tsv"
     output:
         directory("resources/{mag}_working_dataset")
+    resources:
+        shell_prefix="conda run --no-capture-output -n fisher"
     conda:
         "fisher"
     threads: 22
