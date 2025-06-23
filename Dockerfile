@@ -14,6 +14,14 @@ COPY rules/ rules/
 COPY additional_scripts/ additional_scripts/
 COPY resources/ resources/
 
+RUN apt-get update && apt-get install -y \
+    libtiff6 \
+    libgl1 \
+    libxext6 \
+    libsm6 \
+    libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN conda env create -f envs/snakemake.yaml
 RUN conda env create -f envs/pline_max.yaml
 RUN conda env create -f envs/fisher.yaml

@@ -1,4 +1,4 @@
-#!usr/bin/bash --login
+#!usr/bin/env bash
 
 # only two arguments are required:
 # -t <number of threads>
@@ -13,12 +13,9 @@ do
     esac
 done
 
-conda activate fisher
-
-
 # get the file basename
 mag=$(basename ${Input} _input_metadata.tsv)
-
+echo ${mag}
 
 # check if log directory exists
 # if not, create it
@@ -46,18 +43,18 @@ echo "Casting Lines"
 cd resources
 # extract basename of input file
 Input=$(basename $Input)
+echo $Input
 
-
-# get file basename
+# get file basenamr
 
 config.py -d ${mag}_PhyloFishScratch -i $Input
 echo "Configuration of PhyloFisher Modules Complete"
 echo "Waiting for the Fish to Bite"
 fisher.py --threads $TCores -o ${mag}_fish_out --keep_tmp 1> ../logs/FishingLogs/${mag}_fisher.log 2> ../logs/FishingLogs/${mag}_fisher.log
 echo "Fish Caught"
-informant.py -i ${mag}_fish_out --orthologs_only 1> ../logs/FishingLogs/${mag}_informant.log 2> ../logs/FishingLogs/${mag}_informant.log
+informant.py -i resources/${mag}_fish_out --orthologs_only 1> ../logs/FishingLogs/${mag}_informant.log 2> ../logs/FishingLogs/${mag}_informant.log
 echo "Informant Complete"
 echo "Choosing the best fish"
-working_dataset_constructor.py -i ${mag}_fish_out -o ${mag}_working_dataset 1> ../logs/FishingLogs/${mag}_working_dataset_constructor.log 2> ../logs/FishingLogs/${mag}_working_dataset_constructor.log
+working_dataset_constructor.py -i resources/${mag}_fish_out -o ${mag}_working_dataset 1> ../logs/FishingLogs/${mag}_working_dataset_constructor.log 2> ../logs/FishingLogs/${mag}_working_dataset_constructor.log
 echo "Fish on the grill"
 cd ..

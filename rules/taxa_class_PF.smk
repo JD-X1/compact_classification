@@ -160,7 +160,7 @@ checkpoint goneFishing:
     output:
         directory("resources/{mag}_working_dataset")
     resources:
-        shell_prefix="conda run --no-capture-output -n fisher"
+        shell_prefix="conda run --no-capture-output -n fisher /bin/bash -c"
     conda:
         "fisher"
     threads: 22
@@ -175,6 +175,8 @@ rule splitter:
         mag_dir=config["mag_dir"]
     output:
        "resources/{mag}_q_frags/{gene}.fas"
+    resources:
+        shell_prefix="conda run --no-capture-output -n pline_max /bin/bash -c"
     conda:
         "pline_max"
     threads: 22
