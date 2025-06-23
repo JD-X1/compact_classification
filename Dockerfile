@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 ### Install mamba to speed up rebuilds
 RUN conda install -n base -c conda-forge mamba
 
-### Bring in env files in 
+### Bring in env files in individually
 COPY envs/snakemake.yaml envs/
 COPY envs/pline_max.yaml envs/
 COPY envs/fisher.yaml envs/
@@ -29,11 +29,11 @@ COPY envs/compleasm.yaml envs/
 COPY envs/snakemake.yaml envs/
 
 ### Run mamba installs
-RUN mamba env create -f envs/snakemake.yaml
-RUN mamba env create -f envs/pline_max.yaml
-RUN mamba env create -f envs/fisher.yaml
-RUN mamba env create -f envs/mb.yaml
-RUN mamba env create -f envs/compleasm.yaml
+RUN mamba env create -p /opt/conda/envs/snakemake -f envs/snakemake.yaml
+RUN mamba env create -p /opt/conda/envs/pline_max -f envs/pline_max.yaml
+RUN mamba env create -p /opt/conda/envs/fisher -f envs/fisher.yaml
+RUN mamba env create -p /opt/conda/envs/mb -f envs/mb.yaml
+RUN mamba env create -p /opt/conda/envs/compleasm -f envs/compleasm.yaml
 
 
 # Copy Remaining files
