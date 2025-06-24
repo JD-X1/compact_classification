@@ -15,4 +15,3 @@ ls resources/Lenisialimosa_epa_out/*/RAxML_portableTree.epa.jplace | wc -l
 # Questions For EJM
 # 1. Test the install on the phylofisher-test
 #    branch. I think thats ready to go.
-# 2. 

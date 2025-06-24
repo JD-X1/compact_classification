@@ -4,9 +4,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - raxml-ng
   - biopython
-  - epa-ng
   - ca-certificates
   - openssl
   - mafft
@@ -15,4 +13,5 @@ dependencies:
   - gappa
   - raxml
   - pandas
+  - epa-ng
 prefix: /scratch/jduque2/mambaforge/envs/raxml-ng

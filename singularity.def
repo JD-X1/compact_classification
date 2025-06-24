@@ -1,0 +1,59 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%environment
+    # Ensure Conda is available
+    export PATH=/opt/conda/bin:$PATH
+    export CONDA_ALWAYS_YES=true
+    export CONDA_PREFIX=/opt/conda
+
+%files
+    /scratch/jduque2/compact_classification/envs/snakemake.yaml envs/snakemake.yaml
+
+%post
+    # Install system libraries
+    apt-get update && apt-get install -y \
+        libtiff6 \
+        libgl1 \
+        libxext6 \
+        libsm6 \
+        libxrender1 \
+        wget \
+        && ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5 \
+        && rm -rf /var/lib/apt/lists/*
+
+    # Install mamba
+    conda install -n base -c conda-forge mamba
+
+    # Copy environment files
+    mkdir -p /envs
+    cp -r /mnt/envs/*.yaml /envs/
+
+    # Create conda environments using mamba
+    mamba env create -p /opt/conda/envs/snakemake -f /envs/snakemake.yaml
+    mamba env create -p /opt/conda/envs/pline_max -f /envs/pline_max.yaml
+    mamba env create -p /opt/conda/envs/fisher -f /envs/fisher.yaml
+    mamba env create -p /opt/conda/envs/mb -f /envs/mb.yaml
+    mamba env create -p /opt/conda/envs/compleasm -f /envs/compleasm.yaml
+
+    # Set up PhyloFisher data
+    wget https://ndownloader.figshare.com/files/29093409
+    tar -xzvf 29093409
+    mv PhyloFisherDatabase_v1.0 /resources/
+    rm 29093409
+
+    # Activate compleasm and download
+    source /opt/conda/etc/profile.d/conda.sh
+    conda activate /opt/conda/envs/compleasm
+    compleasm download eukaryota
+    mv mb_downloads /resources/
+
+    # Copy remaining project files
+    cp -r /mnt/rules /rules
+    cp -r /mnt/additional_scripts /additional_scripts
+    cp -r /mnt/resources /resources
+
+%runscript
+    exec conda run --no-capture-output -n snakemake snakemake \
+        --use-conda -p --keep-going --rerun-incomplete \
+        -s rules/taxa_class_PF.smk --cores 1 --config mag_dir=resources/test mode=CONCAT

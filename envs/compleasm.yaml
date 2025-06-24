@@ -1,8 +1,8 @@
-name: mb
+name: compleasm
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - busco=5.8.2
+  - compleasm
 prefix: /global/homes/j/jduque/.conda/envs/mb

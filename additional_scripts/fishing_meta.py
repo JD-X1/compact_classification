@@ -50,7 +50,7 @@ for file_path in paths_to_compleasm_output:
     higher_taxonomy = "Amoebozoa"
     lower_taxonomy = "Discosea"
     blast_seed = "none"
-    long_name = "Janus doeus"
+    long_name = "Unknownus nameus"
     data_type = "MAG"
     source = "SequencerProbably"
 
