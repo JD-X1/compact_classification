@@ -55,33 +55,40 @@ rm 29093409
 cd ..
 ```
 
-## Building your own Docker Image (Under)
+## Building your own Docker Image
 
 1. Make sure you have [Docker installed](https://www.docker.com/products/docker-desktop) according to your operating system.
 
-2. To pull the Docker build of Extensiphy, run this command.
+2. To retrieve the Docker build of compact_class, run this command.
 
 ```bash
-docker pull ????
+docker pull ???/compact_class:latest
 ```
 
-3. We'll build your Extensiphy Docker container using this command.
+3. You can run your compact_class Docker container interactively using this command.
 * `-i` makes the container interactive.
 * `-t` specifies the image to use as a template.
 * `--name` specifies the container name.
+
 ```bash
-docker run --name ep_container -i -t mctavishlab/extensiphy bash
+docker run -it --entrypoint /bin/bash ??/compact_class:latest
 ```
 Your command line prompt should change to indicate that you are now working
-inside your Extensiphy container.
+inside your compact_class container.
 
 You can exit the docker container by typing `exit`.
 
 To restart it and return to interactive analyses, run:
 
 ```bash
-docker container restart ep_container
-docker exec -it ep_container bash
+docker container restart ??/compact_class:latest
+docker exec -it ??/compact_class:latest
+```
+
+4. The container can also be run non-interactively
+
+```bash
+docker run compact_class:latest -s /rules/taxa_class_PF.smk --cores 2 --config mag_dir=resources/test/ mode=EP
 ```
 
 ## Example data
