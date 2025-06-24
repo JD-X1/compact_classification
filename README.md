@@ -172,4 +172,5 @@ If using this pipeline, please cite:
  - GAPPA: https://github.com/lczech/gappa
 
  Formatting for README.md largely taken from:
- https://github.com/o-william-white/skim2mito/
+ - https://github.com/o-william-white/skim2mito/
+ - https://github.com/McTavishLab/extensiphy
