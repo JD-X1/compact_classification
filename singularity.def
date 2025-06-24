@@ -2,10 +2,20 @@ Bootstrap: docker
 From: continuumio/miniconda3
 
 %environment
-    # Ensure Conda is available
     export PATH=/opt/conda/bin:$PATH
     export CONDA_ALWAYS_YES=true
     export CONDA_PREFIX=/opt/conda
+
+%files
+envs/snakemake.yaml         /envs/snakemake.yaml
+envs/pline_max.yaml         /envs/pline_max.yaml
+envs/fisher.yaml            /envs/fisher.yaml
+envs/mb.yaml                /envs/mb.yaml
+envs/compleasm.yaml         /envs/compleasm.yaml
+
+rules/                      /rules/
+additional_scripts/         /additional_scripts/
+resources/                  /resources/
 
 %post
     # Install system libraries
