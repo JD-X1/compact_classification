@@ -1,48 +1,53 @@
 Bootstrap: docker
 From: continuumio/miniconda3
-Stage: spython-base
 
-%files
-./envs/ envs/
-./rules/ rules/
-./additional_scripts/ additional_scripts/
-./resources/ resources/
+%environment
+    # Ensure Conda is available
+    export PATH=/opt/conda/bin:$PATH
+    export CONDA_ALWAYS_YES=true
+    export CONDA_PREFIX=/opt/conda
+
 %post
-# syntax=docker/dockerfile:1
+    # Install system libraries
+    apt-get update && apt-get install -y \
+        libtiff6 \
+        libgl1 \
+        libxext6 \
+        libsm6 \
+        libxrender1 \
+        wget \
+        && ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5 \
+        && rm -rf /var/lib/apt/lists/*
 
+    # Install mamba
+    conda install -n base -c conda-forge mamba
 
-# Make RUN commands use 'bash --login'
+    # Copy environment files
+    mkdir -p /envs
+    cp -r /mnt/envs/*.yaml /envs/
 
-SHELL ["/bin/bash", "--login", "-c"]
+    # Create conda environments using mamba
+    mamba env create -p /opt/conda/envs/snakemake -f /envs/snakemake.yaml
+    mamba env create -p /opt/conda/envs/pline_max -f /envs/pline_max.yaml
+    mamba env create -p /opt/conda/envs/fisher -f /envs/fisher.yaml
+    mamba env create -p /opt/conda/envs/mb -f /envs/mb.yaml
+    mamba env create -p /opt/conda/envs/compleasm -f /envs/compleasm.yaml
 
+    wget https://ndownloader.figshare.com/files/29093409
+    tar -xzvf 29093409
+    mv PhyloFisherDatabase_v1.0 /resources/
+    rm 29093409
 
+    source /opt/conda/etc/profile.d/conda.sh
+    conda activate /opt/conda/envs/compleasm
+    compleasm download eukaryota
+    mv mb_downloads /resources/
 
-# Install Dependencies
+    cp -r /mnt/rules /rules
+    cp -r /mnt/additional_scripts /additional_scripts
+    cp -r /mnt/resources /resources
 
-conda env create -f envs/snakemake.yaml
-conda env create -f envs/pline_max.yaml
-conda env create -f envs/fisher.yaml
-conda env create -f envs/mb.yaml
-# change odb arguement if using other different versions of ODB
-conda activate mb \
-&& compleasm download eukaryota --odb odb10 \
-&& mv mb_downloads resources/
-
-
-wget https://ndownloader.figshare.com/files/29093409 \
-&& tar -xzvf 29093409 \
-&& cp -r PhyloFisherDatabase_v1.0 resources/. \
-&& rm 29093409 \
-&& cd ..
-
-
-
-# Make RUN commands use the new environment
-SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
-
-# Final Configuration
-# EXPOSE 8000
 %runscript
-exec conda run --no-capture-output -n snakemake snakemake --use-conda -p --keep-going --rerun-incomplete -s rules/taxa_class_PF.smk --cores 1 --config mag_dir=resources/test mode=CONCAT "$@"
-%startscript
-exec conda run --no-capture-output -n snakemake snakemake --use-conda -p --keep-going --rerun-incomplete -s rules/taxa_class_PF.smk --cores 1 --config mag_dir=resources/test mode=CONCAT "$@"
+    exec conda run --no-capture-output -n snakemake snakemake \
+        --use-conda -p --keep-going --rerun-incomplete \
+        -s rules/taxa_class_PF.smk --cores 1 --config mag_dir=resources/test mode=CONCAT
