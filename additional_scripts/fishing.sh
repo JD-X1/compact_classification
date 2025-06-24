@@ -52,9 +52,9 @@ echo "Configuration of PhyloFisher Modules Complete"
 echo "Waiting for the Fish to Bite"
 fisher.py --threads $TCores -o ${mag}_fish_out --keep_tmp 1> ../logs/FishingLogs/${mag}_fisher.log 2> ../logs/FishingLogs/${mag}_fisher.log
 echo "Fish Caught"
-informant.py -i resources/${mag}_fish_out --orthologs_only 1> ../logs/FishingLogs/${mag}_informant.log 2> ../logs/FishingLogs/${mag}_informant.log
+informant.py -i ${mag}_fish_out --orthologs_only 1> ../logs/FishingLogs/${mag}_informant.log 2> ../logs/FishingLogs/${mag}_informant.log
 echo "Informant Complete"
 echo "Choosing the best fish"
-working_dataset_constructor.py -i resources/${mag}_fish_out -o ${mag}_working_dataset 1> ../logs/FishingLogs/${mag}_working_dataset_constructor.log 2> ../logs/FishingLogs/${mag}_working_dataset_constructor.log
+working_dataset_constructor.py -i ${mag}_fish_out -o ${mag}_working_dataset 1> ../logs/FishingLogs/${mag}_working_dataset_constructor.log 2> ../logs/FishingLogs/${mag}_working_dataset_constructor.log
 echo "Fish on the grill"
 cd ..

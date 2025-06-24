@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y libtiff6 && ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5
+
 ### Install mamba to speed up rebuilds
 RUN conda install -n base -c conda-forge mamba
 
