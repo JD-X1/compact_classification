@@ -172,11 +172,7 @@ checkpoint goneFishing:
 rule splitter:
     input:
         dir=config["outdir"] + "{mag}_working_dataset/",
-        tar=lambda wildcards: expand(
-            config["outdir"] + "{mag}_working_dataset/{gene}.fas",
-            mag=[wildcards.mag],
-            gene=get_superMatrix_targets
-        ),
+        tar=config["outdir"] + "{mag}_working_dataset/{gene}.fas",
         mag_dir=config["mag_dir"]
     output:
        config["outdir"] + "{mag}_q_frags/{gene}.fas"
