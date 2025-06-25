@@ -37,7 +37,7 @@ args = parser.parse_args()
 
 # read in the input fasta file
 input_fasta = args.input
-output_path = str(input_fasta.split("/")[0])
+output_path = str(input_fasta.split("/")[0]) + "/"
 gene = input_fasta.split("/")[-1].split(".")[0]
 print("Gene: " + gene)
 output_fasta = args.output
