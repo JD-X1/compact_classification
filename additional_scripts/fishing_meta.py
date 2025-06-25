@@ -41,7 +41,7 @@ for file_path in paths_to_compleasm_output:
     file_path = '/'.join(file_path.split("/")[1:-1])
     location = file_path.rstrip("translated_protein.fasta")
     file_name = "translated_protein.fasta"
-    unique_id = file_path.split("/")[-3]
+    unique_id = file_path.split("/")[-2]
     # remove any underscores, at symbols, double dots, white space, or asterisks
     unique_id = unique_id.replace("_", "")
     unique_id = unique_id.replace("@", "")

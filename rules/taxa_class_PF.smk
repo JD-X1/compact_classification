@@ -7,7 +7,7 @@ import pandas as pd
 # resources mags/
 
 def get_genes_from_goneFishing(mag):
-    checkpoint_output = f"resources/{mag}_working_dataset"
+    checkpoint_output = config["outdir"] + "{mag}_working_dataset"
 
     # Init an empty list to store genes with corresponding trees
     valid_genes = []
@@ -142,7 +142,7 @@ rule run_busco:
         config["outdir"] + "logs/busco/{mag}.log"
     shell:
         """
-        echo 'Running compleasm with available resources so we are now:'
+        echo 'Running compleasm with available resources'
         compleasm run -a {input} -t {threads} -l eukaryota -L resources/mb_downloads/ -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
         """
 
