@@ -38,7 +38,7 @@ paths_to_compleasm_output = sys.argv[1:]
 
 for file_path in paths_to_compleasm_output:
     # get the location of the proteome file
-    location = "../" + file_path.rstrip("translated_protein.fasta")
+    location = file_path.rstrip("translated_protein.fasta")
     file_name = "translated_protein.fasta"
     unique_id = file_path.split("/")[-3]
     # remove any underscores, at symbols, double dots, white space, or asterisks

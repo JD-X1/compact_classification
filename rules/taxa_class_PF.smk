@@ -142,6 +142,7 @@ rule run_busco:
         config["outdir"] + "logs/busco/{mag}.log"
     shell:
         """
+        echo 'Running compleasm with available resources so we are now:'
         compleasm run -a {input} -t {threads} -l eukaryota -L resources/mb_downloads/ -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
         """
 
