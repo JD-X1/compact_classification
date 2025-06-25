@@ -166,8 +166,7 @@ checkpoint goneFishing:
         "fisher"
     threads: 8
     shell:
-        "sh ./additional_scripts/fishing.sh -t {threads} -i {input} -o {output}"
-
+        "sh ./additional_scripts/fishing.sh -t {threads} -i {wildcards.mag}_input_metadata.tsv -o {config[outdir]}"
 
 rule splitter:
     input:

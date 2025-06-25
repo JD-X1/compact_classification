@@ -17,7 +17,11 @@ done
 # get the file basename
 mag=$(basename ${Input} _input_metadata.tsv)
 working_dataset=${mag}_working_dataset
-echo ${mag}
+log_dir=$Outdir/logs/FishingLogs
+phyloscratch_dir=$Outdir/${mag}_PhyloFishScratch
+echo "Fishing for ${mag}"
+echo "log outdir: ${log_dir}"
+echo "phyloscratch dir: ${phyloscratch_dir}"
 
 # check if log directory exists
 # if not, create it
@@ -27,22 +31,21 @@ then
     mkdir logs
 fi
 
-if [ ! -d logs/FishingLogs ]
+if [ ! -d ${log_dir} ]
 then
-    mkdir logs/FishingLogs
+    mkdir ${log_dir}
 fi
 
-# check if the PhyloFishScratch database exists
-# if not, create it
-if [ ! -d resources/${mag}_PhyloFishScratch ]
+
+if [ ! -d ${phyloscratch_dir} ]
 then
     echo "Creating the PhyloFishScratch database"
-    cp -r resources/PhyloFisherDatabase_v1.0/database resources/${mag}_PhyloFishScratch
+    cp -r resources/PhyloFisherDatabase_v1.0/database ${phyloscratch_dir}
     echo "PhyloFishScratch database created"
 fi
 
 echo "Casting Lines"
-cd output
+cd ${Outdir}
 # extract basename of input file
 Input=$(basename $Input)
 echo $Input
