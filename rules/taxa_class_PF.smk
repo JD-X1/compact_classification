@@ -227,7 +227,7 @@ rule raxml_epa:
     input:
         q_aln=config["outdir"] + "{mag}_mafft_out/{gene}/{gene}_q.aln",
         ref_aln=config["outdir"] + "{mag}_mafft_out/{gene}/{gene}_ref.aln",
-        ref_tree=config["outdir"] + "ref_trees_PF/{gene}/{gene}.raxml.support" #rename this once final tree files available
+        ref_tree="resources/ref_trees_PF/{gene}/{gene}.raxml.support" #rename this once final tree files available
     output:
         config["outdir"] + "{mag}_epa_out/{gene}/{mag}_epa_out.jplace"
     conda:
