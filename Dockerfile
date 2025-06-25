@@ -64,4 +64,4 @@ SHELL [ "conda", "run", "-n", "snakemake", "/bin/bash", "-c" ]
 # Final Configuration
 EXPOSE 8000
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "snakemake", "snakemake", "--use-conda", "-p", "--keep-going", "--rerun-incomplete"]
-CMD ["-s", "rules/taxa_class_PF.smk", "--cores", "1", "--config", "mag_dir=resources/test", "mode=CONCAT"]
+CMD ["-s", "rules/taxa_class_PF.smk", "--cores", "1", "--config", "mag_dir=resources/test", "mode=CONCAT", "outdir=results"]

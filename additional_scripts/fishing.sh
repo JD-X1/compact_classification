@@ -5,22 +5,24 @@
 # -i <input metadata file>
 
 # get the number of threads
-while getopts t:i: option
+while getopts t:i:o: option
 do
     case "${option}" in
         t) TCores=${OPTARG};;
         i) Input=${OPTARG};;
+        o) Outdir=${OPTARG};;
     esac
 done
 
 # get the file basename
 mag=$(basename ${Input} _input_metadata.tsv)
+working_dataset=${mag}_working_dataset
 echo ${mag}
 
 # check if log directory exists
 # if not, create it
 echo "Gathering Bait"
-if [ ! -d logs ]
+if [ ! -d output/logs ]
 then
     mkdir logs
 fi
@@ -40,7 +42,7 @@ then
 fi
 
 echo "Casting Lines"
-cd resources
+cd output
 # extract basename of input file
 Input=$(basename $Input)
 echo $Input
@@ -50,11 +52,11 @@ echo $Input
 config.py -d ${mag}_PhyloFishScratch -i $Input
 echo "Configuration of PhyloFisher Modules Complete"
 echo "Waiting for the Fish to Bite"
-fisher.py --threads $TCores -o ${mag}_fish_out --keep_tmp 1> ../logs/FishingLogs/${mag}_fisher.log 2> ../logs/FishingLogs/${mag}_fisher.log
+fisher.py --threads $TCores -o ${mag}_fish_out --keep_tmp 1> logs/FishingLogs/${mag}_fisher.log 2> logs/FishingLogs/${mag}_fisher.log
 echo "Fish Caught"
-informant.py -i ${mag}_fish_out --orthologs_only 1> ../logs/FishingLogs/${mag}_informant.log 2> ../logs/FishingLogs/${mag}_informant.log
+informant.py -i ${mag}_fish_out --orthologs_only 1> logs/FishingLogs/${mag}_informant.log 2> logs/FishingLogs/${mag}_informant.log
 echo "Informant Complete"
 echo "Choosing the best fish"
-working_dataset_constructor.py -i ${mag}_fish_out -o ${mag}_working_dataset 1> ../logs/FishingLogs/${mag}_working_dataset_constructor.log 2> ../logs/FishingLogs/${mag}_working_dataset_constructor.log
+working_dataset_constructor.py -i ${mag}_fish_out -o ${mag}_working_dataset 1> logs/FishingLogs/${mag}_working_dataset_constructor.log 2> logs/FishingLogs/${mag}_working_dataset_constructor.log
 echo "Fish on the grill"
 cd ..
