@@ -38,6 +38,7 @@ def sanitize_gene_name(name):
 def get_superMatrix_targets_for_mag(mag):
     ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
     gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
+    print([sanitize_gene_name(gene) for gene in gene_files])
     return [sanitize_gene_name(gene) for gene in gene_files]
 
 
@@ -171,7 +172,11 @@ checkpoint goneFishing:
 rule splitter:
     input:
         dir=config["outdir"] + "{mag}_working_dataset/",
-        tar=config["outdir"] + "{mag}_working_dataset/{gene}.fas",
+        tar=lambda wildcards: expand(
+            config["outdir"] + "{mag}_working_dataset/{gene}.fas",
+            mag=[wildcards.mag],
+            gene=get_superMatrix_targets
+        ),
         mag_dir=config["mag_dir"]
     output:
        config["outdir"] + "{mag}_q_frags/{gene}.fas"
