@@ -84,12 +84,11 @@ def all_input():
     
     return all_inputs
 
-# check if config["outdir"] ends with a slash if it doesn't add one
+# checking if config["outdir"] ends with a slash if it doesn't add one
 if not config["outdir"].endswith("/"):
     config["outdir"] += "/"
-
+outdir = config["outdir"]
 mag_f = os.listdir(config["mag_dir"])
-print(mag_f)
 #### CHANGE THE FILE EXTENSION
 #### Swap out this check for file extension
 #### with a test to check that the MAG files
@@ -207,12 +206,14 @@ rule split_aln:
         ref=config["outdir"] + "{mag}_mafft_out/{gene}/{gene}_ref.aln"
     conda:
         "pline_max"
+    params:
+        out_dir=config["outdir"]
     threads: 1
     log:
         config["outdir"] + "logs/split_aln/{mag}/{gene}.log"
     shell:
         """
-        mkdir -p {config["outdir"]}{wildcards.mag}_mafft_out/{wildcards.gene}
+        mkdir -p {params.out_dir}{wildcards.mag}_mafft_out/{wildcards.gene}
         python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} -g {wildcards.gene}> {log}
         mv {wildcards.gene}_q.aln {output.query}
         mv {wildcards.gene}_ref.aln {output.ref}
@@ -229,12 +230,14 @@ rule raxml_epa:
     conda:
         "pline_max"
     threads: 20
+    params:
+        out_dir=config["outdir"]
     log:
         config["outdir"] + "logs/epa/{mag}/{gene}.log"
     shell:
         """
-        mkdir -p {config["outdir"]}{wildcards.mag}_epa_out/{wildcards.gene}
-        mkdir -p {config["outdir"]}logs/epa/{wildcards.mag}
+        mkdir -p {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene}
+        mkdir -p {params.out_dir}logs/epa/{wildcards.mag}
         ulimit -n 65536
         ulimit -s unlimited
         epa-ng --redo --ref-msa {input.ref_aln} \
@@ -253,14 +256,16 @@ rule gappa:
     conda:
         "pline_max"
     threads: 1
+    params:
+        out_dir=config["outdir"]
     log:
-        "logs/gappa/{mag}/{gene}.log"
+        config["outdir"] + "logs/gappa/{mag}/{gene}.log"
     shell:
         """
         gappa examine assign \
             --jplace-path {input} \
             --taxon-file resources/tax_tree.txt \
-            --out-dir resources/{wildcards.mag}_epa_out/{wildcards.gene} \
+            --out-dir {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene} \
             --allow-file-overwriting --best-hit --verbose 1> {log} 2> {log}
         """
 
