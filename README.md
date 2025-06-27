@@ -68,10 +68,14 @@ docker pull mctavishlab/mag_classifications:latest
 3. You can run your compact_class Docker container interactively using this command.
 * `-i` makes the container interactive.
 * `-t` specifies the image to use as a template.
+* `-v` points to local directories that the container read and write to
 * `--name` specifies the container name.
 
 ```bash
-docker run -it --entrypoint /bin/bash mctavishlab/mag_classifications:latest
+docker run -it --entrypoint /bin/bash \
+    -v $(pwd)/input:/input/ \
+    -v $(pwd)/output/:/output/ \
+    mctavishlab/mag_classifications:latest
 ```
 Your command line prompt should change to indicate that you are now working
 inside your compact_class container.
@@ -88,7 +92,11 @@ docker exec -it mctavishlab/mag_classifications:latest
 4. The container can also be run non-interactively
 
 ```bash
-docker run compact_class:latest -s /rules/taxa_class_PF.smk --cores 2 --config mag_dir=resources/test/ mode=EP
+docker run \
+    -v $(pwd)/input:/input/ \
+    -v $(pwd)/output/:/output/ \
+    compact_class:latest -s /rules/taxa_class_PF.smk \
+    --cores 2 --config mag_dir=/input/ mode=EP outdir=/output/
 ```
 
 ## Example data
