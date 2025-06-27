@@ -64,11 +64,13 @@ cd ..
 ```bash
 docker pull mctavishlab/mag_classifications:latest
 ```
+3. To set up input/output directories you'll want to have two directories in your working directory one containing your input mags and the second an empty directory for logs and output files to be written to. In the rest of this guide the input directory is 'input' and 
 
-3. You can run your compact_class Docker container interactively using this command.
+4. You can run your compact_class Docker container interactively using this command.
 * `-i` makes the container interactive.
 * `-t` specifies the image to use as a template.
-* `-v` points to local directories that the container read and write to
+* `-v` points to local directories to be replicated inside the container,
+       changes made in the container will be reflected outside the container
 * `--name` specifies the container name.
 
 ```bash
@@ -89,7 +91,7 @@ docker container restart mctavishlab/mag_classifications:latest
 docker exec -it mctavishlab/mag_classifications:latest
 ```
 
-4. The container can also be run non-interactively
+5. The container can also be run non-interactively
 
 ```bash
 docker run \
@@ -130,7 +132,7 @@ Avoid the following symbols in fasta sequence/file names as certain tools in thi
 
 ## Output
 
-All output is saved in the `resources/` directory with each individual MAG in your target direct generating an.
+All output is saved in your output directory with each individual MAG in your target direct generating an.
 
 | Directory / File Path                            | Description                                                  |
 |--------------------------------------------------|--------------------------------------------------------------|
