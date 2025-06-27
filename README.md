@@ -136,13 +136,13 @@ All output is saved in your output directory with each individual MAG in your ta
 
 | Directory / File Path                            | Description                                                  |
 |--------------------------------------------------|--------------------------------------------------------------|
-| resources/{mag}_input_metadata.tsv              | Metadata file containing input details for each MAG         |
-| resources/{mag}_q_frags/{gene}.fas              | Query fragment FASTA files for each single gene             |
-| resources/{mag}_mafft_out/{gene}.aln            | MAFFT alignment output for each gene                        |
-| resources/{mag}_mafft_out/{gene}.aln.partial.fas| Filtered/partial version of each gene alignment             |
-| resources/{mag}_mafft_out/{gene}.trimal         | Trimmed gene alignment produced using Trimal                |
-| resources/{mag}_epa_out/{mag}_epa_out.jplace    | Phylogenetic placement results in `.jplace` format          |
-| resources/{mag}_epa_out/profile.tsv             | Taxonomic profile summary derived from placement results    |
+| output/{mag}_input_metadata.tsv              | Metadata file containing input details for each MAG         |
+| output/{mag}_q_frags/{gene}.fas              | Query fragment FASTA files for each single gene             |
+| output/{mag}_mafft_out/{gene}.aln            | MAFFT alignment output for each gene                        |
+| output/{mag}_mafft_out/{gene}.aln.partial.fas| Filtered/partial version of each gene alignment             |
+| output/{mag}_mafft_out/{gene}.trimal         | Trimmed gene alignment produced using Trimal                |
+| output/{mag}_epa_out/{mag}_epa_out.jplace    | Phylogenetic placement results in `.jplace` format          |
+| output/{mag}_epa_out/profile.tsv             | Taxonomic profile summary derived from placement results    |
 | resources/busco_out/{mag}/summary.txt           | BUSCO summary report assessing MAG genome completeness      |
 
 
