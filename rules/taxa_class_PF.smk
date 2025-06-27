@@ -87,6 +87,8 @@ def all_input():
 # checking if config["outdir"] ends with a slash if it doesn't add one
 if not config["outdir"].endswith("/"):
     config["outdir"] += "/"
+if not config["mag_dir"].endswith("/"):
+    config["mag_dir"] += "/"
 outdir = config["outdir"]
 mag_f = os.listdir(config["mag_dir"])
 #### CHANGE THE FILE EXTENSION
@@ -100,16 +102,16 @@ if mag_f == []:
 # get mag names
 mags = []
 for f in mag_f:
-    if len(f.split(".")) == 2:
-        mag = f.split(".")[0]
-    elif len(f.split(".")) > 2:
+    mag = ""
+    if len(f.split(".")) >= 2:
         # get mag name
-        '.'.join(f.split(".")[:-1])
+        mag = '.'.join(f.split(".")[:-1])
     # append to list
     else:
         raise ValueError(
             "#################\nMake sure MAG file names follow the folowwing format:\n\t[unique id].[file extension] \n#################\n"
         )
+    print(f"Processing MAG: " + mag)
     mags.append(mag)
 
 rule all:

@@ -71,6 +71,7 @@ docker pull mctavishlab/mag_classifications:latest
 * `-t` specifies the image to use as a template.
 * `-v` points to local directories to be replicated inside the container,
        changes made in the container will be reflected outside the container
+       format [local/directory]:[replicated_container/diretory]
 * `--name` specifies the container name.
 
 ```bash
@@ -143,7 +144,7 @@ All output is saved in your output directory with each individual MAG in your ta
 | output/{mag}_mafft_out/{gene}.trimal         | Trimmed gene alignment produced using Trimal                |
 | output/{mag}_epa_out/{mag}_epa_out.jplace    | Phylogenetic placement results in `.jplace` format          |
 | output/{mag}_epa_out/profile.tsv             | Taxonomic profile summary derived from placement results    |
-| resources/busco_out/{mag}/summary.txt           | BUSCO summary report assessing MAG genome completeness      |
+| output/busco_out/{mag}/summary.txt           | BUSCO summary report assessing MAG genome completeness      |
 
 
 ## Running your own data
