@@ -100,9 +100,16 @@ if mag_f == []:
 # get mag names
 mags = []
 for f in mag_f:
-    # get mag name
-    mag = f.split(".fna")[0]
+    if len(f.split(".")) == 2:
+        mag = f.split(".")[0]
+    elif len(f.split(".")) > 2:
+        # get mag name
+        '.'.join(foo.split(".")[:-1])
     # append to list
+    else:
+        raise ValueError(
+            "#################\nMake sure MAG file names follow the folowwing format:\n\t[unique id].[file extension] \n#################\n"
+        )
     mags.append(mag)
 
 rule all:
