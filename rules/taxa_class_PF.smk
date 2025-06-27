@@ -101,7 +101,7 @@ if mag_f == []:
 mags = []
 for f in mag_f:
     # get mag name
-    mag = f.split(".")[0]
+    mag = f.split(".fna")[0]
     # append to list
     mags.append(mag)
 

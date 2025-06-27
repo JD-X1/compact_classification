@@ -62,7 +62,7 @@ cd ..
 2. To retrieve the Docker build of compact_class, run this command.
 
 ```bash
-docker pull ???/compact_class:latest
+docker pull mctavishlab/mag_classifications:latest
 ```
 
 3. You can run your compact_class Docker container interactively using this command.
@@ -71,7 +71,7 @@ docker pull ???/compact_class:latest
 * `--name` specifies the container name.
 
 ```bash
-docker run -it --entrypoint /bin/bash ??/compact_class:latest
+docker run -it --entrypoint /bin/bash mctavishlab/mag_classifications:latest
 ```
 Your command line prompt should change to indicate that you are now working
 inside your compact_class container.
@@ -81,8 +81,8 @@ You can exit the docker container by typing `exit`.
 To restart it and return to interactive analyses, run:
 
 ```bash
-docker container restart ??/compact_class:latest
-docker exec -it ??/compact_class:latest
+docker container restart mctavishlab/mag_classifications:latest
+docker exec -it mctavishlab/mag_classifications:latest
 ```
 
 4. The container can also be run non-interactively
