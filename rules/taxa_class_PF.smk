@@ -104,7 +104,7 @@ for f in mag_f:
         mag = f.split(".")[0]
     elif len(f.split(".")) > 2:
         # get mag name
-        '.'.join(foo.split(".")[:-1])
+        '.'.join(f.split(".")[:-1])
     # append to list
     else:
         raise ValueError(
