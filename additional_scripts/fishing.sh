@@ -17,8 +17,8 @@ done
 # get the file basename
 mag=$(basename ${Input} _input_metadata.tsv)
 working_dataset=${mag}_working_dataset
-log_dir=$Outdir/logs/FishingLogs
-phyloscratch_dir=$Outdir/${mag}_PhyloFishScratch
+log_dir=${Outdir}logs/FishingLogs
+phyloscratch_dir=${Outdir}${mag}_PhyloFishScratch
 echo "Fishing for ${mag}"
 echo "log outdir: ${log_dir}"
 echo "phyloscratch dir: ${phyloscratch_dir}"
@@ -50,7 +50,7 @@ cd ${Outdir}
 Input=$(basename $Input)
 echo $Input
 
-# get file basenamr
+# get file basename
 
 config.py -d ${mag}_PhyloFishScratch -i $Input
 echo "Configuration of PhyloFisher Modules Complete"
