@@ -163,8 +163,8 @@ rule fishing_meta:
     output:
         config["outdir"] + "{mag}_input_metadata.tsv"
     conda:
-        "raxml-ng"
-    threads: 22
+        "pline_max"
+    threads: 1
     priority: 0
     shell:
         "python ./additional_scripts/fishing_meta.py {input} >> {output}"
@@ -191,7 +191,7 @@ rule splitter:
     output:
        config["outdir"] + "{mag}_q_frags/{gene}.fas"
     conda:
-        "raxml-ng"
+        "pline_max"
     threads: 1
     priority: 0
     log:
@@ -207,7 +207,7 @@ rule mafft:
     output:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:
-        "raxml-ng"
+        "pline_max"
     threads: 22
     priority: 0
     log:
@@ -286,7 +286,7 @@ rule alignment_splitter:
         config["outdir"] + "{mag}_q.aln",
         config["outdir"] + "{mag}_ref.aln"
     conda:
-        "raxml-ng"
+        "pline_max"
     threads: 1
     priority: 0
     log:
@@ -303,7 +303,7 @@ rule raxml_epa:
     output:
         config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
-        "raxml-ng"
+        "pline_max"
     threads: 22
     priority: 0
     params:
@@ -322,9 +322,9 @@ rule raxml_epa:
         # specifying only a run name for the output (not a path).
         ulimit -n 65536
         ulimit -s unlimited
-        epa-ng --ref-msa {mag}_ref.aln \
-         --tree {params.out_dir}ref_concat_pruned.tre \
-         --query {mag}_q.aln \
+        epa-ng --ref-msa {params.out_dir}{mag}_ref.aln \
+         --tree resources/ref_concat_PF.tre \
+         --query {params.out_dir}{mag}_q.aln \
          --model LG -T {threads}
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
@@ -338,8 +338,8 @@ rule gappa:
     output:
         config["outdir"] + "{mag}_epa_out/profile.tsv"
     conda:
-        "raxml-ng"
-    threads: 22
+        "pline_max"
+    threads: 1
     params:
         out_dir=config["outdir"]
     priority: 0
