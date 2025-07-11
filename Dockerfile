@@ -36,6 +36,10 @@ RUN mamba env create -p /opt/conda/envs/pline_max -f envs/pline_max.yaml
 RUN mamba env create -p /opt/conda/envs/fisher -f envs/fisher.yaml
 RUN mamba env create -p /opt/conda/envs/mb -f envs/mb.yaml
 RUN mamba env create -p /opt/conda/envs/compleasm -f envs/compleasm.yaml
+RUN mamba env create -p /opt/conda/envs/div -f envs/div.yaml
+RUN mamba env create -p /opt/conda/envs/trimal -f envs/trimal.yaml
+RUN mamba env create -p /opt/conda/envs/
+RUN mamba env create -p /opt/conda/envs/pythas_two -f envs/pythas_two.yaml
 
 
 # Copy Remaining files
