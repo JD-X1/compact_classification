@@ -111,6 +111,13 @@ for f in mag_f:
         raise ValueError(
             "#################\nMake sure MAG file names follow the folowwing format:\n\t[unique id].[file extension] \n#################\n"
         )
+    if "_" in mag or " " in mag:
+        mag = mag.replace("_", "").replace(" ", "")
+        os.rename(
+            os.path.join(config["mag_dir"], f),
+            os.path.join(config["mag_dir"], mag + ".fna")
+        )
+        print(f"Renaming MAG file to: {mag}.fna")
     print(f"Processing MAG: " + mag)
     mags.append(mag)
 

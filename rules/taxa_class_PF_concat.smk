@@ -97,19 +97,26 @@ if mag_f == []:
 
 # get mag names
 genes = []
-mags = [os.path.splitext(f)[0] for f in mag_f] 
-# for f in mag_f:
-#     mag = ""
-#     if len(f.split(".")) >= 2:
-#         # get mag name
-#         mag = '.'.join(f.split(".")[:-1])
-#     # append to list
-#     else:
-#         raise ValueError(
-#             "#################\nMake sure MAG file names follow the folowwing format:\n\t[unique id].[file extension] \n#################\n"
-#         )
-#     print(f"Processing MAG: " + mag)
-#     mags.append(mag)
+mags = []
+for f in mag_f:
+    mag = ""
+    if len(f.split(".")) >= 2:
+        # get mag name
+        mag = '.'.join(f.split(".")[:-1])
+    # append to list
+    else:
+        raise ValueError(
+            "#################\nMake sure MAG file names follow the folowwing format:\n\t[unique id].[file extension] \n#################\n"
+        )
+    if "_" in mag or " " in mag:
+        mag = mag.replace("_", "").replace(" ", "")
+        os.rename(
+            os.path.join(config["mag_dir"], f),
+            os.path.join(config["mag_dir"], mag + ".fna")
+        )
+        print(f"Renaming MAG file to: {mag}.fna")
+    print(f"Processing MAG: " + mag)
+    mags.append(mag)
 
 rule all:
     input:
@@ -203,7 +210,7 @@ rule splitter:
 rule mafft:
     input:
         query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
-        reference=config["outdir"] + "PhyloFishScratch/alignments/{gene}.fas.aln"
+        reference=config["outdir"] + "{mag}_PhyloFishScratch/alignments/{gene}.fas.aln"
     output:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:
