@@ -180,7 +180,7 @@ checkpoint goneFishing:
     threads: 22
     priority: 0
     shell:
-        "sh ./additional_scripts/fishing.sh -t {threads} -i {input}"
+        "sh ./additional_scripts/fishing.sh -t {threads} -i {input} -o {config[outdir]}"
 
 
 rule splitter:
