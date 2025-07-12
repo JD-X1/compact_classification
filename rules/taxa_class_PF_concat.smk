@@ -255,7 +255,7 @@ rule trimal:
         """
         trimal -in {input} -gt 0.8 -out {output} > {log} 2> {log}
         """
-
+# clear
 rule concat:
     input:
         lambda wildcards: [
