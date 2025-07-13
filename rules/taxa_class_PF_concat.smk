@@ -290,8 +290,8 @@ rule alignment_splitter:
     input:
         config["outdir"] + "{mag}_SuperMatrix.fas"
     output:
-        config["outdir"] + "{mag}_q.aln",
-        config["outdir"] + "{mag}_ref.aln"
+        query=config["outdir"] + "{mag}_q.aln",
+        ref=config["outdir"] + "{mag}_ref.aln"
     conda:
         "pline_max"
     threads: 1
@@ -299,14 +299,34 @@ rule alignment_splitter:
     log:
         config["outdir"] + "logs/alignment_splitter/{mag}.log"
     shell:
-        "python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}"
+        """
+        python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}
+        mv {wildcards.mag}_q.aln {output.query}
+        mv {wildcards.mag}_ref.aln {output.ref}
+        """
 
+rule sub-tree:
+    input:
+        config["outdir"] + "{mag}_ref.aln"
+    output:
+        config["outdir"] + "{mag}_ref.tre"
+    conda:
+        ""
+    threads: 1
+    priority: 0
+    log:
+        config["outdir"] + "logs/sub_tree/{mag}.log"
+    shell:
+        """
+        python additional_scripts/sub_tree.py -a {input} -t {wildcards.mag}
+        mv {wildcards.mag}_ref.tre {output}
+        """
 
 rule raxml_epa:
     input:
         q_aln= config["outdir"] + "{mag}_q.aln",
         ref_aln= config["outdir"] + "{mag}_ref.aln",
-        ref_tree= "resources/ref_concat_PF.tre"
+        ref_tree= config["outdir"] + "{mag}_ref.tre"
     output:
         config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
@@ -321,18 +341,16 @@ rule raxml_epa:
         """
         # Ensure the output directory exists
         mkdir -p {params.out_dir}{wildcards.mag}_epa_out/
-        mkdir -p logs/raxml_epa/
-        # Run RAxML
-        cd {params.out_dir}{wildcards.mag}_epa_out/
+        mkdir -p {params.out_dir}logs/raxml_epa/
 
         # Execute RAxML with the correct path to the alignment and tree files,
         # specifying only a run name for the output (not a path).
         ulimit -n 65536
         ulimit -s unlimited
         epa-ng --ref-msa {params.out_dir}{mag}_ref.aln \
-         --tree resources/ref_concat_PF.tre \
+         --tree resources/ref_concat_PF_alt3.tre \
          --query {params.out_dir}{mag}_q.aln \
-         --model LG -T {threads}
+         --model LG -T {threads} >{log}
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
         mv epa_result.jplace {output}
