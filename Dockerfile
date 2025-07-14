@@ -29,6 +29,10 @@ COPY envs/fisher.yaml envs/
 COPY envs/mb.yaml envs/
 COPY envs/compleasm.yaml envs/
 COPY envs/snakemake.yaml envs/
+COPY envs/div.yaml envs/
+COPY envs/trimal.yaml envs/
+COPY envs/pythas_two.yaml envs/
+COPY envs/dendropy.yaml envs/
 
 ### Run mamba installs
 RUN mamba env create -p /opt/conda/envs/snakemake -f envs/snakemake.yaml
@@ -38,7 +42,6 @@ RUN mamba env create -p /opt/conda/envs/mb -f envs/mb.yaml
 RUN mamba env create -p /opt/conda/envs/compleasm -f envs/compleasm.yaml
 RUN mamba env create -p /opt/conda/envs/div -f envs/div.yaml
 RUN mamba env create -p /opt/conda/envs/trimal -f envs/trimal.yaml
-RUN mamba env create -p /opt/conda/envs/
 RUN mamba env create -p /opt/conda/envs/pythas_two -f envs/pythas_two.yaml
 RUN mamba env create -p /opt/conda/envs/dendropy -f envs/dendropy.yaml
 
