@@ -1,6 +1,8 @@
 name: dendropy
 channels:
   - conda-forge
+  - bioconda
+  - defaults
 dependencies:
   - dendropy=5.0.8
   - biopython
