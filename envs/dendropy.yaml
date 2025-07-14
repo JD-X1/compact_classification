@@ -3,4 +3,5 @@ channels:
   - conda-forge
 dependencies:
   - dendropy=5.0.8
+  - biopython
 prefix: /home/jduque2/miniforge3/envs/dendropy

@@ -305,21 +305,21 @@ rule alignment_splitter:
         mv {wildcards.mag}_ref.aln {output.ref}
         """
 
-rule sub-tree:
+rule sub_tree:
     input:
-        config["outdir"] + "{mag}_ref.aln"
+        aln=config["outdir"] + "{mag}_ref.aln",
+        tree="resources/ref_concat_PF_alt3.tre"
     output:
         config["outdir"] + "{mag}_ref.tre"
     conda:
-        ""
+        "dendropy"
     threads: 1
     priority: 0
     log:
         config["outdir"] + "logs/sub_tree/{mag}.log"
     shell:
         """
-        python additional_scripts/sub_tree.py -a {input} -t {wildcards.mag}
-        mv {wildcards.mag}_ref.tre {output}
+        python additional_scripts/sub_tree.py -a {input.aln} -t {input.tree} -o {output} > {log} 2> {log}
         """
 
 rule raxml_epa:
@@ -347,9 +347,9 @@ rule raxml_epa:
         # specifying only a run name for the output (not a path).
         ulimit -n 65536
         ulimit -s unlimited
-        epa-ng --ref-msa {params.out_dir}{mag}_ref.aln \
-         --tree resources/ref_concat_PF_alt3.tre \
-         --query {params.out_dir}{mag}_q.aln \
+        epa-ng --ref-msa {input.ref_aln} \
+         --tree {input.ref_tree} \
+         --query {input.q_aln} \
          --model LG -T {threads} >{log}
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
@@ -374,7 +374,7 @@ rule gappa:
         """
         gappa examine assign \
             --jplace-path {input} \
-            --taxon-file {params.out_dir}tax_tree.txt \
+            --taxon-file resources/tax_tree.txt \
             --out-dir {params.out_dir}{wildcards.mag}_epa_out \
             --allow-file-overwriting --best-hit --verbose > {log}
         """
