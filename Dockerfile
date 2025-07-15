@@ -54,15 +54,15 @@ COPY resources/ resources/
 
 # change odb arguement if using other different versions of ODB
 RUN conda activate compleasm \
-    && compleasm download eukaryota \
-    && mv mb_downloads resources/
+   && compleasm download eukaryota \
+   && mv mb_downloads resources/
 
 
 RUN wget https://ndownloader.figshare.com/files/29093409 \
-    && tar -xzvf 29093409 \
-    && cp -r PhyloFisherDatabase_v1.0 resources/. \
-    && rm 29093409 \
-    && cd ..
+   && tar -xzvf 29093409 \
+   && cp -r PhyloFisherDatabase_v1.0 resources/. \
+   && rm 29093409 \
+   && cd ..
 
 
 
