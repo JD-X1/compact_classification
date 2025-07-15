@@ -62,16 +62,23 @@ cd ..
 2. To retrieve the Docker build of compact_class, run this command.
 
 ```bash
-docker pull ???/compact_class:latest
+docker pull mctavishlab/mag_classifications:latest
 ```
+3. To set up input/output directories you'll want to have two directories in your working directory one containing your input mags and the second an empty directory for logs and output files to be written to. In the rest of this guide the input directory is 'input' and 
 
-3. You can run your compact_class Docker container interactively using this command.
+4. You can run your compact_class Docker container interactively using this command.
 * `-i` makes the container interactive.
 * `-t` specifies the image to use as a template.
+* `-v` points to local directories to be replicated inside the container,
+       changes made in the container will be reflected outside the container
+       format [local/directory]:[replicated_container/diretory]
 * `--name` specifies the container name.
 
 ```bash
-docker run -it --entrypoint /bin/bash ??/compact_class:latest
+docker run -it --entrypoint /bin/bash \
+    -v $(pwd)/input:/input/ \
+    -v $(pwd)/output/:/output/ \
+    mctavishlab/mag_classifications:latest
 ```
 Your command line prompt should change to indicate that you are now working
 inside your compact_class container.
@@ -81,14 +88,18 @@ You can exit the docker container by typing `exit`.
 To restart it and return to interactive analyses, run:
 
 ```bash
-docker container restart ??/compact_class:latest
-docker exec -it ??/compact_class:latest
+docker container restart mctavishlab/mag_classifications:latest
+docker exec -it mctavishlab/mag_classifications:latest
 ```
 
-4. The container can also be run non-interactively
+5. The container can also be run non-interactively
 
 ```bash
-docker run compact_class:latest -s /rules/taxa_class_PF.smk --cores 2 --config mag_dir=resources/test/ mode=EP
+docker run \
+    -v $(pwd)/input:/input/ \
+    -v $(pwd)/output/:/output/ \
+    compact_class:latest -s /rules/taxa_class_PF.smk \
+    --cores 2 --config mag_dir=/input/ mode=EP outdir=/output/
 ```
 
 ## Example data
@@ -122,18 +133,18 @@ Avoid the following symbols in fasta sequence/file names as certain tools in thi
 
 ## Output
 
-All output is saved in the `resources/` directory with each individual MAG in your target direct generating an.
+All output is saved in your output directory with each individual MAG in your target direct generating an.
 
 | Directory / File Path                            | Description                                                  |
 |--------------------------------------------------|--------------------------------------------------------------|
-| resources/{mag}_input_metadata.tsv              | Metadata file containing input details for each MAG         |
-| resources/{mag}_q_frags/{gene}.fas              | Query fragment FASTA files for each single gene             |
-| resources/{mag}_mafft_out/{gene}.aln            | MAFFT alignment output for each gene                        |
-| resources/{mag}_mafft_out/{gene}.aln.partial.fas| Filtered/partial version of each gene alignment             |
-| resources/{mag}_mafft_out/{gene}.trimal         | Trimmed gene alignment produced using Trimal                |
-| resources/{mag}_epa_out/{mag}_epa_out.jplace    | Phylogenetic placement results in `.jplace` format          |
-| resources/{mag}_epa_out/profile.tsv             | Taxonomic profile summary derived from placement results    |
-| resources/busco_out/{mag}/summary.txt           | BUSCO summary report assessing MAG genome completeness      |
+| output/{mag}_input_metadata.tsv              | Metadata file containing input details for each MAG         |
+| output/{mag}_q_frags/{gene}.fas              | Query fragment FASTA files for each single gene             |
+| output/{mag}_mafft_out/{gene}.aln            | MAFFT alignment output for each gene                        |
+| output/{mag}_mafft_out/{gene}.aln.partial.fas| Filtered/partial version of each gene alignment             |
+| output/{mag}_mafft_out/{gene}.trimal         | Trimmed gene alignment produced using Trimal                |
+| output/{mag}_epa_out/{mag}_epa_out.jplace    | Phylogenetic placement results in `.jplace` format          |
+| output/{mag}_epa_out/profile.tsv             | Taxonomic profile summary derived from placement results    |
+| output/busco_out/{mag}/summary.txt           | BUSCO summary report assessing MAG genome completeness      |
 
 
 ## Running your own data

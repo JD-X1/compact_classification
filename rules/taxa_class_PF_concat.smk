@@ -7,7 +7,7 @@ import pandas as pd
 # resources mags/
 
 def get_genes_from_goneFishing(mag):
-    checkpoint_output = f"resources/{mag}_working_dataset"
+    checkpoint_output = config["outdir"] + "{mag}_working_dataset"
 
     # Init an empty list to store genes with corresponding trees
     valid_genes = []
@@ -27,15 +27,19 @@ def get_genes_from_goneFishing(mag):
 
     return valid_genes
 
-def get_superMatrix_targets(mag):
-
-    sg_alns = os.listdir(f"resources/{mag}_mafft_out/")
-    genes = []
-    for f in sg_alns:
-        if f.endswith(".aln"):
-            gene = f.split(".")[0]
-            genes.append(gene)
+def get_superMatrix_targets(wildcards):
+    ckpt_out = checkpoints.goneFishing.get(mag=wildcards.mag).output[0]
+    genes = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
     return genes
+
+def sanitize_gene_name(name):
+    return name.replace("/", "_").replace(" ", "_").replace("\\", "_")
+
+def get_superMatrix_targets_for_mag(mag):
+    ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
+    gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
+    print([sanitize_gene_name(gene) for gene in gene_files])
+    return [sanitize_gene_name(gene) for gene in gene_files]
 
 
 def all_input():
@@ -46,17 +50,17 @@ def all_input():
     for mag in mags:
         # Dynamically get genes for the current MAG after goneFishing
         # Check if the checkpoint directory for this MAG exists to infer completion
-        checkpoint_dir = f"resources/{mag}_working_dataset"
+        checkpoint_dir = config["outdir"] + "{mag}_working_dataset"
         mag_inputs = [
-            f"resources/busco_out/{mag}/summary.txt",
-            f"resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta",
-            f"resources/{mag}_input_metadata.tsv",
+            config["outdir"] + "busco_out/{mag}/summary.txt",
+            config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta",
+            config["outdir"] + "{mag}_input_metadata.tsv",
             #f"{mag}_summary.csv",
             f"{mag}_SuperMatrix.fas",
             f"{mag}_q.aln",
             f"{mag}_ref.aln",
-            f"resources/{mag}_epa_out/{mag}_epa_out.jplace",
-            f"resources/{mag}_epa_out/profile.tsv",
+            config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace",
+            config["outdir"] + "{mag}_epa_out/profile.tsv",
             checkpoint_dir  # This implicitly checks for its existence
         ]
 
@@ -66,8 +70,8 @@ def all_input():
             genes = get_genes_from_goneFishing(mag)
             for gene in genes:
                 mag_inputs.extend([
-                    f"resources/{mag}_q_frags/{gene}.fas",
-                    f"resources/{mag}_mafft_out/{gene}.aln"
+                    config["outdir"] + "{mag}_q_frags/{gene}.fas",
+                    config["outdir"] + "{mag}_mafft_out/{gene}.aln"
                 ])
         
         # Add the MAG-specific inputs to the overall list
@@ -75,7 +79,12 @@ def all_input():
     
     return all_inputs
 
-
+# checking if config["outdir"] ends with a slash if it doesn't add one
+if not config["outdir"].endswith("/"):
+    config["outdir"] += "/"
+if not config["mag_dir"].endswith("/"):
+    config["mag_dir"] += "/"
+outdir = config["outdir"]
 mag_f = os.listdir(config["mag_dir"])
 #print(mag_f)
 #### CHANGE THE FILE EXTENSION
@@ -87,43 +96,82 @@ if mag_f == []:
     raise ValueError("#################\nNo MAGs found in the specified directory.\n#################\n")
 
 # get mag names
-mags = []
 genes = []
+mags = []
 for f in mag_f:
-    # get mag name
-    mag = f.strip(".fna")
+    mag = ""
+    if len(f.split(".")) >= 2:
+        # get mag name
+        mag = '.'.join(f.split(".")[:-1])
     # append to list
+    else:
+        raise ValueError(
+            "#################\nMake sure MAG file names follow the folowwing format:\n\t[unique id].[file extension] \n#################\n"
+        )
+    if "_" in mag or " " in mag:
+        mag = mag.replace("_", "").replace(" ", "")
+        os.rename(
+            os.path.join(config["mag_dir"], f),
+            os.path.join(config["mag_dir"], mag + ".fna")
+        )
+        print(f"Renaming MAG file to: {mag}.fna")
+    print(f"Processing MAG: " + mag)
     mags.append(mag)
 
 rule all:
     input:
-        all_input()
+        expand(config["outdir"] + "{mag}_working_dataset", mag=mags),
+        expand(
+            config["outdir"] + "{mag}_q_frags/{gene}.fas",
+                mag=mags,
+                gene=lambda wildcards: [
+                    gene
+                    for mag in mags
+                    for gene in get_superMatrix_targets_for_mag(mag)
+                ]
+            ),
+        expand(
+            config["outdir"] + "{mag}_mafft_out/{gene}.aln",
+                mag=mags,
+                gene=lambda wildcards: [
+                    gene
+                    for mag in mags
+                    for gene in get_superMatrix_targets_for_mag(mag)
+                ]
+            ),
+        expand(config["outdir"] + "{mag}_q.aln", mag=mags),
+        expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
+        expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
+        expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
+        expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags)
+        
     
 rule run_busco:
-    input: 
-        config["mag_dir"] + "{mag}.fna"
+    input:
+        expand(config["mag_dir"] + "{mag}.fna", mag=mags)
     output:
-       "resources/busco_out/{mag}/summary.txt",
-       "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
+       config["outdir"] + "busco_out/{mag}/summary.txt",
+       config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     conda:
-        "../envs/mb.yaml"
+        "compleasm"
     threads: 22
-    priority: 0
     log:
-        "logs/busco/{mag}.log"
+        config["outdir"] + "logs/busco/{mag}.log"
     shell:
         """
-        compleasm run -a {input} -t {threads} -l eukaryota -L resources/mb_downloads/ -o resources/busco_out/{wildcards.mag} 1> {log} 2> {log}
+        echo "Running BUSCO for {wildcards.mag}..."
+        echo "Running BUSCO with available threads: {threads}"
+        compleasm run -a {input} -t {threads} -l eukaryota -L resources/mb_downloads/ -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
         """
 
 rule fishing_meta:
     input:
-        "resources/busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
+        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     output:
-        "resources/{mag}_input_metadata.tsv"
+        config["outdir"] + "{mag}_input_metadata.tsv"
     conda:
-        "../envs/raxml-ng.yaml"
-    threads: 22
+        "pline_max"
+    threads: 1
     priority: 0
     shell:
         "python ./additional_scripts/fishing_meta.py {input} >> {output}"
@@ -131,62 +179,62 @@ rule fishing_meta:
 
 checkpoint goneFishing:
     input:
-        "resources/{mag}_input_metadata.tsv"
+        config["outdir"] + "{mag}_input_metadata.tsv"
     output:
-        directory("resources/{mag}_working_dataset")
+        directory(config["outdir"] + "{mag}_working_dataset")
     conda:
-        "../envs/fisher.yaml"
+        "fisher"
     threads: 22
     priority: 0
     shell:
-        "sh ./additional_scripts/fishing.sh -t {threads} -i {input}"
+        "sh ./additional_scripts/fishing.sh -t {threads} -i {input} -o {config[outdir]}"
 
 
 rule splitter:
     input:
-        dir="resources/{mag}_working_dataset/",
-        tar="resources/{mag}_working_dataset/{gene}.fas",
+        dir=config["outdir"] + "{mag}_working_dataset/",
+        tar=config["outdir"] + "{mag}_working_dataset/{gene}.fas",
         mag_dir=config["mag_dir"]
     output:
-       "resources/{mag}_q_frags/{gene}.fas"
+       config["outdir"] + "{mag}_q_frags/{gene}.fas"
     conda:
-        "../envs/raxml-ng.yaml"
+        "pline_max"
     threads: 1
     priority: 0
     log:
-        "logs/splitter/{mag}_{gene}.log"
+        config["outdir"] + "logs/splitter/{mag}_{gene}.log"
     shell:
         "python ./additional_scripts/splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
 
 
 rule mafft:
     input:
-        query="resources/{mag}_q_frags/{gene}.fas",
-        reference="resources/PhyloFishScratch/alignments/{gene}.fas.aln"
+        query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
+        reference=config["outdir"] + "{mag}_PhyloFishScratch/alignments/{gene}.fas.aln"
     output:
-        "resources/{mag}_mafft_out/{gene}.aln"
+        config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:
-        "../envs/raxml-ng.yaml"
+        "pline_max"
     threads: 22
     priority: 0
     log:
-        "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
+        config["outdir"] + "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
     shell:
         "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
 
-superMatrix_targets = get_superMatrix_targets(mag)
-print(len(superMatrix_targets))
+#superMatrix_targets = get_superMatrix_targets(mag)
+#print(len(superMatrix_targets))
 
 rule divvier:
     input:
-        "resources/{mag}_mafft_out/{gene}.aln"
+        config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     output:
-        "resources/{mag}_mafft_out/{gene}.aln.partial.fas",
-        "resources/{mag}_mafft_out/{gene}.aln.PP"
+        config["outdir"] + "{mag}_mafft_out/{gene}.aln.partial.fas",
+        config["outdir"] + "{mag}_mafft_out/{gene}.aln.PP"
     log:
-        "logs/divvier/{mag}/{mag}_{gene}_divvier.log"
+        config["outdir"] + "logs/divvier/{mag}/{mag}_{gene}_divvier.log"
     conda:
-        "../envs/div.yaml"
+        "div"
     threads: 1
     shell:
         """
@@ -195,39 +243,44 @@ rule divvier:
 
 rule trimal:
     input:
-        "resources/{mag}_mafft_out/{gene}.aln.partial.fas"
+        config["outdir"] + "{mag}_mafft_out/{gene}.aln.partial.fas"
     output:
-        "resources/{mag}_mafft_out/{gene}.trimal"
+        config["outdir"] + "{mag}_mafft_out/{gene}.trimal"
     log:
-        "logs/trimal/{mag}/{mag}_{gene}_trimal.log"
+        config["outdir"] + "logs/trimal/{mag}/{mag}_{gene}_trimal.log"
     conda:
-        "../envs/trimal.yaml"
+        "trimal"
     threads: 1
     shell:
         """
         trimal -in {input} -gt 0.8 -out {output} > {log} 2> {log}
         """
-
+# clear
 rule concat:
     input:
-        expand("resources/{mag}_mafft_out/{gene}.trimal", gene=superMatrix_targets, mag=mags)
+        lambda wildcards: [
+            f"{config['outdir']}{wildcards.mag}_mafft_out/{gene}.trimal"
+            for gene in get_superMatrix_targets_for_mag(wildcards.mag)
+        ]
     output:
-        "{mag}_SuperMatrix.fas"
+        config["outdir"] + "{mag}_SuperMatrix.fas"
     conda:
-        "../envs/pythas_two.yaml"
+        "pythas_two"
     threads: 1
     priority: 0
+    params:
+        out_dir=config["outdir"]
     log:
-        "logs/concat/{mag}.log"
+        config["outdir"] + "logs/concat/{mag}.log"
     shell:
         """
         FIXED_ALNS=()
-        mkdir -p resources/{wildcards.mag}_relabeled
-        for i in $(realpath resources/{wildcards.mag}_mafft_out/*trimal)
+        mkdir -p {params.out_dir}{wildcards.mag}_relabeled
+        for i in $(realpath {params.out_dir}{wildcards.mag}_mafft_out/*trimal)
         do
         prot=$(basename ${{i}} .trimal)
-        python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o resources/{wildcards.mag}_relabeled/${{prot}}.fas
-        FIXED_ALNS+=("resources/{wildcards.mag}_relabeled/${{prot}}.fas")
+        python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
+        FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
         done
         python2 additional_scripts/geneStitcher.py -in ${{FIXED_ALNS[@]}} 
         mv SuperMatrix.fas {output}
@@ -235,49 +288,69 @@ rule concat:
 
 rule alignment_splitter:
     input:
-        "{mag}_SuperMatrix.fas"
+        config["outdir"] + "{mag}_SuperMatrix.fas"
     output:
-        "{mag}_q.aln"
-        "{mag}_ref.aln"
+        query=config["outdir"] + "{mag}_q.aln",
+        ref=config["outdir"] + "{mag}_ref.aln"
     conda:
-        "../envs/raxml-ng.yaml"
+        "pline_max"
     threads: 1
     priority: 0
     log:
-        "logs/alignment_splitter/{mag}.log"
+        config["outdir"] + "logs/alignment_splitter/{mag}.log"
     shell:
-        "python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}"
+        """
+        python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}
+        mv {wildcards.mag}_q.aln {output.query}
+        mv {wildcards.mag}_ref.aln {output.ref}
+        """
 
+rule sub_tree:
+    input:
+        aln=config["outdir"] + "{mag}_ref.aln",
+        tree="resources/ref_concat_PF_alt3.tre"
+    output:
+        config["outdir"] + "{mag}_ref.tre"
+    conda:
+        "dendropy"
+    threads: 1
+    priority: 0
+    log:
+        config["outdir"] + "logs/sub_tree/{mag}.log"
+    shell:
+        """
+        python additional_scripts/sub_tree.py -a {input.aln} -t {input.tree} -o {output} > {log} 2> {log}
+        """
 
 rule raxml_epa:
     input:
-        q_aln="{mag}_q.fas",
-        ref_aln="{mag}_ref.fas",
-        ref_tree="resources/ref_concat_PF.tre"
+        q_aln= config["outdir"] + "{mag}_q.aln",
+        ref_aln= config["outdir"] + "{mag}_ref.aln",
+        ref_tree= config["outdir"] + "{mag}_ref.tre"
     output:
-        "resources/{mag}_epa_out/{mag}_epa_out.jplace"
+        config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
-        "../envs/raxml-ng.yaml"
+        "pline_max"
     threads: 22
     priority: 0
+    params:
+        out_dir=config["outdir"]
     log:
-        "logs/raxml_epa/{mag}_epa.log"
+        config["outdir"] + "logs/raxml_epa/{mag}_epa.log"
     shell:
         """
         # Ensure the output directory exists
-        mkdir -p resources/{wildcards.mag}_epa_out/
-        mkdir -p logs/raxml_epa/
-        # Run RAxML
-        cd resources/{wildcards.mag}_epa_out/
+        mkdir -p {params.out_dir}{wildcards.mag}_epa_out/
+        mkdir -p {params.out_dir}logs/raxml_epa/
 
         # Execute RAxML with the correct path to the alignment and tree files,
         # specifying only a run name for the output (not a path).
         ulimit -n 65536
         ulimit -s unlimited
-        epa-ng --ref-msa {mag}_ref.aln \
-         --tree resources/ref_concat_pruned.tre \
-         --query {mag}_q.aln \
-         --model LG -T {threads}
+        epa-ng --ref-msa {input.ref_aln} \
+         --tree {input.ref_tree} \
+         --query {input.q_aln} \
+         --model LG -T {threads} >{log}
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
         mv epa_result.jplace {output}
@@ -286,20 +359,22 @@ rule raxml_epa:
 
 rule gappa:
     input:
-        "resources/{mag}_epa_out/{mag}_epa_out.jplace"
+        config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     output:
-        "resources/{mag}_epa_out/profile.tsv"
+        config["outdir"] + "{mag}_epa_out/profile.tsv"
     conda:
-        "../envs/raxml-ng.yaml"
-    threads: 22
+        "pline_max"
+    threads: 1
+    params:
+        out_dir=config["outdir"]
     priority: 0
     log:
-        "logs/gappa/{mag}.log"
+        config["outdir"] + "logs/gappa/{mag}.log"
     shell:
         """
         gappa examine assign \
             --jplace-path {input} \
             --taxon-file resources/tax_tree.txt \
-            --out-dir resources/{wildcards.mag}_epa_out \
+            --out-dir {params.out_dir}{wildcards.mag}_epa_out \
             --allow-file-overwriting --best-hit --verbose > {log}
         """
