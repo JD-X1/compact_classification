@@ -5,6 +5,7 @@ From: continuumio/miniconda3
     export PATH=/opt/conda/envs/snakemake/bin:$PATH
 
 %post
+    export PATH=/opt/conda/bin:$PATH
     apt-get update && apt-get install -y git wget curl libtiff6 libgl1 libxext6 libsm6 libxrender1 \
         && rm -rd /var/lib/apt/lists/*
     
@@ -33,7 +34,7 @@ From: continuumio/miniconda3
 
     wget https://ndownloader.figshare.com/files/29093409 \
         && tar -xzvf 29093409 \
-        && cp -r PhyloFisherDatabase_v1.0 resources/. \
+        && mv PhyloFisherDatabase_v1.0 resources/. \
         && rm 29093409 \
         && cd ..
 

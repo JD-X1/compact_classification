@@ -54,6 +54,35 @@ rm 29093409
 # Return to bas compact_class directory
 cd ..
 ```
+## Running compact_class with Singularity
+
+1. Make sure you have [Singularity installed](https://apptainer.org/docs/user/latest/quick_start.html) according to your operating system.
+
+2. To retrieve the singularity build of compact_class, download the `.sif` image:
+
+```bash
+ singularity pull library://jduque2/mag_classification/compact_class:latest
+```
+
+3. To set up input/output directories you'll want to have two directories in your working directory one containing your input mags and the second an empty directory for logs and output files to be written to. In the rest of this guide the input directory is 'input' and the output directory is 'output'
+
+4. You can run compact_class container interactively using this command.
+
+* `shell` starts and interactive shell inside the container
+* `--bind` maps local directories into the container, changesmade inside the container will be reflected outside. Format [local/directory]:[container/directory]
+
+```bash
+singularity shell \
+    --bind $(pwd)/input:/input \
+    --bind $(pwd)/output:/output \
+    compact_class.sif
+```
+Your command line prompt should change to indicate that you are now working inside your compact_class container.
+
+You can exit the Singularity container by typig exit.
+
+5. The container can also 
+
 
 ## Building your own Docker Image
 
