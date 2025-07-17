@@ -68,20 +68,45 @@ cd ..
 
 4. You can run compact_class container interactively using this command.
 
+Singularity Flags:
 * `shell` starts and interactive shell inside the container
 * `--bind` maps local directories into the container, changesmade inside the container will be reflected outside. Format [local/directory]:[container/directory]
+
+Container Required Arguements:
+* `cores` threads to use (default = 2)
+* `input` path to input folder in container (defualt: `/input/`)
+* `mode` whether to perform phylogenetic placement of hits on single gene trees (sgt) or on species tree (concat) (default: concat)
+* `output` path to output folder in container (default: `/output/`)
+* `database` which database to use between PhyloFisher (PF) and EukProt (EP) (default: PF)
 
 ```bash
 singularity shell \
     --bind $(pwd)/input:/input \
     --bind $(pwd)/output:/output \
-    compact_class.sif
+    compact_class.sif [cores] [input] [mode] [output] [database]
 ```
+
+Example:
+
+```bash
+singularity shell \
+    --bind $(pwd)/input:/input \
+    --bind $(pwd)/output:/output \
+    compact_class.sif 4 input/ concat output/ PF
+```
+
 Your command line prompt should change to indicate that you are now working inside your compact_class container.
 
 You can exit the Singularity container by typig exit.
 
-5. The container can also 
+5. The container can also be run non-interactively:
+
+```bash
+singularity run \
+    --bind $(pwd)/input:/input \
+    --bind $(pwd)/input:/input \
+    compact_class.sif [cores] [input] [mode] [output] [database]
+```
 
 
 ## Building your own Docker Image

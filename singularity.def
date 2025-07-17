@@ -41,7 +41,21 @@ From: continuumio/miniconda3
     echo "conda activate snakemake" >> ~/.bashrc
 
 %runscript
-    exec snakemake -s rules/taxa_class_PF_concat.smk \
-        --cores ${1:-1} \
-        --config mag_dir=${2:-"."} mode=CONCAT \
+    CORE=${1:-2}
+    MAG_DIR=${2:-"input"}
+    MODE=${3:-"concat"}
+    output=${4:-"output"}
+    DATABASE=${5:-"PF"}
+    RULESET=""
+    if [ "${MODE}" == "concat" ]; then
+        echo "Running in concatenation mode"
+        RULESET="rules/taxa_class_${DATABASE}_concat.smk"
+    elif [ "${MODE}" == "sgt" ]; then
+        echo "Running in single gene tree mode"
+        RULESET="rules/taxa_class_${DATABASE}.smk"
+    fi
+
+    exec snakemake -s ${RULESET} \
+        --cores ${CORE} \
+        --config mag_dir=${MAG_DIR} mode=${MODE} output=${output} \
         --use-conda -p --keep-going --rerun-incomplete
