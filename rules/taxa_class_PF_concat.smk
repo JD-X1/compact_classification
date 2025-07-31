@@ -308,7 +308,7 @@ rule alignment_splitter:
 rule sub_tree:
     input:
         aln=config["outdir"] + "{mag}_ref.aln",
-        tree="/compact_class/resources/ref_concat_PF_alt3.tre"
+        tree="/compact_classification/resources/ref_concat_PF_alt3.tre"
     output:
         config["outdir"] + "{mag}_ref.tre"
     conda:
