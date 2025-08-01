@@ -300,10 +300,12 @@ rule alignment_splitter:
         "pline_max"
     threads: 1
     priority: 0
+    params:
+        out_dir=config["outdir"]
     log:
         config["outdir"] + "logs/alignment_splitter/{mag}.log"
     shell:
-        "python /compact_classification/additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} -o {config['outdir']} > {log} 2> {log}"
+        "python /compact_classification/additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2> {log}"
 
 rule sub_tree:
     input:
