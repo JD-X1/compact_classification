@@ -18,7 +18,7 @@ done
 mag=$(basename ${Input} _input_metadata.tsv)
 working_dataset=${mag}_working_dataset
 log_dir=${Outdir}logs/FishingLogs
-phyloscratch_dir=${Outdir}${mag}_PhyloFishScratch
+phyloscratch_dir= ${Outdir}${mag}_PhyloFishScratch
 echo "Fishing for ${mag}"
 echo "log outdir: ${log_dir}"
 echo "phyloscratch dir: ${phyloscratch_dir}"
@@ -40,7 +40,7 @@ fi
 if [ ! -d ${phyloscratch_dir} ]
 then
     echo "Creating the PhyloFishScratch database"
-    cp -r resources/PhyloFisherDatabase_v1.0/database ${phyloscratch_dir}
+    cp -r /compact_classification/resources/PhyloFisherDatabase_v1.0/database ${phyloscratch_dir}
     echo "PhyloFishScratch database created"
 fi
 

@@ -161,7 +161,11 @@ rule run_busco:
         """
         echo "Running BUSCO for {wildcards.mag}..."
         echo "Running BUSCO with available threads: {threads}"
-        compleasm run -a {input} -t {threads} -l eukaryota -L /compact_classification/resources/mb_downloads/ -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
+        compleasm run -a {input} -t {threads} \
+            -l eukaryota \
+            -L /compact_classification/resources/mb_downloads/ \
+            -o {config[outdir]}busco_out/{wildcards.mag} \
+            1> {log} 2> {log}
         """
 
 rule fishing_meta:
