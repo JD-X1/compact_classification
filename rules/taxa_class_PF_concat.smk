@@ -305,8 +305,8 @@ rule alignment_splitter:
     shell:
         """
         python /compact_classification/additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}
-        mv {wildcards.mag}_q.aln {output.query}
-        mv {wildcards.mag}_ref.aln {output.ref}
+        mv {config[outdir]}{wildcards.mag}_q.aln {output.query}
+        mv {config[outdir]}{wildcards.mag}_ref.aln {output.ref}
         """
 
 rule sub_tree:
