@@ -18,22 +18,22 @@ done
 mag=$(basename ${Input} _input_metadata.tsv)
 working_dataset=${mag}_working_dataset
 log_dir=${Outdir}logs/FishingLogs
-phyloscratch_dir= ${Outdir}${mag}_PhyloFishScratch
-echo "Fishing for ${mag}"
-echo "log outdir: ${log_dir}"
-echo "phyloscratch dir: ${phyloscratch_dir}"
+phyloscratch_dir=${Outdir}${mag}_PhyloFishScratch
+echo 'Fishing for ${mag}'
+echo 'log outdir: ${log_dir}'
+echo 'phyloscratch dir: ${phyloscratch_dir}'
 
 # check if log directory exists
 # if not, create it
 echo "Gathering Bait"
-if [ ! -d output/logs ]
+if [ ! -d ${log_dir} ]
 then
-    mkdir logs
+    mkdir -p ${log_dir}
 fi
 
 if [ ! -d ${log_dir} ]
 then
-    mkdir ${log_dir}
+    mkdir -p ${log_dir}
 fi
 
 
