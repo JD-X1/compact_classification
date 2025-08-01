@@ -303,11 +303,7 @@ rule alignment_splitter:
     log:
         config["outdir"] + "logs/alignment_splitter/{mag}.log"
     shell:
-        """
-        python /compact_classification/additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}
-        mv /{wildcards.mag}_q.aln {output.query}
-        mv /{wildcards.mag}_ref.aln {output.ref}
-        """
+        "python /compact_classification/additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} -o {config['outdir']} > {log} 2> {log}"
 
 rule sub_tree:
     input:
