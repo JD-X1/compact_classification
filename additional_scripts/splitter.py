@@ -41,7 +41,7 @@ output_path = str(input_fasta.split("/")[0]) + "/"
 gene = input_fasta.split("/")[-1].split(".")[0]
 print("Gene: " + gene)
 output_fasta = args.output
-species = str(args.input).split("/")[1].replace("_working_dataset", "")
+species = str(args.input).split("/")[-2].replace("_working_dataset", "")
 hits_path = output_path + species + "_fish_out/tmp/" + species + "/" + gene + ".hmmout"
 print("HMM Path: " + hits_path)
 
