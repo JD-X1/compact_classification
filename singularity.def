@@ -1,61 +1,90 @@
 Bootstrap: docker
-From: continuumio/miniconda3
+From: continuumio/miniconda3:latest
 
 %environment
     export PATH=/opt/conda/envs/snakemake/bin:$PATH
 
 %post
-    export PATH=/opt/conda/bin:$PATH
-    apt-get update && apt-get install -y git wget curl libtiff6 libgl1 libxext6 libsm6 libxrender1 \
-        && rm -rd /var/lib/apt/lists/*
-    
-    apt-get update && apt-get install -y libtiff6 && ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5
+    set -e
+    echo "Setting portable compiler flags + micromamba ..."
 
-    
-    conda install -n base -c conda-forge mamba
+    apt-get update && apt-get install -y build-essential git wget curl libtiff6 libgl1 libxext6 libsm6 libxrender1 \
+        && rm -rf /var/lib/apt/lists/*
+
+    curl -L https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+
+    export PATH=$PWD/bin:$PATH
+    export MAMBA_ROOT_PREFIX=/opt/micromamba
+    export MAMBA_EXE=$PWD/bin/micromamba
+    mkdir -p /opt/micromamba/bin
+    ln -s $MAMBA_EXE /opt/micromamba/bin/mamba # micromamba masked as mamba via symlink, because snakemake now ignores frontend flags
+    export CONDA_SUBDIR=linux-64
+    # built using newer architecture, so we need to set these older environmentals so people other than me can use it
+    export CFLAGS="-march=x86-64 -mtune=generic"
+    export CXXFLAGS="-march=x86-64 -mtune=generic"
+    export CPPFLAGS="$CFLAGS"
+    export LDFLAGS=""
+    export GOAMD64=v1
+   
+
+    apt-get install -y libtiff6 && ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5
+
+    . /opt/conda/etc/profile.d/conda.sh # had to learn a crumb of POSIX shell magic to make this work
 
     git clone https://github.com/JD-X1/compact_classification.git
     cd compact_classification
+    git checkout EPDB-test 
 
-    # Create the conda environment
-    mamba env create -p /opt/conda/envs/snakemake -f envs/snakemake.yaml
-    mamba env create -p /opt/conda/envs/pline_max -f envs/pline_max.yaml
-    mamba env create -p /opt/conda/envs/fisher -f envs/fisher.yaml
-    mamba env create -p /opt/conda/envs/mb -f envs/mb.yaml
-    mamba env create -p /opt/conda/envs/compleasm -f envs/compleasm.yaml
-    mamba env create -p /opt/conda/envs/div -f envs/div.yaml
-    mamba env create -p /opt/conda/envs/trimal -f envs/trimal.yaml
-    mamba env create -p /opt/conda/envs/pythas_two -f envs/pythas_two.yaml
-    mamba env create -p /opt/conda/envs/dendropy -f envs/dendropy.yaml
+    micromamba create -y -p /opt/conda/envs/compleasm -f /compact_classification/envs/compleasm.yaml
+    micromamba create -y -p /opt/conda/envs/snakemake -f /compact_classification/envs/snakemake.yaml
+    micromamba create -y -p /opt/conda/envs/fisher -f /compact_classification/envs/fisher.yaml
+    micromamba create -y -p /opt/conda/envs/pline_max -f /compact_classification/envs/pline_max.yaml
+    micromamba create -y -p /opt/conda/envs/pythas_two -f /compact_classification/envs/pythas_two.yaml
+    micromamba create -y -p /opt/conda/envs/raxml-ng -f /compact_classification/envs/raxml-ng.yaml
+    micromamba create -y -p /opt/conda/envs/trimal -f /compact_classification/envs/trimal.yaml
+    micromamba create -y -p /opt/conda/envs/div -f /compact_classification/envs/div.yaml
+    micromamba create -y -p /opt/conda/envs/dendropy -f /compact_classification/envs/dendropy.yaml
 
-    conda activate compleasm \
-        && compleasm download eukaryota \
-        && mv mb_downloads resources/
 
-    wget https://ndownloader.figshare.com/files/29093409 \
-        && tar -xzvf 29093409 \
-        && mv PhyloFisherDatabase_v1.0 resources/. \
-        && rm 29093409 \
-        && cd ..
 
-    echo "conda activate snakemake" >> ~/.bashrc
+    wget https://ndownloader.figshare.com/files/29093409 
+    tar -xzvf 29093409 
+    mv /compact_classification/PhyloFisherDatabase_v1.0 /compact_classification/resources/. 
+    rm /compact_classification/29093409
+
+    /opt/conda/envs/compleasm/bin/compleasm download eukaryota
+    mv /compact_classification/mb_downloads /compact_classification/resources/.
+
+    cd ..
+    echo "export PATH=/opt/micromamba/envs/snakemake/bin:\$PATH" >> ~/.bashrc
+    export PATH=/opt/micromamba/bin:$PATH # should, arguably, enforce fake symlink from here on
 
 %runscript
+    #!/bin/bash
+    export PATH=/opt/micromamba/bin:$PATH # just in case
+    export PATH=/opt/micromamba/envs/snakemake/bin:$PATH
+
     CORE=${1:-2}
     MAG_DIR=${2:-"input"}
     MODE=${3:-"concat"}
     output=${4:-"output"}
     DATABASE=${5:-"PF"}
+
+
     RULESET=""
     if [ "${MODE}" == "concat" ]; then
         echo "Running in concatenation mode"
-        RULESET="rules/taxa_class_${DATABASE}_concat.smk"
+        RULESET="/compact_classification/rules/taxa_class_${DATABASE}_concat.smk"
     elif [ "${MODE}" == "sgt" ]; then
         echo "Running in single gene tree mode"
-        RULESET="rules/taxa_class_${DATABASE}.smk"
+        RULESET="/compact_classification/rules/taxa_class_${DATABASE}.smk"
     fi
+
+    cd "$output"
 
     exec snakemake -s ${RULESET} \
         --cores ${CORE} \
-        --config mag_dir=${MAG_DIR} mode=${MODE} output=${output} \
-        --use-conda -p --keep-going --rerun-incomplete
+        --config mag_dir=${MAG_DIR} mode=${MODE} outdir=${output} \
+        --use-conda --conda-frontend mamba \
+        -p --keep-going --rerun-incomplete
+
