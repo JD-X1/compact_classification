@@ -7,7 +7,6 @@ dependencies:
   - pandas
   - hmmer
   - boost
-  - gappa
   - epa-ng
   - ca-certificates
   - openssl

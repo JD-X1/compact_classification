@@ -365,7 +365,7 @@ rule gappa:
     output:
         config["outdir"] + "{mag}_epa_out/profile.tsv"
     conda:
-        "pline_max"
+        "gappa"
     threads: 1
     params:
         out_dir=config["outdir"]

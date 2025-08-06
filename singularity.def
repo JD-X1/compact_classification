@@ -4,6 +4,9 @@ From: continuumio/miniconda3:latest
 %environment
     export PATH=/opt/conda/envs/snakemake/bin:$PATH
 
+%files
+    compact_classification/resources/PhyloFisherDatabase_v1.0 /compact_classification/resources/PhyloFisherDatabase_v1.0
+    compact_classification/resources/mb_downloads /compact_classification/resources/mb_downloads
 %post
     set -e
     echo "Setting portable compiler flags + micromamba ..."
@@ -44,16 +47,17 @@ From: continuumio/miniconda3:latest
     micromamba create -y -p /opt/conda/envs/trimal -f /compact_classification/envs/trimal.yaml
     micromamba create -y -p /opt/conda/envs/div -f /compact_classification/envs/div.yaml
     micromamba create -y -p /opt/conda/envs/dendropy -f /compact_classification/envs/dendropy.yaml
+    micromamba create -y -p /opt/conda/envs/gappa -f /compact_classification/envs/gappa.yaml
 
 
 
-    wget https://ndownloader.figshare.com/files/29093409 
-    tar -xzvf 29093409 
-    mv /compact_classification/PhyloFisherDatabase_v1.0 /compact_classification/resources/. 
-    rm /compact_classification/29093409
+    #wget https://ndownloader.figshare.com/files/29093409 
+    #tar -xzvf 29093409 
+    #mv /compact_classification/PhyloFisherDatabase_v1.0 /compact_classification/resources/. 
+    #rm /compact_classification/29093409
 
-    /opt/conda/envs/compleasm/bin/compleasm download eukaryota
-    mv /compact_classification/mb_downloads /compact_classification/resources/.
+    #/opt/conda/envs/compleasm/bin/compleasm download eukaryota
+    #mv /compact_classification/mb_downloads /compact_classification/resources/.
 
     cd ..
     echo "export PATH=/opt/micromamba/envs/snakemake/bin:\$PATH" >> ~/.bashrc
