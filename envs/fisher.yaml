@@ -4,4 +4,4 @@ channels:
   - bioconda
 dependencies:
   - phylofisher
-prefix: /scratch/jduque2/mambaforge/envs/fisher
+

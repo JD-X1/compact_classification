@@ -4,4 +4,3 @@ channels:
   - bioconda
 dependencies:
   - snakemake=9.1.4
-prefix: /home/jduque2/miniforge3/envs/snakemake

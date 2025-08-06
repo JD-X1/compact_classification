@@ -13,4 +13,3 @@ dependencies:
   - biopython
   - trimal
   - divvier
-prefix: /home/jduque2/miniforge3/envs/pline_max
