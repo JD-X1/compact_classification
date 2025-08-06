@@ -148,7 +148,7 @@ rule all:
     
 rule run_busco:
     input:
-        expand(config["mag_dir"] + "{mag}.fna", mag=mags)
+        config["mag_dir"] + "{mag}.fna"
     output:
        config["outdir"] + "busco_out/{mag}/summary.txt",
        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"

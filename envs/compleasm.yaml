@@ -5,4 +5,3 @@ channels:
   - defaults
 dependencies:
   - compleasm
-prefix: /global/homes/j/jduque/.conda/envs/mb
