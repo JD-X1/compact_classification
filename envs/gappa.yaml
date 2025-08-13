@@ -1,7 +1,7 @@
-name: fisher
+name: gappa
 channels:
   - conda-forge
   - bioconda
 dependencies:
-  - phylofisher
-
+  - python=3.10
+  - gappa=0.8.*

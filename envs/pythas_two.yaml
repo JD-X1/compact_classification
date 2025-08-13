@@ -6,4 +6,3 @@ dependencies:
   - python=2.7
   - pandas
   - biopython
-prefix: /scratch/jduque2/mambaforge/envs/pythas_two

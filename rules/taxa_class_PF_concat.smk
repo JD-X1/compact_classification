@@ -21,7 +21,7 @@ def get_genes_from_goneFishing(mag):
         for f in files:
             if f.endswith('.fas'):
                 gene_name = os.path.splitext(f)[0]
-                tree_file = os.path.join("resources/ref_trees", gene_name, gene_name + ".raxml.support")
+                tree_file = os.path.join("/compact_classification/resources/ref_trees", gene_name, gene_name + ".raxml.support")
                 if os.path.exists(tree_file):
                     valid_genes.append(gene_name)
 
@@ -148,7 +148,7 @@ rule all:
     
 rule run_busco:
     input:
-        expand(config["mag_dir"] + "{mag}.fna", mag=mags)
+        config["mag_dir"] + "{mag}.fna"
     output:
        config["outdir"] + "busco_out/{mag}/summary.txt",
        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
@@ -161,7 +161,11 @@ rule run_busco:
         """
         echo "Running BUSCO for {wildcards.mag}..."
         echo "Running BUSCO with available threads: {threads}"
-        compleasm run -a {input} -t {threads} -l eukaryota -L resources/mb_downloads/ -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
+        compleasm run -a {input} -t {threads} \
+            -l eukaryota \
+            -L /compact_classification/resources/mb_downloads/ \
+            -o {config[outdir]}busco_out/{wildcards.mag} \
+            1> {log} 2> {log}
         """
 
 rule fishing_meta:
@@ -174,7 +178,7 @@ rule fishing_meta:
     threads: 1
     priority: 0
     shell:
-        "python ./additional_scripts/fishing_meta.py {input} >> {output}"
+        "python /compact_classification/additional_scripts/fishing_meta.py {input} >> {output}"
 
 
 checkpoint goneFishing:
@@ -187,7 +191,7 @@ checkpoint goneFishing:
     threads: 22
     priority: 0
     shell:
-        "sh ./additional_scripts/fishing.sh -t {threads} -i {input} -o {config[outdir]}"
+        "sh /compact_classification/additional_scripts/fishing.sh -t {threads} -i {input} -o {config[outdir]}"
 
 
 rule splitter:
@@ -204,7 +208,7 @@ rule splitter:
     log:
         config["outdir"] + "logs/splitter/{mag}_{gene}.log"
     shell:
-        "python ./additional_scripts/splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
+        "python /compact_classification/additional_scripts/splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
 
 
 rule mafft:
@@ -279,10 +283,10 @@ rule concat:
         for i in $(realpath {params.out_dir}{wildcards.mag}_mafft_out/*trimal)
         do
         prot=$(basename ${{i}} .trimal)
-        python additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
+        python /compact_classification/additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
         FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
         done
-        python2 additional_scripts/geneStitcher.py -in ${{FIXED_ALNS[@]}} 
+        python2 /compact_classification/additional_scripts/geneStitcher.py -in ${{FIXED_ALNS[@]}} 
         mv SuperMatrix.fas {output}
         """
 
@@ -296,19 +300,17 @@ rule alignment_splitter:
         "pline_max"
     threads: 1
     priority: 0
+    params:
+        out_dir=config["outdir"]
     log:
         config["outdir"] + "logs/alignment_splitter/{mag}.log"
     shell:
-        """
-        python additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag}
-        mv {wildcards.mag}_q.aln {output.query}
-        mv {wildcards.mag}_ref.aln {output.ref}
-        """
+        "python /compact_classification/additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2> {log}"
 
 rule sub_tree:
     input:
         aln=config["outdir"] + "{mag}_ref.aln",
-        tree="resources/ref_concat_PF_alt3.tre"
+        tree="/compact_classification/resources/ref_concat_PF_alt3.tre"
     output:
         config["outdir"] + "{mag}_ref.tre"
     conda:
@@ -319,7 +321,7 @@ rule sub_tree:
         config["outdir"] + "logs/sub_tree/{mag}.log"
     shell:
         """
-        python additional_scripts/sub_tree.py -a {input.aln} -t {input.tree} -o {output} > {log} 2> {log}
+        python /compact_classification/additional_scripts/sub_tree.py -a {input.aln} -t {input.tree} -o {output} > {log} 2> {log}
         """
 
 rule raxml_epa:
@@ -363,7 +365,7 @@ rule gappa:
     output:
         config["outdir"] + "{mag}_epa_out/profile.tsv"
     conda:
-        "pline_max"
+        "gappa"
     threads: 1
     params:
         out_dir=config["outdir"]
@@ -374,7 +376,7 @@ rule gappa:
         """
         gappa examine assign \
             --jplace-path {input} \
-            --taxon-file resources/tax_tree.txt \
+            --taxon-file /compact_classification/resources/tax_tree.txt \
             --out-dir {params.out_dir}{wildcards.mag}_epa_out \
             --allow-file-overwriting --best-hit --verbose > {log}
         """

@@ -37,12 +37,16 @@ args = parser.parse_args()
 
 # read in the input fasta file
 input_fasta = args.input
-output_path = str(input_fasta.split("/")[0]) + "/"
+print(input_fasta)
+output_path = "/"+ str(input_fasta).split("/")[1] + "/"
+print("Output Path: " + output_path)
 gene = input_fasta.split("/")[-1].split(".")[0]
 print("Gene: " + gene)
 output_fasta = args.output
-species = str(args.input).split("/")[1].replace("_working_dataset", "")
+print("Output Fasta: " + output_fasta)
+species = str(args.input).split("/")[-2].replace("_working_dataset", "")
 hits_path = output_path + species + "_fish_out/tmp/" + species + "/" + gene + ".hmmout"
+print(hits_path)
 print("HMM Path: " + hits_path)
 
 # read in the Unique ID column 
