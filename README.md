@@ -11,7 +11,62 @@
  - [Getting help](#getting-help)
  - [Citations](#citations)
 
-## Setup
+
+## Running compact_class with Singularity
+
+1. Make sure you have [Singularity installed](https://apptainer.org/docs/user/latest/quick_start.html) according to your operating system.
+
+2. To retrieve the singularity build of compact_class, download the `.sif` image:
+
+```bash
+ singularity pull library://jduque2/mag_classification/compact_class:latest
+```
+
+3. To set up input/output directories you'll want to have two directories in your working directory one containing your input mags and the second an empty directory for logs and output files to be written to. In the rest of this guide the input directory is 'input' and the output directory is 'output'
+
+4. You can run compact_class container interactively using this command.
+
+Singularity Flags:
+* `shell` starts and interactive shell inside the container
+* `--bind` maps local directories into the container, changesmade inside the container will be reflected outside. Format [local/directory]:[container/directory]
+
+Container Required Arguements:
+* `cores` threads to use (default = 2)
+* `input` path to input folder in container (defualt: `/input/`)
+* `mode` whether to perform phylogenetic placement of hits on single gene trees (sgt) or on species tree (concat) (default: concat)
+* `output` path to output folder in container (default: `/output/`)
+* `database` which database to use between PhyloFisher (PF) and EukProt (EP) (default: PF)
+
+```bash
+singularity shell \
+    --bind $(pwd)/input:/input \
+    --bind $(pwd)/output:/output \
+    compact_class_latest.sif [cores] [input] [mode] [output] [database]
+```
+
+Example:
+
+```bash
+singularity shell \
+    --bind $(pwd)/input/:/input \
+    --bind $(pwd)/output/:/output \
+    compact_class_latest.sif 4 input/ concat output/ PF
+```
+
+Your command line prompt should change to indicate that you are now working inside your compact_class container.
+
+You can exit the Singularity container by typig exit.
+
+5. The container can also be run non-interactively:
+
+```bash
+singularity run \
+    --bind $(pwd)/input:/input \
+    --bind $(pwd)/input:/input \
+    compact_class.sif [cores] [input] [mode] [output] [database]
+```
+
+## Using Snakemake Directly
 
 This workflow was implemented in snakemake and depends on conda to manage dependencies [dependencies] (#citations).
 
@@ -42,119 +97,6 @@ cd resources
 # Download PhylofisherDB 
 wget https://ndownloader.figshare.com/files/29093409
 
-# Download the BUSCO database
-python compleasm.py download lineages eukaryota
-
-# Unpack Compressed Directory
-tar -xzvf 29093409
-
-# Delete Compressed version of Database
-rm 29093409
-
-# Return to bas compact_class directory
-cd ..
-```
-## Running compact_class with Singularity
-
-1. Make sure you have [Singularity installed](https://apptainer.org/docs/user/latest/quick_start.html) according to your operating system.
-
-2. To retrieve the singularity build of compact_class, download the `.sif` image:
-
-```bash
- singularity pull library://jduque2/mag_classification/compact_class:latest
-```
-
-3. To set up input/output directories you'll want to have two directories in your working directory one containing your input mags and the second an empty directory for logs and output files to be written to. In the rest of this guide the input directory is 'input' and the output directory is 'output'
-
-4. You can run compact_class container interactively using this command.
-
-Singularity Flags:
-* `shell` starts and interactive shell inside the container
-* `--bind` maps local directories into the container, changesmade inside the container will be reflected outside. Format [local/directory]:[container/directory]
-
-Container Required Arguements:
-* `cores` threads to use (default = 2)
-* `input` path to input folder in container (defualt: `/input/`)
-* `mode` whether to perform phylogenetic placement of hits on single gene trees (sgt) or on species tree (concat) (default: concat)
-* `output` path to output folder in container (default: `/output/`)
-* `database` which database to use between PhyloFisher (PF) and EukProt (EP) (default: PF)
-
-```bash
-singularity shell \
-    --bind $(pwd)/input:/input \
-    --bind $(pwd)/output:/output \
-    compact_class.sif [cores] [input] [mode] [output] [database]
-```
-
-Example:
-
-```bash
-singularity shell \
-    --bind $(pwd)/input:/input \
-    --bind $(pwd)/output:/output \
-    compact_class.sif 4 input/ concat output/ PF
-```
-
-Your command line prompt should change to indicate that you are now working inside your compact_class container.
-
-You can exit the Singularity container by typig exit.
-
-5. The container can also be run non-interactively:
-
-```bash
-singularity run \
-    --bind $(pwd)/input:/input \
-    --bind $(pwd)/input:/input \
-    compact_class.sif [cores] [input] [mode] [output] [database]
-```
-
-
-## Building your own Docker Image
-
-1. Make sure you have [Docker installed](https://www.docker.com/products/docker-desktop) according to your operating system.
-
-2. To retrieve the Docker build of compact_class, run this command.
-
-```bash
-docker pull mctavishlab/mag_classifications:latest
-```
-3. To set up input/output directories you'll want to have two directories in your working directory one containing your input mags and the second an empty directory for logs and output files to be written to. In the rest of this guide the input directory is 'input' and 
-
-4. You can run your compact_class Docker container interactively using this command.
-* `-i` makes the container interactive.
-* `-t` specifies the image to use as a template.
-* `-v` points to local directories to be replicated inside the container,
-       changes made in the container will be reflected outside the container
-       format [local/directory]:[replicated_container/diretory]
-* `--name` specifies the container name.
-
-```bash
-docker run -it --entrypoint /bin/bash \
-    -v $(pwd)/input:/input/ \
-    -v $(pwd)/output/:/output/ \
-    mctavishlab/mag_classifications:latest
-```
-Your command line prompt should change to indicate that you are now working
-inside your compact_class container.
-
-You can exit the docker container by typing `exit`.
-
-To restart it and return to interactive analyses, run:
-
-```bash
-docker container restart mctavishlab/mag_classifications:latest
-docker exec -it mctavishlab/mag_classifications:latest
-```
-
-5. The container can also be run non-interactively
-
-```bash
-docker run \
-    -v $(pwd)/input:/input/ \
-    -v $(pwd)/output/:/output/ \
-    compact_class:latest -s /rules/taxa_class_PF.smk \
-    --cores 2 --config mag_dir=/input/ mode=EP outdir=/output/
-```
 
 ## Example data
 
