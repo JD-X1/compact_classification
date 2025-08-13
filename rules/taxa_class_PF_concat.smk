@@ -86,11 +86,17 @@ if not config["mag_dir"].endswith("/"):
     config["mag_dir"] += "/"
 outdir = config["outdir"]
 mag_f = os.listdir(config["mag_dir"])
+
+# Check if config["augustus"] is set, if not set it to default
+augustus = False
+if "augustus" in config:
+    augustus = True
+    print("Using Augustus for BUSCO runs.")
 #print(mag_f)
 #### CHANGE THE FILE EXTENSION
 #### Swap out this check for file extension
 #### with a test to check that the MAG files
-#### are actually nucliec acid fastas. 
+#### are actually nucleic acid fastas.
 mag_f = [f for f in mag_f if f.endswith(".fna")]
 if mag_f == []:
     raise ValueError("#################\nNo MAGs found in the specified directory.\n#################\n")
@@ -150,23 +156,37 @@ rule run_busco:
     input:
         config["mag_dir"] + "{mag}.fna"
     output:
-       config["outdir"] + "busco_out/{mag}/summary.txt",
-       config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
+        branch(
+            augustus,
+            [config["outdir"] + "busco_out/{mag}/short_summary.specific.eukaryota_odb12.{mag}.txt", config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"],
+            [config["outdir"] + "busco_out/{mag}/summary.txt", config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"]
+       )
     conda:
-        "compleasm"
-    threads: 22
+        branch(augustus,
+        "busco", # executes rule w/ buscos Waugustus
+        "compleasm" # executes rule w/ compleasm's miniprot
+        )
+    threads: workflow.cores
     log:
         config["outdir"] + "logs/busco/{mag}.log"
     shell:
+        branch(augustus,
         """
-        echo "Running BUSCO for {wildcards.mag}..."
+        echo "Running BUSCO w/ augustus for {wildcards.mag}..."
         echo "Running BUSCO with available threads: {threads}"
+        busco -i {input} -m genome -l /compact_classification/resources/busco_downloads/lineages/eukaryota_odb12 -c {threads} -f --augustus -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
+        mkdir -p {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/
+        cat {config[outdir]}busco_out/{wildcards.mag}/run_eukaryota_odb12/augustus_output/*faa* >> {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/translated_protein.fasta
+        """,
+        """
+        echo "Running compleasm for {wildcards.mag}..."
+        echo "Running compleasm with available threads: {threads}"
         compleasm run -a {input} -t {threads} \
             -l eukaryota \
             -L /compact_classification/resources/mb_downloads/ \
             -o {config[outdir]}busco_out/{wildcards.mag} \
             1> {log} 2> {log}
-        """
+        """)
 
 rule fishing_meta:
     input:
@@ -310,7 +330,8 @@ rule alignment_splitter:
 rule sub_tree:
     input:
         aln=config["outdir"] + "{mag}_ref.aln",
-        tree="/compact_classification/resources/ref_concat_PF_alt3.tre"
+        tree="/compact_classification/resources/ref_concat_PF_alt3.tre" # uncomment for singularity
+        #tree="resources/ref_concat_PF_alt3.tre"  # uncomment for direct snakemake execution
     output:
         config["outdir"] + "{mag}_ref.tre"
     conda:

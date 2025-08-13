@@ -1,0 +1,6 @@
+name: myenv
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - busco=6.0.0
