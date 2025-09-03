@@ -2,6 +2,20 @@
 
 import os
 
+GENOME_EXTS   = [".fna", ".fa", ".fasta", ".fna.gz", ".fa.gz", ".fasta.gz"]
+PROTEOME_EXTS = [".faa", ".faa.gz", ".aa.fa", ".aa.fasta"]
+
+# check if /compact_classification/resources/ exists
+# if it does RESOURCES_DIR is /compact_classification/resources/
+# else RESOURCES_DIR is resources/
+if os.path.exists("/compact_classification/resources/"):
+    RESOURCES_DIR = "/compact_classification/resources/"
+elif os.path.exists("resources/"):
+    RESOURCES_DIR = "resources/"
+else:
+    raise ValueError("If running from source code and not singularity, please ensure that the 'resources' directory is present in the current working directory and be sure it contains the necessary databases.")
+
+
 def get_genes_from_goneFishing(mag):
     checkpoint_output = config["outdir"] + "{mag}_working_dataset"
 
@@ -32,6 +46,21 @@ def get_superMatrix_targets_for_mag(mag):
     print([sanitize_gene_name(gene) for gene in gene_files])
     return [sanitize_gene_name(gene) for gene in gene_files]
 
+def _mag_path_candidates(base):
+    return [base + ext for ext in GENOME_EXTS + PROTEOME_EXTS]
+
+def find_mag_file(wildcards):
+    base = os.path.join(config["mag_dir"], wildcards.mag)
+    for cand in _mag_path_candidates(base):
+        if os.path.exists(cand):
+            return cand
+    raise ValueError(
+        f"No input file found for {wildcards.mag} in {config['mag_dir']} with any of the expected extensions for genomic sequence: {GENOME_EXTS} or proteomic sequence: {PROTEOME_EXTS}"
+    )
+
+def is_proteome(path):
+    return any(path.endswith(ext) for ext in PROTEOME_EXTS)
+
 # checking if config["outdir"] ends with a slash if it doesn't add one
 if not config["outdir"].endswith("/"):
     config["outdir"] += "/"
@@ -39,6 +68,8 @@ if not config["mag_dir"].endswith("/"):
     config["mag_dir"] += "/"
 outdir = config["outdir"]
 mag_f = os.listdir(config["mag_dir"])
+print(mag_f)
+print("########################################")
 
 # Check if config["augustus"] is set, if not set it to default
 augustus = False
@@ -60,7 +91,10 @@ if "--proteome" in config:
 #### Swap out this check for file extension
 #### with a test to check that the MAG files
 #### are actually nucleic acid fastas.
-mag_f = [f for f in mag_f if f.endswith(".fna")]
+
+
+mag_f = [f for f in mag_f if any(f.endswith(ext) for ext in (GENOME_EXTS + PROTEOME_EXTS))]
+
 if mag_f == []:
     raise ValueError("#################\nNo MAGs found in the specified directory.\n#################\n")
 
@@ -117,7 +151,7 @@ rule all:
     
 rule run_busco:
     input:
-        config["mag_dir"] + "{mag}.fna"
+        find_mag_file
     output:
         branch(
             augustus,
@@ -126,30 +160,46 @@ rule run_busco:
        )
     conda:
         branch(augustus,
-        "busco", # executes rule w/ buscos Waugustus
+        "busco", # executes rule w/ buscos w/ augustus
         "compleasm" # executes rule w/ compleasm's miniprot
         )
     threads: workflow.cores
+    params:
+        busco_mode = lambda wildcards, input: "proteins" if is_proteome(input[0]) else "genome",
+        resources_dir = RESOURCES_DIR
     log:
         config["outdir"] + "logs/busco/{mag}.log"
     shell:
         branch(augustus,
         """
-        echo "Running BUSCO w/ augustus for {wildcards.mag}..."
-        echo "Running BUSCO with available threads: {threads}"
-        busco -i {input} -m genome -l /compact_classification/resources/busco_downloads/lineages/eukaryota_odb12 -c {threads} -f --augustus -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
+        echo "Running BUSCO for {wildcards.mag} (mode: {params.busco_mode})"
+        busco -i {input} -m {params.busco_mode} \
+            -l {params.resources_dir}/busco_downloads/lineages/eukaryota_odb12 \
+            -c {threads} \
+            -f --augustus \
+            -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
         mkdir -p {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/
-        cat {config[outdir]}busco_out/{wildcards.mag}/run_eukaryota_odb12/augustus_output/*faa* >> {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/translated_protein.fasta
+        if [[ "{params.busco_mode}" == "proteins" ]]; then
+            cat {config[outdir]}busco_out/{wildcards.mag}/run_eukaryota_odb12/augustus_output/*faa* >> {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/translated_protein.fasta
+        elif [[ "{params.busco_mode}" == "genome" ]]; then
+            cat {config[outdir]}busco_out/{wildcards.mag}/run_eukaryota_odb12/augustus_output/*faa* >> {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/translated_protein.fasta
+        fi
         """,
+        
         """
-        echo "Running compleasm for {wildcards.mag}..."
-        echo "Running compleasm with available threads: {threads}"
+        ### compleasm route requires genomic input
+        if [[ "{params.busco_mode}" = "proteins" ]]; then
+            echo "Error: Proteome input provided but compleasm mode selected. Please provide genomic input for compleasm."
+            exit 2
+        fi
+        echo "Running compleasm for {wildcards.mag}"
         compleasm run -a {input} -t {threads} \
             -l eukaryota \
-            -L /compact_classification/resources/mb_downloads/ \
+            -L {params.resources_dir}/mb_downloads/ \
             -o {config[outdir]}busco_out/{wildcards.mag} \
             1> {log} 2> {log}
-        """)
+        """
+        )
 
 rule fishing_meta:
     input:
@@ -305,8 +355,8 @@ rule alignment_splitter:
 rule sub_tree:
     input:
         aln=config["outdir"] + "{mag}_ref.aln",
-        tree="/compact_classification/resources/ref_concat_PF_alt3.tre" # uncomment for singularity
-        #tree="resources/ref_concat_PF_alt3.tre"  # uncomment for direct snakemake execution
+        #tree="/compact_classification/resources/ref_concat_PF_alt3.tre" # uncomment for singularity
+        tree="resources/ref_concat_PF_alt3.tre"  # uncomment for direct snakemake execution
     output:
         config["outdir"] + "{mag}_ref.tre"
     conda:
