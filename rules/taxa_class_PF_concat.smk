@@ -1,10 +1,6 @@
 #!usr/bin/env python
 
 import os
-import pandas as pd
-
-
-# resources mags/
 
 def get_genes_from_goneFishing(mag):
     checkpoint_output = config["outdir"] + "{mag}_working_dataset"
@@ -27,11 +23,6 @@ def get_genes_from_goneFishing(mag):
 
     return valid_genes
 
-def get_superMatrix_targets(wildcards):
-    ckpt_out = checkpoints.goneFishing.get(mag=wildcards.mag).output[0]
-    genes = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
-    return genes
-
 def sanitize_gene_name(name):
     return name.replace("/", "_").replace(" ", "_").replace("\\", "_")
 
@@ -40,44 +31,6 @@ def get_superMatrix_targets_for_mag(mag):
     gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
     print([sanitize_gene_name(gene) for gene in gene_files])
     return [sanitize_gene_name(gene) for gene in gene_files]
-
-
-def all_input():
-    # Initialize an empty list to collect all inputs
-    all_inputs = []
-    
-    # Iterate over each MAG to generate inputs
-    for mag in mags:
-        # Dynamically get genes for the current MAG after goneFishing
-        # Check if the checkpoint directory for this MAG exists to infer completion
-        checkpoint_dir = config["outdir"] + "{mag}_working_dataset"
-        mag_inputs = [
-            config["outdir"] + "busco_out/{mag}/summary.txt",
-            config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta",
-            config["outdir"] + "{mag}_input_metadata.tsv",
-            #f"{mag}_summary.csv",
-            f"{mag}_SuperMatrix.fas",
-            f"{mag}_q.aln",
-            f"{mag}_ref.aln",
-            config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace",
-            config["outdir"] + "{mag}_epa_out/profile.tsv",
-            checkpoint_dir  # This implicitly checks for its existence
-        ]
-
-        # Check if the checkpoint has completed by checking the existence of its output directory
-        if os.path.exists(checkpoint_dir):
-            # Assuming get_genes_from_goneFishing is adjusted to accept a mag parameter
-            genes = get_genes_from_goneFishing(mag)
-            for gene in genes:
-                mag_inputs.extend([
-                    config["outdir"] + "{mag}_q_frags/{gene}.fas",
-                    config["outdir"] + "{mag}_mafft_out/{gene}.aln"
-                ])
-        
-        # Add the MAG-specific inputs to the overall list
-        all_inputs.extend(mag_inputs)
-    
-    return all_inputs
 
 # checking if config["outdir"] ends with a slash if it doesn't add one
 if not config["outdir"].endswith("/"):
@@ -92,7 +45,17 @@ augustus = False
 if "augustus" in config:
     augustus = True
     print("Using Augustus for BUSCO runs.")
-#print(mag_f)
+
+trim_alignments = False
+if "trim" in config:
+    trim_alignments = True
+    print("Trimming alignments with trimAl + divvier.")
+
+proteome_input = False
+if "--proteome" in config:
+    proteome_input = True
+    print("Using proteome input instead of BUSCO Output.")
+
 #### CHANGE THE FILE EXTENSION
 #### Swap out this check for file extension
 #### with a test to check that the MAG files
@@ -190,7 +153,12 @@ rule run_busco:
 
 rule fishing_meta:
     input:
-        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
+        branch(
+            proteome_input,
+            "/input/{proteome}",
+            config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
+            )
+        
     output:
         config["outdir"] + "{mag}_input_metadata.tsv"
     conda:
@@ -198,7 +166,7 @@ rule fishing_meta:
     threads: 1
     priority: 0
     shell:
-        "python /compact_classification/additional_scripts/fishing_meta.py {input} >> {output}"
+        "python /compact_classification/additional_scripts/fishing_meta.py -p {input} -o {output}"
 
 
 checkpoint goneFishing:
@@ -279,13 +247,20 @@ rule trimal:
         """
         trimal -in {input} -gt 0.8 -out {output} > {log} 2> {log}
         """
-# clear
+
 rule concat:
     input:
-        lambda wildcards: [
-            f"{config['outdir']}{wildcards.mag}_mafft_out/{gene}.trimal"
-            for gene in get_superMatrix_targets_for_mag(wildcards.mag)
-        ]
+        branch(
+            trim_alignments,
+            lambda wildcards: [
+                f"{config['outdir']}{wildcards.mag}_mafft_out/{gene}.trimal"
+                for gene in get_superMatrix_targets_for_mag(wildcards.mag)
+            ],
+            lambda wildcards: [
+                f"{config['outdir']}{wildcards.mag}_mafft_out/{gene}.aln"
+                for gene in get_superMatrix_targets_for_mag(wildcards.mag)
+            ]
+        )
     output:
         config["outdir"] + "{mag}_SuperMatrix.fas"
     conda:
