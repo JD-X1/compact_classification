@@ -34,7 +34,8 @@ def main():
         out_line = "\t".join([location, file_name, unique_id, higher_taxonomy, lower_taxonomy, blast_seed, long_name, data_type, source])
         
         print(out_line)
-        
+        with open(output_path, "a") as out_file:
+            out_file.write(out_line + "\n")
 
 if __name__ == "__main__":
     main()
