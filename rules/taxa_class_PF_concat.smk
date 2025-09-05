@@ -1,6 +1,7 @@
 #!usr/bin/env python
 
 import os
+import datetime
 
 GENOME_EXTS   = [".fna", ".fa", ".fasta", ".fna.gz", ".fa.gz", ".fasta.gz"]
 PROTEOME_EXTS = [".faa", ".faa.gz", ".aa.fa", ".aa.fasta"]
@@ -8,12 +9,26 @@ PROTEOME_EXTS = [".faa", ".faa.gz", ".aa.fa", ".aa.fasta"]
 # check if /compact_classification/resources/ exists
 # if it does RESOURCES_DIR is /compact_classification/resources/
 # else RESOURCES_DIR is resources/
+print("[{:%Y-%m-%d %H:%M:%S}]: Checking for resources directory...".format(datetime.datetime.now()))
 if os.path.exists("/compact_classification/resources/"):
     RESOURCES_DIR = "/compact_classification/resources/"
+    print("[{:%Y-%m-%d %H:%M:%S}]: Found resources directory at /compact_classification/resources/".format(datetime.datetime.now()))
 elif os.path.exists("resources/"):
     RESOURCES_DIR = "resources/"
+    print("[{:%Y-%m-%d %H:%M:%S}]: Found resources directory at resources/".format(datetime.datetime.now()))
 else:
-    raise ValueError("If running from source code and not singularity, please ensure that the 'resources' directory is present in the current working directory and be sure it contains the necessary databases.")
+    raise ValueError("[{:%Y-%m-%d %H:%M:%S}]: If running from source code and not singularity, please ensure that the 'resources' directory is present in the current working directory and be sure it contains the necessary databases.".format(datetime.datetime.now()))
+
+# same story as above except for /compact_classification/additional_scripts/
+print("[{:%Y-%m-%d %H:%M:%S}]: Checking for additional scripts directory...".format(datetime.datetime.now()))
+if os.path.exists("/compact_classification/additional_scripts/"):
+    ADDITIONAL_SCRIPTS_DIR = "/compact_classification/additional_scripts/"
+    print("[{:%Y-%m-%d %H:%M:%S}]: Found additional scripts directory at /compact_classification/additional_scripts/".format(datetime.datetime.now()))
+elif os.path.exists("additional_scripts/"):
+    ADDITIONAL_SCRIPTS_DIR = "additional_scripts/"
+    print("[{:%Y-%m-%d %H:%M:%S}]: Found additional scripts directory at additional_scripts/".format(datetime.datetime.now()))
+else:
+    raise ValueError("[{:%Y-%m-%d %H:%M:%S}]: If running from source code and not singularity, please ensure that the 'additional_scripts' directory is present in the current working directory and be sure it contains the necessary scripts.".format(datetime.datetime.now()))
 
 
 def get_genes_from_goneFishing(mag):
@@ -55,7 +70,10 @@ def find_mag_file(wildcards):
         if os.path.exists(cand):
             return cand
     raise ValueError(
-        f"No input file found for {wildcards.mag} in {config['mag_dir']} with any of the expected extensions for genomic sequence: {GENOME_EXTS} or proteomic sequence: {PROTEOME_EXTS}"
+    f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}]: "
+    f"No input file found for {wildcards.mag} in {config['mag_dir']} "
+    f"with any of the expected extensions for genomic sequence: {GENOME_EXTS} "
+    f"or proteomic sequence: {PROTEOME_EXTS}"
     )
 
 def is_proteome(path):
@@ -68,24 +86,27 @@ if not config["mag_dir"].endswith("/"):
     config["mag_dir"] += "/"
 outdir = config["outdir"]
 mag_f = os.listdir(config["mag_dir"])
-print(mag_f)
-print("########################################")
 
 # Check if config["augustus"] is set, if not set it to default
+print("[{:%Y-%m-%d %H:%M:%S}]: Command invoked with the following options:".format(datetime.datetime.now()))
+print("[{:%Y-%m-%d %H:%M:%S}]: Output directory: {}".format(datetime.datetime.now(), config["outdir"]))
+print("[{:%Y-%m-%d %H:%M:%S}]: MAG directory: {}".format(datetime.datetime.now(), config["mag_dir"]))
+
 augustus = False
 if "augustus" in config:
     augustus = True
-    print("Using Augustus for BUSCO runs.")
-
+    print("[{:%Y-%m-%d %H:%M:%S}]: Will use Augustus for BUSCO runs.".format(datetime.datetime.now()))
+else:
+    print("[{:%Y-%m-%d %H:%M:%S}]: Will use Compleasm for BUSCO runs.".format(datetime.datetime.now()))
 trim_alignments = False
 if "trim" in config:
     trim_alignments = True
-    print("Trimming alignments with trimAl + divvier.")
+    print("[{:%Y-%m-%d %H:%M:%S}]: Trimming alignments with trimAl + divvier.".format(datetime.datetime.now()))
 
 proteome_input = False
 if "--proteome" in config:
     proteome_input = True
-    print("Using proteome input instead of BUSCO Output.")
+    print("[{:%Y-%m-%d %H:%M:%S}]: Using proteome input instead of BUSCO Output.".format(datetime.datetime.now()))
 
 #### CHANGE THE FILE EXTENSION
 #### Swap out this check for file extension
@@ -213,10 +234,12 @@ rule fishing_meta:
         config["outdir"] + "{mag}_input_metadata.tsv"
     conda:
         "pline_max"
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
     threads: 1
     priority: 0
     shell:
-        "python /compact_classification/additional_scripts/fishing_meta.py -p {input} -o {output}"
+        "python {params.ADD_SCRIPTS}/fishing_meta.py -p {input} -o {output}"
 
 
 checkpoint goneFishing:
@@ -226,10 +249,13 @@ checkpoint goneFishing:
         directory(config["outdir"] + "{mag}_working_dataset")
     conda:
         "fisher"
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+        resources_dir=RESOURCES_DIR
     threads: 22
     priority: 0
     shell:
-        "sh /compact_classification/additional_scripts/fishing.sh -t {threads} -i {input} -o {config[outdir]}"
+        "sh {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input} -r {params.resources_dir} -o {config[outdir]}"
 
 
 rule splitter:
