@@ -6,9 +6,6 @@ import datetime
 GENOME_EXTS   = [".fna", ".fa", ".fasta", ".fna.gz", ".fa.gz", ".fasta.gz"]
 PROTEOME_EXTS = [".faa", ".faa.gz", ".aa.fa", ".aa.fasta"]
 
-# check if /compact_classification/resources/ exists
-# if it does RESOURCES_DIR is /compact_classification/resources/
-# else RESOURCES_DIR is resources/
 print("[{:%Y-%m-%d %H:%M:%S}]: Checking for resources directory...".format(datetime.datetime.now()))
 if os.path.exists("/compact_classification/resources/"):
     RESOURCES_DIR = "/compact_classification/resources/"
@@ -19,7 +16,6 @@ elif os.path.exists("resources/"):
 else:
     raise ValueError("[{:%Y-%m-%d %H:%M:%S}]: If running from source code and not singularity, please ensure that the 'resources' directory is present in the current working directory and be sure it contains the necessary databases.".format(datetime.datetime.now()))
 
-# same story as above except for /compact_classification/additional_scripts/
 print("[{:%Y-%m-%d %H:%M:%S}]: Checking for additional scripts directory...".format(datetime.datetime.now()))
 if os.path.exists("/compact_classification/additional_scripts/"):
     ADDITIONAL_SCRIPTS_DIR = "/compact_classification/additional_scripts/"
@@ -226,7 +222,7 @@ rule fishing_meta:
     input:
         branch(
             proteome_input,
-            "/input/{proteome}",
+            config["mag_dir"],
             config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
             )
         
@@ -252,10 +248,10 @@ checkpoint goneFishing:
     params:
         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
         resources_dir=RESOURCES_DIR
-    threads: 22
+    threads: workflow.cores
     priority: 0
     shell:
-        "sh {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input} -r {params.resources_dir} -o {config[outdir]}"
+        "bash {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input} -r {params.resources_dir} -o {config[outdir]}"
 
 
 rule splitter:
