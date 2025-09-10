@@ -18,16 +18,17 @@ done
 mag="$(basename "${Input}" _input_metadata.tsv)"
 outdir="${Outdir:-.}"; outdir="${outdir%/}/"
 
-log_dir="${outdir}/logs/FishingLogs"
-phyloscratch_dir="${outdir}/${mag}_PhyloFishScratch"
-fish_out="${outdir}/${mag}_fish_out"
-working_dataset="${outdir}/${mag}_working_dataset"
+Input="$(basename "${Input}")"
+log_dir="logs/FishingLogs"
+phyloscratch_dir="${mag}_PhyloFishScratch"
+fish_out="${mag}_fish_out"
+working_dataset="${mag}_working_dataset"
 
 mkdir -p "${log_dir}" "${phyloscratch_dir}"
 
-echo "${phyloscratch_dir}"
 echo "Fishing for ${mag}"
 echo "log outdir: ${log_dir}"
+echo "Fisher Out: ${fish_out}"
 echo "phyloscratch dir: ${phyloscratch_dir}"
 
 resource_root="${reSource:-}"; resources_root="${resource_root%/}/"
@@ -47,20 +48,19 @@ if [[ -z "${phyloDB}" ]]; then
   exit 2
 fi
 
+cd "${outdir}"
 
 echo "Gathering Bait"
 if [[ ! -d "${phyloscratch_dir}/database" ]]; then
   echo "Creating the PhyloFishScratch database"
-  cp -r "${phyloDB}" "${phyloscratch_dir}"
+  cp -r "../${phyloDB}" "${phyloscratch_dir}"
   echo "PhyloFishScratch database created"
 fi
 
 echo "Casting Lines"
-echo "${mag}_input_metadata.tsv"
-
 
 cp -f "${Input}" "${phyloscratch_dir}/metadata.tsv"
-config.py -d "${phyloscratch_dir}" -i "${Input}"
+config.py -d "${phyloscratch_dir}/database" -i "${Input}"
 echo "Configuration of PhyloFisher Modules Complete"
 
 echo "Waiting for the Fish to Bite"
@@ -78,3 +78,5 @@ working_dataset_constructor.py -i "${fish_out}" -o "${working_dataset}" \
 echo "Fish on the grill"
 
 mv config.ini "${phyloscratch_dir}/config.ini"
+
+cd ..

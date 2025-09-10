@@ -263,18 +263,20 @@ rule splitter:
        config["outdir"] + "{mag}_q_frags/{gene}.fas"
     conda:
         "pline_max"
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
     threads: 1
     priority: 0
     log:
         config["outdir"] + "logs/splitter/{mag}_{gene}.log"
     shell:
-        "python /compact_classification/additional_scripts/splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
-
+        "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
+output/isochrysisgalbana_working_dataset/CCDC37.fas
 
 rule mafft:
     input:
         query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
-        reference=config["outdir"] + "{mag}_PhyloFishScratch/alignments/{gene}.fas.aln"
+        reference=config["outdir"] + "{mag}_PhyloFishScratch/database/alignments/{gene}.fas.aln"
     output:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:

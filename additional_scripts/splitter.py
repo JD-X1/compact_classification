@@ -1,10 +1,11 @@
-#!usr/bin/python3
+#!usr/bin/env python3
 
 import os
 import argparse
 import pandas as pd
-from Bio import SeqIO
-from Bio import SearchIO
+from pathlib import Path
+from Bio import SeqIO, SearchIO
+from typing import Iterable, List, Optional, Tuple
 
 """
 Usage:
@@ -23,6 +24,28 @@ to rename the sequences to the mag name
 where necessary.
 
 """
+
+FA_EXT = (".fa", ".fasta", ".fas", ".faa", ".aln")
+
+def open_text(path: Path):
+    if str(os.path).endswith(".gz"):
+        return gzip.open(os.path, "rt")
+    return open(path, "r")
+
+def strip_known_ext(name: str) -> str:
+    for ext in sorted(FA_EXT, key=len, reverse=True):
+        if name.endswith(ext):
+            return name[: -len(ext)]
+    return name
+
+def infer_mag_from_header(fasta_path: Path) -> Optional[str]:
+    for parent in [p.parent] + list(p.parents):
+        nm = parent.name
+        for suf in ("_working_dataset", "_fish_out", "_mafft_out"):
+            if nm.endswith(suf):
+                return nm[: -len(suf)]
+    return None
+
 # get the input and output file names
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="input fasta file")
