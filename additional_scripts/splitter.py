@@ -46,6 +46,8 @@ def infer_mag_from_header(fasta_path: Path) -> Optional[str]:
                 return nm[: -len(suf)]
     return None
 
+
+
 # get the input and output file names
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="input fasta file")
