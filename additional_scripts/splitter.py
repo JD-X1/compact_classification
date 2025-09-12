@@ -1,6 +1,7 @@
 #!usr/bin/env python3
 
 import os
+import re
 import argparse
 import pandas as pd
 from pathlib import Path
@@ -25,99 +26,106 @@ where necessary.
 
 """
 
-FA_EXT = (".fa", ".fasta", ".fas", ".faa", ".aln")
+FA_EXTS = (".fa", ".fasta", ".fas", ".faa", ".aln")
 
-def open_text(path: Path):
-    if str(os.path).endswith(".gz"):
-        return gzip.open(os.path, "rt")
-    return open(path, "r")
-
-def strip_known_ext(name: str) -> str:
-    for ext in sorted(FA_EXT, key=len, reverse=True):
+def infer_context(input_fa: Path, outdir_opt: Optional[str]) -> Tuple[str, str, Path]:
+    name = input_fa.name
+    
+    for ext in sorted(FA_EXTS, key=len, reverse=True):
         if name.endswith(ext):
-            return name[: -len(ext)]
-    return name
+            name=name[:-len(ext)]
+            break
+    gene = name
+    mag = None
+    for suf in ("_mafft_out", "_working_dataset", "_fish_out"):
+        if input_fa.parent.name.endswith(suf):
+            mag = input_fa.parent.name[:-len(suf)]
+            break 
+    if not mag:
+        raise SystemExit(f"Could not infer MAG ID to {input_fa}")
 
-def infer_mag_from_header(fasta_path: Path) -> Optional[str]:
-    for parent in [p.parent] + list(p.parents):
-        nm = parent.name
-        for suf in ("_working_dataset", "_fish_out", "_mafft_out"):
-            if nm.endswith(suf):
-                return nm[: -len(suf)]
+    outdir = None
+    for parent in [input_fa.parent] + list(input_fa.parents):
+        if (parent / f"{mag}_fish_out").exists() or (parent / f"{mag}_working dataset").exists():
+            outdir = parent
+            break
+        if outdir is None: 
+            outdir = input_fa.parent.parent.resolve()
+    return mag, gene, outdir
+
+def find_hmmout(outdir: Path, mag: str, gene: str) -> Optional[Path]:
+    base = outdir / f"{mag}_fish_out" / "tmp" / mag
+    p = base / f"{gene}.hmmout"
+    if p.is_file():
+        return p
+    for cand in sorted(base.glob(f"{gene}*")):
+        if cand.is_file():
+            return cand
     return None
 
+def pick_best_hit(hmm_path: Path, input_ids: List[str]) -> Optional[str]:
+    for fmt in ("hmmer3-text", "hmmer3-domtab", "hmmer3-tab"):
+        try:
+            q = SearchIO.read(str(hmm_path), fmt)
+            break
+        except Exception:
+            q = None
+    if q is None:
+        return None
+    best_id, best_ev = None, None
+    for hit in q:
+        if not any(hit.id in i or i in hit.id for i in input_ids):
+            continue
+        evs = [hsp.evalue for hsp in hit.hsps if getattr(hsp, "evalue", None) is not None]
+        if not evs:
+            continue
+        ev = min(evs)
+        if best_ev is None or ev < best_ev:
+            best_ev, best_id = ev, hit.id
+    if best_id is None and len(q) > 0:
+        return q[0].id
+    return best_id
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", help="input fasta file")
+    parser.add_argument("-d", "--directory", help="directory containing mag files")
+    parser.add_argument("-o", "--output", help="outputfasta file name and path")
+    args = parser.parse_args()
 
-# get the input and output file names
-parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input", help="input fasta file")
-parser.add_argument("-d", "--directory", help="directory containing mag files")
-parser.add_argument("-o", "--output", help="outputfasta file name and path")
-args = parser.parse_args()
+    input_fa = Path(args.input).resolve()
+    out_fa = Path(args.output).resolve()
 
-# check if directory resources/q_frags/
-# exists, if not create it
-# if not os.path.exists("resources/q_frags/"):
-#    os.makedirs("resources/q_frags/")
+    mag, gene, outdir = infer_context(input_fa, args.directory)
+    print(f"Identified MAG: {mag}, gene: {gene}, outdir: {outdir}")
+    opener = gzip.open if str(input_fa).endswith(".gz") else open
 
-# read in the input fasta file
-input_fasta = args.input
-print(input_fasta)
-output_path = "/"+ str(input_fasta).split("/")[1] + "/"
-print("Output Path: " + output_path)
-gene = input_fasta.split("/")[-1].split(".")[0]
-print("Gene: " + gene)
-output_fasta = args.output
-print("Output Fasta: " + output_fasta)
-species = str(args.input).split("/")[-2].replace("_working_dataset", "")
-hits_path = output_path + species + "_fish_out/tmp/" + species + "/" + gene + ".hmmout"
-print(hits_path)
-print("HMM Path: " + hits_path)
+    with opener(input_fa, "rt") as fh:
+        records = list(SeqIO.parse(fh, "fasta"))
+    if not records:
+        raise SystemExit(f"No sequences found in {input_fa}")
+    input_ids = [r.id for r in records]
 
-# read in the Unique ID column 
-# from input_metadata.tsv
-# store as a list
+    hmm_path = find_hmmout(outdir, mag, gene)
 
-def get_valid_keys(input_fasta):
-    fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
-    valid_keys = []
-    for key, value in fasta_dict.items():
-        if species in key:
-            valid_keys.append(key.split("_HMM_")[0])
-    return valid_keys
+    if hmm_path is None:
+        raise SystemExit(f"HMMER output not found for: {outdir}/{mag}_fish_out/tmp/{mag}/{gene}*.hmmout")
+    best = pick_best_hit(hmm_path, input_ids) or records[0].id
 
-def eval_filter(hits_path, input_fasta):
-    hits = SearchIO.read(hits_path, "hmmer3-text")
-    print(hits.id)
-    valid_keys = get_valid_keys(input_fasta)
-    best_hit_id = valid_keys[0]
-    best_hit_iter = 0
-    for i in range(1, len(hits)):
-        if hits[i].evalue < hits[best_hit_iter].evalue:
-            if any(hits[i].id in vkey for vkey in valid_keys):
-                best_hit_iter = i
-                best_hit_id = hits[i].id
-    print("Best Hit Iterator: " + "\t" + str(best_hit_iter))
-    print("Best Hit ID: " + "\t" + best_hit_id)
-    return best_hit_id
+    out_fa.parent.mkdir(parents=True, exist_ok=True)
+    for rec in records:
+        if best in rec.id or rec.id in best:
+            rec.id = mag
+            rec.description = mag
+            with open(out_fa, "w") as out:
+                SeqIO.write(rec, out, "fasta")
+            break
+    else:
+        rec = records[0]
+        rec.id = mag
+        rec.description = mag
+        with open(out_fa, "w") as out:
+            SeqIO.write(rec, out, "fasta")
 
-def splitter(input_fasta, output_fasta, species, best_hit):
-    fasta_dict = SeqIO.to_dict(SeqIO.parse(input_fasta, "fasta"))
-    valid_keys = get_valid_keys(input_fasta)
-    print("Valid Keys: ")
-    print(valid_keys)
-    with open(output_fasta, "w") as out:
-        for key, value in fasta_dict.items():
-            if best_hit in key:
-                if any(best_hit in vkey for vkey in valid_keys):
-                    print(key + " best hit is clear !!")
-                    value.id = species
-                    value.description = species
-                    SeqIO.write(value, out, "fasta")
-
-
-
-best_hit = eval_filter(hits_path, input_fasta)
-print("Best Hit: " + best_hit)
-
-splitter(input_fasta, output_fasta, species, best_hit)
+if __name__ == "__main__":
+    main()

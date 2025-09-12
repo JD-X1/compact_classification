@@ -18,14 +18,15 @@ done
 mag="$(basename "${Input}" _input_metadata.tsv)"
 outdir="${Outdir:-.}"; outdir="${outdir%/}/"
 
-Input="$(basename "${Input}")"
-log_dir="logs/FishingLogs"
-phyloscratch_dir="${mag}_PhyloFishScratch"
-fish_out="${mag}_fish_out"
-working_dataset="${mag}_working_dataset"
+Input="${outdir}$(basename "${Input}")"
+log_dir="${outdir}logs/FishingLogs"
+phyloscratch_dir="${outdir}${mag}_PhyloFishScratch"
+fish_out="${outdir}${mag}_fish_out"
+working_dataset="${outdir}${mag}_working_dataset"
 
 mkdir -p "${log_dir}" "${phyloscratch_dir}"
 
+echo "Outdir: ${outdir}"
 echo "Fishing for ${mag}"
 echo "log outdir: ${log_dir}"
 echo "Fisher Out: ${fish_out}"
@@ -47,8 +48,6 @@ if [[ -z "${phyloDB}" ]]; then
   echo "ERROR: Could not find PhyloFisher DB (tried -r, /compact_classification/resources, /)." >&2
   exit 2
 fi
-
-cd "${outdir}"
 
 echo "Gathering Bait"
 if [[ ! -d "${phyloscratch_dir}/database" ]]; then

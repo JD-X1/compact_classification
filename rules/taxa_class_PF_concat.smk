@@ -271,7 +271,7 @@ rule splitter:
         config["outdir"] + "logs/splitter/{mag}_{gene}.log"
     shell:
         "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
-output/isochrysisgalbana_working_dataset/CCDC37.fas
+
 
 rule mafft:
     input:
@@ -339,6 +339,8 @@ rule concat:
         config["outdir"] + "{mag}_SuperMatrix.fas"
     conda:
         "pythas_two"
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
     threads: 1
     priority: 0
     params:
@@ -352,10 +354,10 @@ rule concat:
         for i in $(realpath {params.out_dir}{wildcards.mag}_mafft_out/*trimal)
         do
         prot=$(basename ${{i}} .trimal)
-        python /compact_classification/additional_scripts/add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
+        python {params.ADD_SCRIPTS}add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
         FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
         done
-        python2 /compact_classification/additional_scripts/geneStitcher.py -in ${{FIXED_ALNS[@]}} 
+        python2 {params.ADD_SCRIPTS}geneStitcher.py -in ${{FIXED_ALNS[@]}} 
         mv SuperMatrix.fas {output}
         """
 
@@ -370,11 +372,12 @@ rule alignment_splitter:
     threads: 1
     priority: 0
     params:
-        out_dir=config["outdir"]
+        out_dir=config["outdir"],
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
     log:
         config["outdir"] + "logs/alignment_splitter/{mag}.log"
     shell:
-        "python /compact_classification/additional_scripts/alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2> {log}"
+        "python {params.ADD_SCRIPTS}alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2> {log}"
 
 rule sub_tree:
     input:
@@ -385,13 +388,15 @@ rule sub_tree:
         config["outdir"] + "{mag}_ref.tre"
     conda:
         "dendropy"
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
     threads: 1
     priority: 0
     log:
         config["outdir"] + "logs/sub_tree/{mag}.log"
     shell:
         """
-        python /compact_classification/additional_scripts/sub_tree.py -a {input.aln} -t {input.tree} -o {output} > {log} 2> {log}
+        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {input.tree} -o {output} > {log} 2> {log}
         """
 
 rule raxml_epa:
