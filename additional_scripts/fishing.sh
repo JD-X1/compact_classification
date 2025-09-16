@@ -14,34 +14,51 @@ do
     esac
 done
 
-# get the file basename
-mag="$(basename "${Input}" _input_metadata.tsv)"
-outdir="${Outdir:-.}"; outdir="${outdir%/}/"
+orig_pwd="${pwd}"
 
-Input="${outdir}$(basename "${Input}")"
-log_dir="${outdir}logs/FishingLogs"
-phyloscratch_dir="${outdir}${mag}_PhyloFishScratch"
-fish_out="${outdir}${mag}_fish_out"
-working_dataset="${outdir}${mag}_working_dataset"
+outdir="${Outdir:-.}"; outdir="${outdir%/}/"
+[[ "${outdir}" = /* ]] || outdir="${orig_pwd}${outdir}"
+mkdir -p "${outdir}"
+
+if [[ "${Input}" = /* = /* ]]; then
+  input_abs="${Input}"
+else
+  input_abs="${orig_pwd}/${Input}"
+fi
+
+resource_abs=""
+if [[ -n "${reSource:-}" ]]; then
+  if [[ "${reSource}" = /* ]]; then
+    resource_abs="${reSource%/}"
+  else
+    resource_abs="${orig_pwd}/${reSource}"
+  fi
+fi
+
+cd "${outdir}"
+mag="$(basename "${input_abs}" _input_metadata.tsv)"
+log_dir="logs/FishingLogs"
+phyloscratch_dir="${mag}_PhyloFishScratch"
+fish_out="${mag}_fish_out"
+working_dataset="${mag}_working_dataset"
 
 mkdir -p "${log_dir}" "${phyloscratch_dir}"
 
-echo "Outdir: ${outdir}"
+echo "CWD: $(pwd)"
 echo "Fishing for ${mag}"
 echo "log outdir: ${log_dir}"
 echo "Fisher Out: ${fish_out}"
 echo "phyloscratch dir: ${phyloscratch_dir}"
 
-resource_root="${reSource:-}"; resources_root="${resource_root%/}/"
 phyloDB=""
 
 for cand in \
-  "${resource_root}/PhyloFisherDatabase_v1.0/database" \
+  "${resource_abs:+${resource_abs}/}PhyloFisherDatabase_v1.0/database" \
   "/compact_classification/resources/PhyloFisherDatabase_v1.0/database" \
   "/PhyloFisherDatabase_v1.0/database" \
   "PhyloFisherDatabase_v1.0/database"
 do
-  if [[ -d "${cand}" ]]; then phyloDB="${cand}"; break; fi
+  [[ -n "${cand}" && -d "${cand}" ]] && { phyloDB="${cand}"; break; }
 done
 
 if [[ -z "${phyloDB}" ]]; then
@@ -52,20 +69,25 @@ fi
 echo "Gathering Bait"
 if [[ ! -d "${phyloscratch_dir}/database" ]]; then
   echo "Creating the PhyloFishScratch database"
-  cp -r "../${phyloDB}" "${phyloscratch_dir}"
+  cp -r "${phyloDB}" "${phyloscratch_dir}/"
   echo "PhyloFishScratch database created"
+fi
+
+if [[ ! -d "${outdir}logs" ]]; then
+  mkdir -p "${outdir}logs"
 fi
 
 echo "Casting Lines"
 
-cp -f "${Input}" "${phyloscratch_dir}/metadata.tsv"
-config.py -d "${phyloscratch_dir}/database" -i "${Input}"
+cp -f "${input_abs}" "${phyloscratch_dir}/metadata.tsv"
+config.py -d "${phyloscratch_dir}" -i "${input_abs}"
 echo "Configuration of PhyloFisher Modules Complete"
 
 echo "Waiting for the Fish to Bite"
 fisher.py --threads "${TCores}" -o "${fish_out}" --keep_tmp \
     1> "${log_dir}/${mag}_fisher.log" 2>&1
 echo "Fish Caught"
+
 
 informant.py -i "${fish_out}" --orthologs_only \
     1> "${log_dir}/${mag}_informant.log" 2>&1
@@ -76,6 +98,4 @@ working_dataset_constructor.py -i "${fish_out}" -o "${working_dataset}" \
     1> "${log_dir}/${mag}_working_dataset_constructor.log" 2>&1
 echo "Fish on the grill"
 
-mv config.ini "${phyloscratch_dir}/config.ini"
-
-cd ..
+[[ -f config.ini ]] && mv -f config.ini "${phyloscratch_dir}/config.ini"
