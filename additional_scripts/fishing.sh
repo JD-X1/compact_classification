@@ -42,9 +42,11 @@ phyloscratch_dir="${mag}_PhyloFishScratch"
 fish_out="${mag}_fish_out"
 working_dataset="${mag}_working_dataset"
 
-mkdir -p "${log_dir}" "${phyloscratch_dir}"
+mkdir -p "${log_dir}"
 
 echo "CWD: $(pwd)"
+echo "outdir: ${outdir}"
+echo "input abs: ${input_abs}"
 echo "Fishing for ${mag}"
 echo "log outdir: ${log_dir}"
 echo "Fisher Out: ${fish_out}"
@@ -68,10 +70,11 @@ fi
 
 echo "Gathering Bait"
 if [[ ! -d "${phyloscratch_dir}" ]]; then
+  mkdir -p "${phyloscratch_dir}"
   echo "Creating the PhyloFishScratch database"
-  echo "Copying from ${phyloDB} to ${phyloscratch_dir}"
-  cp -r "${phyloDB}" "${phyloscratch_dir}"
-  echo "cp -r ${phyloDB} ${phyloscratch_dir}"
+  #echo "Copying from ${phyloDB} to ${phyloscratch_dir}"
+  cp -r "${phyloDB}" "${phyloscratch_dir}/."
+  #echo "cp -r ${phyloDB} ${phyloscratch_dir}"
   echo "PhyloFishScratch database created"
 fi
 
