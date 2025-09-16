@@ -14,13 +14,13 @@ do
     esac
 done
 
-orig_pwd="${pwd}"
+orig_pwd="$(pwd)"
 
 outdir="${Outdir:-.}"; outdir="${outdir%/}/"
-[[ "${outdir}" = /* ]] || outdir="${orig_pwd}${outdir}"
+[[ "${outdir}" = /* ]] || outdir="${orig_pwd}/${outdir}"
 mkdir -p "${outdir}"
 
-if [[ "${Input}" = /* = /* ]]; then
+if [[ "${Input}" = /* ]]; then
   input_abs="${Input}"
 else
   input_abs="${orig_pwd}/${Input}"
@@ -67,9 +67,11 @@ if [[ -z "${phyloDB}" ]]; then
 fi
 
 echo "Gathering Bait"
-if [[ ! -d "${phyloscratch_dir}/database" ]]; then
+if [[ ! -d "${phyloscratch_dir}" ]]; then
   echo "Creating the PhyloFishScratch database"
-  cp -r "${phyloDB}" "${phyloscratch_dir}/"
+  echo "Copying from ${phyloDB} to ${phyloscratch_dir}"
+  cp -r "${phyloDB}" "${phyloscratch_dir}"
+  echo "cp -r ${phyloDB} ${phyloscratch_dir}"
   echo "PhyloFishScratch database created"
 fi
 
@@ -80,7 +82,7 @@ fi
 echo "Casting Lines"
 
 cp -f "${input_abs}" "${phyloscratch_dir}/metadata.tsv"
-config.py -d "${phyloscratch_dir}" -i "${input_abs}"
+config.py -d "${phyloscratch_dir}/database" -i "${input_abs}"
 echo "Configuration of PhyloFisher Modules Complete"
 
 echo "Waiting for the Fish to Bite"
