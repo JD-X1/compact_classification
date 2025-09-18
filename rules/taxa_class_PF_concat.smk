@@ -54,7 +54,9 @@ def sanitize_gene_name(name):
 def get_superMatrix_targets_for_mag(mag):
     ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
     gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
+    print([gene for gene in gene_files])
     print([sanitize_gene_name(gene) for gene in gene_files])
+    print("################################################################################")
     return [sanitize_gene_name(gene) for gene in gene_files]
 
 def _mag_path_candidates(base):
@@ -340,20 +342,20 @@ rule concat:
     conda:
         "pythas_two"
     params:
-        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+        out_dir=config["outdir"],
+        ALN_SUFFIX=branch(trim_alignments, ".trimal", ".aln")
     threads: 1
-    priority: 0
-    params:
-        out_dir=config["outdir"]
+    priority: 0       
     log:
         config["outdir"] + "logs/concat/{mag}.log"
     shell:
         """
         FIXED_ALNS=()
         mkdir -p {params.out_dir}{wildcards.mag}_relabeled
-        for i in $(realpath {params.out_dir}{wildcards.mag}_mafft_out/*trimal)
+        for i in $(realpath {params.out_dir}{wildcards.mag}_mafft_out/*{params.ALN_SUFFIX});
         do
-        prot=$(basename ${{i}} .trimal)
+        prot=$(basename ${{i}} {params.ALN_SUFFIX})
         python {params.ADD_SCRIPTS}add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
         FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
         done
@@ -381,22 +383,21 @@ rule alignment_splitter:
 
 rule sub_tree:
     input:
-        aln=config["outdir"] + "{mag}_ref.aln",
-        #tree="/compact_classification/resources/ref_concat_PF_alt3.tre" # uncomment for singularity
-        tree="resources/ref_concat_PF_alt3.tre"  # uncomment for direct snakemake execution
+        aln=config["outdir"] + "{mag}_ref.aln"
     output:
         config["outdir"] + "{mag}_ref.tre"
     conda:
         "dendropy"
     params:
-        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+        resources_dir=RESOURCES_DIR
     threads: 1
     priority: 0
     log:
         config["outdir"] + "logs/sub_tree/{mag}.log"
     shell:
         """
-        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {input.tree} -o {output} > {log} 2> {log}
+        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.resources_dir}/ref_concat_PF_alt3.tre -o {output} > {log} 2> {log}
         """
 
 rule raxml_epa:
@@ -443,7 +444,8 @@ rule gappa:
         "gappa"
     threads: 1
     params:
-        out_dir=config["outdir"]
+        out_dir=config["outdir"],
+        resources_dir=RESOURCES_DIR
     priority: 0
     log:
         config["outdir"] + "logs/gappa/{mag}.log"
@@ -451,7 +453,7 @@ rule gappa:
         """
         gappa examine assign \
             --jplace-path {input} \
-            --taxon-file /compact_classification/resources/tax_tree.txt \
+            --taxon-file {params.resources_dir}/tax_tree.txt \
             --out-dir {params.out_dir}{wildcards.mag}_epa_out \
             --allow-file-overwriting --best-hit --verbose > {log}
         """

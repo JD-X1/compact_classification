@@ -72,9 +72,7 @@ echo "Gathering Bait"
 if [[ ! -d "${phyloscratch_dir}" ]]; then
   mkdir -p "${phyloscratch_dir}"
   echo "Creating the PhyloFishScratch database"
-  #echo "Copying from ${phyloDB} to ${phyloscratch_dir}"
   cp -r "${phyloDB}" "${phyloscratch_dir}/."
-  #echo "cp -r ${phyloDB} ${phyloscratch_dir}"
   echo "PhyloFishScratch database created"
 fi
 
