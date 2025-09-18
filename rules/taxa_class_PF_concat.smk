@@ -143,24 +143,34 @@ for f in mag_f:
 rule all:
     input:
         expand(config["outdir"] + "{mag}_working_dataset", mag=mags),
-        expand(
-            config["outdir"] + "{mag}_q_frags/{gene}.fas",
-                mag=mags,
-                gene=lambda wildcards: [
-                    gene
-                    for mag in mags
-                    for gene in get_superMatrix_targets_for_mag(mag)
-                ]
-            ),
-        expand(
-            config["outdir"] + "{mag}_mafft_out/{gene}.aln",
-                mag=mags,
-                gene=lambda wildcards: [
-                    gene
-                    for mag in mags
-                    for gene in get_superMatrix_targets_for_mag(mag)
-                ]
-            ),
+        # expand(
+        #     config["outdir"] + "{mag}_q_frags/{gene}.fas",
+        #         mag=mags,
+        #         gene=lambda wildcards: [
+        #             gene
+        #             for mag in mags
+        #             for gene in get_superMatrix_targets_for_mag(mag)
+        #         ]
+        #     ),
+        # expand(
+        #     config["outdir"] + "{mag}_mafft_out/{gene}.aln",
+        #         mag=mags,
+        #         gene=lambda wildcards: [
+        #             gene
+        #             for mag in mags
+        #             for gene in get_superMatrix_targets_for_mag(mag)
+        #         ]
+        #     ),
+        lambda wildcards: [
+            f"{config['outdir']}{mag}_q_frags/{gene}.fas"
+            for mag in mags
+            for gene in get_superMatrix_targets_for_mag(mag)
+        ],
+        lambda wildcards: [
+            f"{config['outdir']}{mag}_mafft_out/{gene}.aln"
+            for mag in mags
+            for gene in get_superMatrix_targets_for_mag(mag)
+        ],
         expand(config["outdir"] + "{mag}_q.aln", mag=mags),
         expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
         expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
