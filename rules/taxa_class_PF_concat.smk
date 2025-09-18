@@ -54,9 +54,9 @@ def sanitize_gene_name(name):
 def get_superMatrix_targets_for_mag(mag):
     ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
     gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
-    print([gene for gene in gene_files])
-    print([sanitize_gene_name(gene) for gene in gene_files])
-    print("################################################################################")
+    # print([gene for gene in gene_files])
+    # print([sanitize_gene_name(gene) for gene in gene_files])
+    # print("################################################################################")
     return [sanitize_gene_name(gene) for gene in gene_files]
 
 def _mag_path_candidates(base):
