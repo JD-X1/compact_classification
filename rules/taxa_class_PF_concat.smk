@@ -438,11 +438,14 @@ rule raxml_epa:
         epa-ng --ref-msa {input.ref_aln} \
          --tree {input.ref_tree} \
          --query {input.q_aln} \
-         --model LG -T {threads} >{log}
+         --model LG -T {threads} >{log} 2>&1
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
         mv epa_result.jplace {output}
-        mv epa_info.log {log}
+        if [ -f epa_info.log ]; then
+            mv epa_info.log {params.out_dir}{wildcards.mag}_epa_out/
+        fi
+        rm -f epa_info.log
         """
 
 rule gappa:
@@ -455,7 +458,8 @@ rule gappa:
     threads: 1
     params:
         out_dir=config["outdir"],
-        resources_dir=RESOURCES_DIR
+        resources_dir=RESOURCES_DIR,
+        tax_tree=os.path.join(RESOURCES_DIR, "tax_tree.txt")
     priority: 0
     log:
         config["outdir"] + "logs/gappa/{mag}.log"
@@ -466,4 +470,9 @@ rule gappa:
             --taxon-file {params.resources_dir}/tax_tree.txt \
             --out-dir {params.out_dir}{wildcards.mag}_epa_out \
             --allow-file-overwriting --best-hit --verbose > {log}
+        if [ ! -s "{input}" ]; then
+            echo "ERROR: Missing or empty JPLACE: {input}" >&2
+            exit 2
+        fi
+        
         """
