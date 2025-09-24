@@ -106,6 +106,12 @@ if "--proteome" in config:
     proteome_input = True
     print("[{:%Y-%m-%d %H:%M:%S}]: Using proteome input instead of BUSCO Output.".format(datetime.datetime.now()))
 
+purge = False
+purge_target = None
+if "purge" in config:
+    purge = True
+    purge_target = config["purge"]
+
 #### CHANGE THE FILE EXTENSION
 #### Swap out this check for file extension
 #### with a test to check that the MAG files
@@ -143,24 +149,6 @@ for f in mag_f:
 rule all:
     input:
         expand(config["outdir"] + "{mag}_working_dataset", mag=mags),
-        # expand(
-        #     config["outdir"] + "{mag}_q_frags/{gene}.fas",
-        #         mag=mags,
-        #         gene=lambda wildcards: [
-        #             gene
-        #             for mag in mags
-        #             for gene in get_superMatrix_targets_for_mag(mag)
-        #         ]
-        #     ),
-        # expand(
-        #     config["outdir"] + "{mag}_mafft_out/{gene}.aln",
-        #         mag=mags,
-        #         gene=lambda wildcards: [
-        #             gene
-        #             for mag in mags
-        #             for gene in get_superMatrix_targets_for_mag(mag)
-        #         ]
-        #     ),
         lambda wildcards: [
             f"{config['outdir']}{mag}_q_frags/{gene}.fas"
             for mag in mags
@@ -230,14 +218,47 @@ rule run_busco:
         """
         )
 
+rule proc_database:
+    input:
+        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
+    output:
+        config["outdir"] + "{mag}_purged_taxa.complete",
+        directory(config["outdir"] + "{mag}_PhyloFishScratch/")
+    conda:
+        "fisher"
+    params:
+        resources_dir=RESOURCES_DIR,
+        target_taxa=purge_target
+    threads: 1
+    log: 
+        config["outdir"] + "logs/proc_database/{mag}.log"
+    shell:
+        branch(purge,
+        """
+        mkdir -p {config[outdir]}logs/proc_database
+        echo "{params.target_taxa}" > {config[outdir]}{wildcards.mag}_taxa_to_purge.txt
+        cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {config[outdir]}{wildcards.mag}_PhyloFishScratch
+        purge.py \
+            --input {config[outdir]}/{wildcards.mag}_taxa_to_purge.txt \
+            --database {config[outdir]}/{wildcards.mag}_PhyloFishScratch/ \
+            1> {log} 2>&1
+        rm {config[outdir]}{wildcards.mag}_taxa_to_purge.txt
+        touch {output[0]}
+        """,
+        """
+        mkdir -p {config[outdir]}logs/proc_database
+        cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {config[outdir]}{wildcards.mag}_PhyloFishScratch
+        touch {output[0]}
+        """
+        )
+
 rule fishing_meta:
     input:
         branch(
             proteome_input,
             config["mag_dir"],
             config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
-            )
-        
+            )   
     output:
         config["outdir"] + "{mag}_input_metadata.tsv"
     conda:
@@ -419,7 +440,7 @@ rule raxml_epa:
         config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
         "pline_max"
-    threads: 22
+    threads: 8
     priority: 0
     params:
         out_dir=config["outdir"]
@@ -430,7 +451,6 @@ rule raxml_epa:
         # Ensure the output directory exists
         mkdir -p {params.out_dir}{wildcards.mag}_epa_out/
         mkdir -p {params.out_dir}logs/raxml_epa/
-
         # Execute RAxML with the correct path to the alignment and tree files,
         # specifying only a run name for the output (not a path).
         ulimit -n 65536
