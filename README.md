@@ -160,7 +160,7 @@ snakemake -s rules/taxa_class_EP_concat.smk \
 
 Open an issue or email [jduque2@ucmerced.edu].
 
-## Citations
+# Citations
 
 If using this pipeline, please cite:
  - compleasm: https://github.com/huangnengCSU/compleasm

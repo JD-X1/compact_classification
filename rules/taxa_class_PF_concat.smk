@@ -431,7 +431,7 @@ rule sub_tree:
         python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.resources_dir}/ref_concat_PF_alt3.tre -o {output} > {log} 2> {log}
         """
 
-rule raxml_epa:
+rule epa:
     input:
         q_aln= config["outdir"] + "{mag}_q.aln",
         ref_aln= config["outdir"] + "{mag}_ref.aln",
@@ -440,7 +440,7 @@ rule raxml_epa:
         config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
         "pline_max"
-    threads: 8
+    threads: workflow.cores
     priority: 0
     params:
         out_dir=config["outdir"]
@@ -451,19 +451,14 @@ rule raxml_epa:
         # Ensure the output directory exists
         mkdir -p {params.out_dir}{wildcards.mag}_epa_out/
         mkdir -p {params.out_dir}logs/raxml_epa/
-        # Execute RAxML with the correct path to the alignment and tree files,
-        # specifying only a run name for the output (not a path).
-        ulimit -n 65536
-        ulimit -s unlimited
+        #ulimit -n 65536
+        #ulimit -s unlimited
         epa-ng --ref-msa {input.ref_aln} \
          --tree {input.ref_tree} \
          --query {input.q_aln} \
          --model LG -T {threads} >{log} 2>&1
-        # The actual output file is named according to the RAxML naming convention,
-        # incorporating the run name. Ensure this matches your output specification.
         mv epa_result.jplace {output}
-        if [ -f epa_info.log ]; then cat epa_info.log >> {log}; fi
-        rm -f epa_info.log
+        if [ -f epa_info.log ]; then cat epa_info.log >> {log}; rm epa_info.log; fi
         """
 
 rule gappa:
