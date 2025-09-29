@@ -462,9 +462,7 @@ rule raxml_epa:
         # The actual output file is named according to the RAxML naming convention,
         # incorporating the run name. Ensure this matches your output specification.
         mv epa_result.jplace {output}
-        if [ -f epa_info.log ]; then
-            mv epa_info.log {params.out_dir}{wildcards.mag}_epa_out/
-        fi
+        if [ -f epa_info.log ]; then cat epa_info.log >> {log}; fi
         rm -f epa_info.log
         """
 
