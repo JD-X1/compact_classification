@@ -91,18 +91,18 @@ print("[{:%Y-%m-%d %H:%M:%S}]: Output directory: {}".format(datetime.datetime.no
 print("[{:%Y-%m-%d %H:%M:%S}]: MAG directory: {}".format(datetime.datetime.now(), config["mag_dir"]))
 
 augustus = False
-if "augustus" in config:
+if "augustus" in config and config["augustus"]==True:
     augustus = True
     print("[{:%Y-%m-%d %H:%M:%S}]: Will use Augustus for BUSCO runs.".format(datetime.datetime.now()))
 else:
     print("[{:%Y-%m-%d %H:%M:%S}]: Will use Compleasm for BUSCO runs.".format(datetime.datetime.now()))
 trim_alignments = False
-if "trim" in config:
+if "trim" in config and config["trim"]==True:
     trim_alignments = True
     print("[{:%Y-%m-%d %H:%M:%S}]: Trimming alignments with trimAl + divvier.".format(datetime.datetime.now()))
 
 proteome_input = False
-if "--proteome" in config:
+if "proteome" in config and config["proteome"]==True:
     proteome_input = True
     print("[{:%Y-%m-%d %H:%M:%S}]: Using proteome input instead of BUSCO Output.".format(datetime.datetime.now()))
 
@@ -111,12 +111,6 @@ purge_target = None
 if "purge" in config:
     purge = True
     purge_target = config["purge"]
-
-#### CHANGE THE FILE EXTENSION
-#### Swap out this check for file extension
-#### with a test to check that the MAG files
-#### are actually nucleic acid fastas.
-
 
 mag_f = [f for f in mag_f if any(f.endswith(ext) for ext in (GENOME_EXTS + PROTEOME_EXTS))]
 
