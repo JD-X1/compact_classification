@@ -26,7 +26,6 @@ elif os.path.exists("additional_scripts/"):
 else:
     raise ValueError("[{:%Y-%m-%d %H:%M:%S}]: If running from source code and not singularity, please ensure that the 'additional_scripts' directory is present in the current working directory and be sure it contains the necessary scripts.".format(datetime.datetime.now()))
 
-
 def get_genes_from_goneFishing(mag):
     checkpoint_output = config["outdir"] + "{mag}_working_dataset"
 
@@ -106,9 +105,38 @@ if "proteome" in config and config["proteome"]==True:
     proteome_input = True
     print("[{:%Y-%m-%d %H:%M:%S}]: Using proteome input instead of BUSCO Output.".format(datetime.datetime.now()))
 
+## Parse database options
+DATABASE_TYPE = "PhyloFisher"
+PF_DIR = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0")
+EP_DIR = ""
+if "database" in config:
+    if config["database"] == "EukProt" or config["database"] == "EP":
+        if not os.path.exists(os.path.join(RESOURCES_DIR, "PF_extended_DB_v0.1")):
+            raise ValueError(
+                "[{:%Y-%m-%d %H:%M:%S}]: EukProt database not found in resources directory. Please ensure that the 'PF_extended_DB_v0.1' directory is present in the resources directory.".format(datetime.datetime.now())
+            )
+        else:
+            print("[{:%Y-%m-%d %H:%M:%S}]: Using EukProt database located in resources directory.".format(datetime.datetime.now()))
+        DATABASE_TYPE = "EukProt"
+        EP_DIR = os.path.join(RESOURCES_DIR, "PF_ExtendedEukProtDB_v0.1")
+
 purge = False
 purge_target = None
 if "purge" in config:
+    purge_target = config["purge"]
+    if DATABASE_TYPE == "PhyloFisher":
+        long_names = []
+        with open(os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0/database/metadata.tsv"), "r") as f:
+            lines = f.readlines()
+            header = lines[0].strip().split("\t")
+            long_names_idx = header.index("Long Name")
+            long_names = [line.strip().split("\t")[long_names_idx] for line in lines[1:]]
+            print(long_names)
+        if config["purge"] not in long_names:
+            raise ValueError(
+                "[{:%Y-%m-%d %H:%M:%S}]: Specified purge target '{}' not found in long names.".format(datetime.datetime.now(), config["purge"])
+            )
+
     purge = True
     purge_target = config["purge"]
 
@@ -142,6 +170,7 @@ for f in mag_f:
 
 rule all:
     input:
+        expand(config["outdir"] + "{mag}_purged_taxa_check.complete", mag=mags),
         expand(config["outdir"] + "{mag}_working_dataset", mag=mags),
         lambda wildcards: [
             f"{config['outdir']}{mag}_q_frags/{gene}.fas"
@@ -196,7 +225,6 @@ rule run_busco:
             cat {config[outdir]}busco_out/{wildcards.mag}/run_eukaryota_odb12/augustus_output/*faa* >> {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/translated_protein.fasta
         fi
         """,
-        
         """
         ### compleasm route requires genomic input
         if [[ "{params.busco_mode}" = "proteins" ]]; then
@@ -216,7 +244,7 @@ rule proc_database:
     input:
         config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
     output:
-        config["outdir"] + "{mag}_purged_taxa.complete",
+        config["outdir"] + "{mag}_purged_taxa_check.complete",
         directory(config["outdir"] + "{mag}_PhyloFishScratch/")
     conda:
         "fisher"

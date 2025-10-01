@@ -1,4 +1,4 @@
-# compact_class
+# Compact Class
 
 **compact_class** is a snakemake pipeline designed to classify recently assembled putatively eukaryotic metagenome assembled genomes (MAGs). The pipeline carries out a phylogenetic placement using a pre-generated database of 240 single gene alignments and phylogenies. The pipeline automates the identification of potential orthologs, alignment of query orthologs to reference alignments, and the phylogenetic placement itself. compact_class is intended to be used on linux HPCC environments.
 
