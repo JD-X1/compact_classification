@@ -58,8 +58,7 @@ for cand in \
   "${resource_abs:+${resource_abs}/}PhyloFisherDatabase_v1.0/database" \
   "/compact_classification/resources/PhyloFisherDatabase_v1.0/database" \
   "/PhyloFisherDatabase_v1.0/database" \
-  "PhyloFisherDatabase_v1.0/database" \
-  "{outdir}{mag}_PhyloFishScratch"
+  "PhyloFisherDatabase_v1.0/database"
 do
   [[ -n "${cand}" && -d "${cand}" ]] && { phyloDB="${cand}"; break; }
 done
@@ -84,7 +83,7 @@ fi
 echo "Casting Lines"
 
 cp -f "${input_abs}" "${phyloscratch_dir}/metadata.tsv"
-config.py -d "${phyloscratch_dir}/database" -i "${input_abs}"
+config.py -d "${phyloscratch_dir}" -i "${input_abs}"
 echo "Configuration of PhyloFisher Modules Complete"
 
 echo "Waiting for the Fish to Bite"
