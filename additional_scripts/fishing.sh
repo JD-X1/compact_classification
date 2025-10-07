@@ -58,7 +58,8 @@ for cand in \
   "${resource_abs:+${resource_abs}/}PhyloFisherDatabase_v1.0/database" \
   "/compact_classification/resources/PhyloFisherDatabase_v1.0/database" \
   "/PhyloFisherDatabase_v1.0/database" \
-  "PhyloFisherDatabase_v1.0/database"
+  "PhyloFisherDatabase_v1.0/database" \
+  "{outdir}{mag}_PhyloFishScratch"
 do
   [[ -n "${cand}" && -d "${cand}" ]] && { phyloDB="${cand}"; break; }
 done

@@ -288,9 +288,11 @@ rule fishing_meta:
     params:
         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
     threads: 1
+    log:
+        config["outdir"] + "logs/fishing_meta/{mag}.log"
     priority: 0
     shell:
-        "python {params.ADD_SCRIPTS}/fishing_meta.py -p {input} -o {output}"
+        "python {params.ADD_SCRIPTS}/fishing_meta.py -p {input} -o {output} > {log} 2> {log}"
 
 
 checkpoint goneFishing:
