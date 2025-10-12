@@ -124,6 +124,7 @@ purge = False
 purge_target = None
 if "purge" in config:
     purge_target = config["purge"]
+    pruge = True
     if DATABASE_TYPE == "PhyloFisher":
         long_names = []
         with open(os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0/database/metadata.tsv"), "r") as f:
@@ -242,7 +243,7 @@ rule run_busco:
 
 rule proc_database:
     input:
-        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
+        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta" # ensures proteome exists before moving on
     output:
         config["outdir"] + "{mag}_purged_taxa_check.complete",
         directory(config["outdir"] + "{mag}_PhyloFishScratch/")
@@ -258,7 +259,13 @@ rule proc_database:
         branch(purge,
         """
         mkdir -p {config[outdir]}logs/proc_database
-        echo "{params.target_taxa}" > {config[outdir]}{wildcards.mag}_taxa_to_purge.txt
+        python - <<'PY'
+        import os
+        tax = "{params.target_taxa}".strip()
+        with open("{config[outdir]}{wildcards.mag}_taxa_to_purge.txt","w") as fh:
+            for t in filter(None, [x.strip() for x in tax.replace(";",",").split(",")]):
+                fh.write(t + "\n")
+        PY
         cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {config[outdir]}{wildcards.mag}_PhyloFishScratch
         purge.py \
             --input {config[outdir]}/{wildcards.mag}_taxa_to_purge.txt \
@@ -280,7 +287,7 @@ rule fishing_meta:
             proteome_input,
             config["mag_dir"],
             config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
-            )   
+            )
     output:
         config["outdir"] + "{mag}_input_metadata.tsv"
     conda:
@@ -297,7 +304,8 @@ rule fishing_meta:
 
 checkpoint goneFishing:
     input:
-        config["outdir"] + "{mag}_input_metadata.tsv"
+        meta = config["outdir"] + "{mag}_input_metadata.tsv",
+        dbdir = directory(config["outdir"] + "{mag}_PhyloFishScratch/")
     output:
         directory(config["outdir"] + "{mag}_working_dataset")
     conda:
@@ -308,7 +316,7 @@ checkpoint goneFishing:
     threads: workflow.cores
     priority: 0
     shell:
-        "bash {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input} -r {params.resources_dir} -o {config[outdir]}"
+        "bash {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input.meta} -r {params.resources_dir} -o {config[outdir]}"
 
 
 rule splitter:
@@ -333,7 +341,7 @@ rule splitter:
 rule mafft:
     input:
         query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
-        reference=config["outdir"] + "{mag}_PhyloFishScratch/database/alignments/{gene}.fas.aln"
+        reference=config["outdir"] + "{mag}_PhyloFishScratch/alignments/{gene}.fas.aln"
     output:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:

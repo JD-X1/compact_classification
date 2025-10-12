@@ -1,4 +1,4 @@
-#!usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # get the number of threads
@@ -82,8 +82,8 @@ fi
 
 echo "Casting Lines"
 
-cp -f "${input_abs}" "${phyloscratch_dir}/metadata.tsv"
-config.py -d "${phyloscratch_dir}" -i "${input_abs}"
+cp -f "${input_abs}" "${phyloscratch_dir}/${mag}_metadata.tsv"
+config.py -d "${phyloscratch_dir}" -i "${phyloscratch_dir}/${mag}_metadata.tsv"
 echo "Configuration of PhyloFisher Modules Complete"
 
 echo "Waiting for the Fish to Bite"
