@@ -123,23 +123,45 @@ if "database" in config:
 purge = False
 purge_target = None
 if "purge" in config:
-    purge_target = config["purge"]
-    pruge = True
-    if DATABASE_TYPE == "PhyloFisher":
-        long_names = []
-        with open(os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0/database/metadata.tsv"), "r") as f:
-            lines = f.readlines()
-            header = lines[0].strip().split("\t")
-            long_names_idx = header.index("Long Name")
-            long_names = [line.strip().split("\t")[long_names_idx] for line in lines[1:]]
-            print(long_names)
-        if config["purge"] not in long_names:
-            raise ValueError(
-                "[{:%Y-%m-%d %H:%M:%S}]: Specified purge target '{}' not found in long names.".format(datetime.datetime.now(), config["purge"])
-            )
-
+    requested = config["purge"].strip()
+    purge_target = requested
     purge = True
-    purge_target = config["purge"]
+    if DATABASE_TYPE == "PhyloFisher":
+        meta_path = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0/database/metadata.tsv")
+        with open(meta_path, "r") as f:
+            header = f.readline().strip().split("\t")
+            def col_idx(name: str):
+                name = name.lower()
+                for i, h in enumerate(header):
+                    if h.strip().lower() == name:
+                        return i
+            
+            uid_i = col_idx("Unique ID")
+            lname_i = col_idx("Long Name")
+            if uid_i is None or lname_i is None:
+                raise ValueError(f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}]: "
+                                    f"Required columns 'Unique ID' and 'Long Name' not found in {meta_path}.")
+        
+            long2uids = {}
+            all_uids = set()
+            for line in f:
+                parts = line.strip().split("\t")
+                if len(parts) <= max(uid_i, lname_i):
+                    continue
+                uid = parts[uid_i].strip()
+                lname = parts[lname_i].strip()
+                all_uids.add(uid)
+                long2uids.setdefault(lname, set()).add(uid)
+        if requested in all_uids:
+            purge_target = requested
+        elif requested in long2uids:
+            uids = sorted(long2uids[requested])
+            purge_target = ",".join(uids)
+        else:
+            raise ValueError(
+                "[{:%Y-%m-%d %H:%M:%S}]: Specified purge target '{}' not found in database.".format(datetime.datetime.now(), requested)
+            )
+    print("[{:%Y-%m-%d %H:%M:%S}]: Will purge the following taxa from the database: {}".format(datetime.datetime.now(), purge_target))
 
 mag_f = [f for f in mag_f if any(f.endswith(ext) for ext in (GENOME_EXTS + PROTEOME_EXTS))]
 
@@ -246,7 +268,7 @@ rule proc_database:
         config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta" # ensures proteome exists before moving on
     output:
         config["outdir"] + "{mag}_purged_taxa_check.complete",
-        directory(config["outdir"] + "{mag}_PhyloFishScratch/")
+        directory(config["outdir"] + "{mag}_PhyloFishScratch")
     conda:
         "fisher"
     params:
@@ -259,19 +281,27 @@ rule proc_database:
         branch(purge,
         """
         mkdir -p {config[outdir]}logs/proc_database
-        python - <<'PY'
-        import os
-        tax = "{params.target_taxa}".strip()
-        with open("{config[outdir]}{wildcards.mag}_taxa_to_purge.txt","w") as fh:
-            for t in filter(None, [x.strip() for x in tax.replace(";",",").split(",")]):
-                fh.write(t + "\n")
-        PY
-        cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {config[outdir]}{wildcards.mag}_PhyloFishScratch
+
+        purge_list={config[outdir]}{mag}_to_purge_list.txt
+
+        printf "%s" {params.target_taxa} > ${{purge_list}}
+        echo ${{purge_list}}
+        echo "purge_list: ${{purge_list}}" >> {log}
+        echo "purge UID: {params.target_taxa}" >> {log}
+
+        if [ ! -s "$purge_list" ]; then
+            echo "ERROR: Purge list is empty: $purge_list" >> {log}
+            exit 2
+        fi
+
+        cp -r {params.resources_dir}PhyloFisherDatabase_v1.0/database {output[1]}
+        
         purge.py \
-            --input {config[outdir]}/{wildcards.mag}_taxa_to_purge.txt \
-            --database {config[outdir]}/{wildcards.mag}_PhyloFishScratch/ \
-            1> {log} 2>&1
-        rm {config[outdir]}{wildcards.mag}_taxa_to_purge.txt
+            --input ${{purge_list}} \
+            --database {output[1]} \
+            1>> {log} 2>&1
+        
+        rm -f "${{purge_list}}"
         touch {output[0]}
         """,
         """
@@ -305,7 +335,7 @@ rule fishing_meta:
 checkpoint goneFishing:
     input:
         meta = config["outdir"] + "{mag}_input_metadata.tsv",
-        dbdir = directory(config["outdir"] + "{mag}_PhyloFishScratch/")
+        dbdir = config["outdir"] + "{mag}_PhyloFishScratch/"
     output:
         directory(config["outdir"] + "{mag}_working_dataset")
     conda:
