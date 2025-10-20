@@ -483,15 +483,20 @@ rule sub_tree:
         "dendropy"
     params:
         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
-        resources_dir=RESOURCES_DIR
+        resources_dir=RESOURCES_DIR,
+        target_taxa=purge_target
     threads: 1
     priority: 0
     log:
         config["outdir"] + "logs/sub_tree/{mag}.log"
     shell:
+        branch(purge,
+        """
+        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.resources_dir}/ref_concat_PF_alt3.tre -p {params.target_taxa} -o {output} > {log} 2> {log}
+        """,
         """
         python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.resources_dir}/ref_concat_PF_alt3.tre -o {output} > {log} 2> {log}
-        """
+        """)
 
 rule epa:
     input:
