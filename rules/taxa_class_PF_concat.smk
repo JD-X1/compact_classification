@@ -273,43 +273,60 @@ rule proc_database:
         "fisher"
     params:
         resources_dir=RESOURCES_DIR,
-        target_taxa=purge_target
+        target_taxa=purge_target,
+        purge_enabled=purge
     threads: 1
-    log: 
+    log:
         config["outdir"] + "logs/proc_database/{mag}.log"
-    shell:
-        branch(purge,
-        """
-        mkdir -p {config[outdir]}logs/proc_database
+    run:
+        from pathlib import Path
+        from snakemake.shell import shell
 
-        purge_list={config[outdir]}{mag}_to_purge_list.txt
+        outdir = Path(config["outdir"])
+        log_dir = outdir / "logs" / "proc_database"
+        log_dir.mkdir(parents=True, exist_ok=True)
 
-        printf "%s" {params.target_taxa} > ${{purge_list}}
-        echo ${{purge_list}}
-        echo "purge_list: ${{purge_list}}" >> {log}
-        echo "purge UID: {params.target_taxa}" >> {log}
+        if params.purge_enabled:
+            purge_list = outdir / f"{wildcards.mag}_to_purge_list.txt"
+            target_taxa = (params.target_taxa or "").strip()
 
-        if [ ! -s "$purge_list" ]; then
-            echo "ERROR: Purge list is empty: $purge_list" >> {log}
-            exit 2
-        fi
+            if not target_taxa:
+                raise ValueError(
+                    f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}]: Purge requested but no target taxa were resolved."
+                )
 
-        cp -r {params.resources_dir}PhyloFisherDatabase_v1.0/database {output[1]}
-        
-        purge.py \
-            --input ${{purge_list}} \
-            --database {output[1]} \
-            1>> {log} 2>&1
-        
-        rm -f "${{purge_list}}"
-        touch {output[0]}
-        """,
-        """
-        mkdir -p {config[outdir]}logs/proc_database
-        cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {config[outdir]}{wildcards.mag}_PhyloFishScratch
-        touch {output[0]}
-        """
-        )
+            purge_list.write_text(f"{target_taxa}\n", encoding="utf-8")
+
+            shell(
+                r"""
+                echo "{purge_list}"
+                echo "purge_list: {purge_list}" >> {log}
+                echo "purge UID: {params.target_taxa}" >> {log}
+
+                if [ ! -s "{purge_list}" ]; then
+                    echo "ERROR: Purge list is empty: {purge_list}" >> {log}
+                    exit 2
+                fi
+
+                cp -r {params.resources_dir}PhyloFisherDatabase_v1.0/database {output[1]}
+
+                purge.py \
+                    --input "{purge_list}" \
+                    --database {output[1]} \
+                    1>> {log} 2>&1
+
+                rm -f "{purge_list}"
+                touch {output[0]}
+                """,
+                purge_list=str(purge_list),
+            )
+        else:
+            shell(
+                r"""
+                cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {config[outdir]}{wildcards.mag}_PhyloFishScratch
+                touch {output[0]}
+                """
+            )
 
 rule fishing_meta:
     input:
@@ -355,7 +372,8 @@ rule splitter:
         tar=config["outdir"] + "{mag}_working_dataset/{gene}.fas",
         mag_dir=config["mag_dir"]
     output:
-       config["outdir"] + "{mag}_q_frags/{gene}.fas"
+       qs=config["outdir"] + "{mag}_q_frags/{gene}.fas",
+       ref=config["outdir"] + "{mag}_ref_frags/{gene}.fas"
     conda:
         "pline_max"
     params:
@@ -365,7 +383,7 @@ rule splitter:
     log:
         config["outdir"] + "logs/splitter/{mag}_{gene}.log"
     shell:
-        "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output} 1> {log} 2> {log}"
+        "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output.qs} -r {output.ref} 1> {log} 2> {log}"
 
 
 rule mafft:

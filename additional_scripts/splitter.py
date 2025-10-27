@@ -3,7 +3,9 @@
 import os
 import re
 import argparse
+import gzip
 import pandas as pd
+from copy import deepcopy
 from pathlib import Path
 from Bio import SeqIO, SearchIO
 from typing import Iterable, List, Optional, Tuple
@@ -91,10 +93,12 @@ def main():
     parser.add_argument("-i", "--input", help="input fasta file")
     parser.add_argument("-d", "--directory", help="directory containing mag files")
     parser.add_argument("-o", "--output", help="outputfasta file name and path")
+    parser.add_argument("-r", "--refoutput", help="reference output fasta file name and path")
     args = parser.parse_args()
 
     input_fa = Path(args.input).resolve()
     out_fa = Path(args.output).resolve()
+    ref_fa = Path(args.refoutput).resolve() if args.refoutput else None
 
     mag, gene, outdir = infer_context(input_fa, args.directory)
     print(f"Identified MAG: {mag}, gene: {gene}, outdir: {outdir}")
@@ -113,19 +117,29 @@ def main():
     best = pick_best_hit(hmm_path, input_ids) or records[0].id
 
     out_fa.parent.mkdir(parents=True, exist_ok=True)
-    for rec in records:
+    ref_out = Path(args.reference_output).resolve() if args.reference_output else None
+    if ref_out:
+        ref_out.parent.mkdir(parents=True, exist_ok=True)
+
+    query_index = None
+    for idx, rec in enumerate(records):
         if best in rec.id or rec.id in best:
-            rec.id = mag
-            rec.description = mag
-            with open(out_fa, "w") as out:
-                SeqIO.write(rec, out, "fasta")
+            query_index = idx
             break
-    else:
-        rec = records[0]
-        rec.id = mag
-        rec.description = mag
+        if query_index is None:
+            query_index = 0
+
+        query_record = deepcopy(records[query_index])
+        query_record.id = mag
+        query_record.description = mag
+
         with open(out_fa, "w") as out:
-            SeqIO.write(rec, out, "fasta")
+            SeqIO.write(query_record, out, "fasta")
+
+        if ref_out:
+            reference_records = [records[idx] for idx in range(len(records)) if idx != query_index]
+            with open(ref_out, "w") as ref_handle:
+                SeqIO.write(reference_records, ref_handle, "fasta")
 
 if __name__ == "__main__":
     main()
