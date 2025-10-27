@@ -389,7 +389,7 @@ rule splitter:
 rule mafft:
     input:
         query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
-        reference=config["outdir"] + "{mag}_PhyloFishScratch/alignments/{gene}.fas.aln"
+        reference=config["outdir"] + "{mag}_ref_frags/{gene}.fas"
     output:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:

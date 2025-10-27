@@ -93,12 +93,12 @@ def main():
     parser.add_argument("-i", "--input", help="input fasta file")
     parser.add_argument("-d", "--directory", help="directory containing mag files")
     parser.add_argument("-o", "--output", help="outputfasta file name and path")
-    parser.add_argument("-r", "--refoutput", help="reference output fasta file name and path")
+    parser.add_argument("-r", "--reference_output", help="reference output fasta file name and path")
     args = parser.parse_args()
 
     input_fa = Path(args.input).resolve()
     out_fa = Path(args.output).resolve()
-    ref_fa = Path(args.refoutput).resolve() if args.refoutput else None
+    ref_fa = Path(args.reference_output).resolve() if args.reference_output else None
 
     mag, gene, outdir = infer_context(input_fa, args.directory)
     print(f"Identified MAG: {mag}, gene: {gene}, outdir: {outdir}")
