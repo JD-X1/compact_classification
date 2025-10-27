@@ -93,11 +93,7 @@ def main():
     parser.add_argument("-i", "--input", help="input fasta file")
     parser.add_argument("-d", "--directory", help="directory containing mag files")
     parser.add_argument("-o", "--output", help="outputfasta file name and path")
-    parser.add_argument(
-        "-r",
-        "--reference-output",
-        help="optional output fasta containing non-query (reference) sequences",
-    )
+    parser.add_argument("-r", "--reference-output", help="optional output fasta containing non-query (reference) sequences")
     args = parser.parse_args()
 
     input_fa = Path(args.input).resolve()
@@ -157,11 +153,33 @@ def main():
     
     if ref_fa:
         candidate_index_set = set(candidate_indices or [query_index])
-        reference_records = [
+        reference_ids = [
             records[idx]
             for idx in range(len(records))
             if idx not in candidate_index_set
         ]
+        reference_records: List = []
+
+        if reference_ids:
+            align_dir = outdir / f"{mag}_PhyloFishScratch" / "alignments"
+            align_path = None
+            candidate = align_dir / f"{gene}.fas.aln"
+            if candidate.exists():
+                align_path = candidate
+            if align_path is None:
+                matches = sorted(align_dir.glob(f"{gene}*"))
+                if matches:
+                    align_path = matches[0]
+            if align_path is None:
+                raise SystemExit(f"Reference alignment not found for {gene} in {align_dir}")
+            align_opener = gzip.open if str(align_path).endswith(".gz") else open
+            with align_opener(align_path, "rt") as align_handle:
+                reference_records = [
+                    rec
+                    for rec in SeqIO.parse(align_handle, "fasta")
+                    if rec.id in reference_ids
+                ]
+
         with open(ref_out, "w") as ref_handle:
             SeqIO.write(reference_records, ref_handle, "fasta")
 
