@@ -93,7 +93,11 @@ def main():
     parser.add_argument("-i", "--input", help="input fasta file")
     parser.add_argument("-d", "--directory", help="directory containing mag files")
     parser.add_argument("-o", "--output", help="outputfasta file name and path")
-    parser.add_argument("-r", "--reference_output", help="reference output fasta file name and path")
+    parser.add_argument(
+        "-r",
+        "--reference-output",
+        help="optional output fasta containing non-query (reference) sequences",
+    )
     args = parser.parse_args()
 
     input_fa = Path(args.input).resolve()
@@ -113,33 +117,53 @@ def main():
     hmm_path = find_hmmout(outdir, mag, gene)
 
     if hmm_path is None:
-        raise SystemExit(f"HMMER output not found for: {outdir}/{mag}_fish_out/tmp/{mag}/{gene}*.hmmout")
-    best = pick_best_hit(hmm_path, input_ids) or records[0].id
+        raise SystemExit(
+            f"HMMER output not found for: {outdir}/{mag}_fish_out/tmp/{mag}/{gene}*.hmmout"
+        )
+
+    candidate_indices = [
+        idx
+        for idx, rec in enumerate(records)
+        if mag in rec.id or mag in getattr(rec, "description", "")
+    ]
+    candidate_ids = [records[idx].id for idx in candidate_indices]
+
+    selection_indices = candidate_indices or list(range(len(records)))
+    selection_ids = candidate_ids or input_ids
+
+    best = pick_best_hit(hmm_path, selection_ids) or records[selection_indices[0]].id
 
     out_fa.parent.mkdir(parents=True, exist_ok=True)
+
     ref_out = Path(args.reference_output).resolve() if args.reference_output else None
     if ref_out:
         ref_out.parent.mkdir(parents=True, exist_ok=True)
 
     query_index = None
-    for idx, rec in enumerate(records):
-        if best in rec.id or rec.id in best:
+    for idx in selection_indices:
+        rec = records[idx]
+        if best == rec.id or best in rec.id or rec.id in best:
             query_index = idx
             break
-        if query_index is None:
-            query_index = 0
+    if query_index is None:
+        query_index = selection_indices[0]
+    
+    query_rec = deepcopy(records[query_index])
+    query_rec.id = mag
+    query_rec.description = mag
 
-        query_record = deepcopy(records[query_index])
-        query_record.id = mag
-        query_record.description = mag
-
-        with open(out_fa, "w") as out:
-            SeqIO.write(query_record, out, "fasta")
-
-        if ref_out:
-            reference_records = [records[idx] for idx in range(len(records)) if idx != query_index]
-            with open(ref_out, "w") as ref_handle:
-                SeqIO.write(reference_records, ref_handle, "fasta")
+    with open(out_fa, "w") as out:
+        SeqIO.write(query_rec, out, "fasta")
+    
+    if ref_fa:
+        candidate_index_set = set(candidate_indices or [query_index])
+        reference_records = [
+            records[idx]
+            for idx in range(len(records))
+            if idx not in candidate_index_set
+        ]
+        with open(ref_out, "w") as ref_handle:
+            SeqIO.write(reference_records, ref_handle, "fasta")
 
 if __name__ == "__main__":
     main()
