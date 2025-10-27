@@ -122,6 +122,7 @@ def main():
         for idx, rec in enumerate(records)
         if mag in rec.id or mag in getattr(rec, "description", "")
     ]
+
     candidate_ids = [records[idx].id for idx in candidate_indices]
 
     selection_indices = candidate_indices or list(range(len(records)))
@@ -132,6 +133,7 @@ def main():
     out_fa.parent.mkdir(parents=True, exist_ok=True)
 
     ref_out = Path(args.reference_output).resolve() if args.reference_output else None
+    
     if ref_out:
         ref_out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -141,6 +143,7 @@ def main():
         if best == rec.id or best in rec.id or rec.id in best:
             query_index = idx
             break
+    
     if query_index is None:
         query_index = selection_indices[0]
     
@@ -154,10 +157,12 @@ def main():
     if ref_fa:
         candidate_index_set = set(candidate_indices or [query_index])
         reference_ids = [
-            records[idx]
+            str(records[idx].id)
             for idx in range(len(records))
             if idx not in candidate_index_set
         ]
+        print(reference_ids)
+
         reference_records: List = []
 
         if reference_ids:
@@ -177,7 +182,7 @@ def main():
                 reference_records = [
                     rec
                     for rec in SeqIO.parse(align_handle, "fasta")
-                    if rec.id in reference_ids
+                    if str(rec.id) in reference_ids
                 ]
 
         with open(ref_out, "w") as ref_handle:

@@ -377,7 +377,7 @@ rule splitter:
     conda:
         "pline_max"
     params:
-        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
     threads: 1
     priority: 0
     log:
