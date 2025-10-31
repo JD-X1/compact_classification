@@ -128,12 +128,9 @@ EOF
     fi
 
     # normalize outdir to absolute with one trailing slash
-    ABS_OUTDIR="$(python - <<'PY'
-    import os,sys
-    p=sys.argv[1]
-    print(os.path.abspath(p).rstrip(os.sep) + os.sep)
-PY
-    "${OUTDIR_ARG}")"
+    ABS_OUTDIR="$(python -c 'import os,sys; print(os.path.abspath(sys.argv[1]).rstrip(os.sep) + os.sep)' \
+        "${OUTDIR_ARG}")"
+    
     mkdir -p "${ABS_OUTDIR}"
 
     # pick ruleset
