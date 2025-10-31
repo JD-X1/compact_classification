@@ -84,6 +84,14 @@ From: continuumio/miniconda3:latest
     TRIM=false
     PURGE=""
 
+    if [[ -z "${PURGE}" ]]; then
+        for legacy_arg in "${@:6}"; do
+            [[ "${legacy_arg}" == purge=* ]] || continue
+            PURGE="${legacy_arg#purge=}"
+            break
+        done
+    fi
+
     # flags-first; fallback to positional for back-compat
     if [[ $# -gt 0 && "$1" == -* ]]; then
     while [[ $# -gt 0 ]]; do
@@ -128,8 +136,14 @@ EOF
     fi
 
     # normalize outdir to absolute with one trailing slash
-    ABS_OUTDIR="$(python -c 'import os,sys; print(os.path.abspath(sys.argv[1]).rstrip(os.sep) + os.sep)' \
-        "${OUTDIR_ARG}")"
+    ABS_OUTDIR="$(python - "${OUTDIR_ARG}" <<'PY'
+import os
+import sys
+
+path = os.path.abspath(sys.argv[1])
+print(path.rstrip(os.sep) + os.sep)
+PY
+)"
     
     mkdir -p "${ABS_OUTDIR}"
 
