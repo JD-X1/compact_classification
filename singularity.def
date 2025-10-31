@@ -94,66 +94,59 @@ From: continuumio/miniconda3:latest
 
     # flags-first; fallback to positional for back-compat
     if [[ $# -gt 0 && "$1" == -* ]]; then
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-        -c|--cores)   CORES="$2"; shift 2;;
-        -m|--mag-dir) MAG_DIR="$2"; shift 2;;
-        -M|--mode)    MODE="$2"; shift 2;;
-        -o|--outdir)  OUTDIR_ARG="$2"; shift 2;;
-        -d|--db)      DATABASE="$2"; shift 2;;
-        -a|--augustus) AUGUSTUS=true; shift 1;;
-        -t|--trim)     TRIM=true; shift 1;;
-        -p|--purge)    PURGE="${2:-}"; shift 2;;
-        -h|--help)
-            cat <<EOF
-    Usage:
-    singularity run image.sif [options]
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+            -c|--cores)   CORES="$2"; shift 2;;
+            -m|--mag-dir) MAG_DIR="$2"; shift 2;;
+            -M|--mode)    MODE="$2"; shift 2;;
+            -o|--outdir)  OUTDIR_ARG="$2"; shift 2;;
+            -d|--db)      DATABASE="$2"; shift 2;;
+            -a|--augustus) AUGUSTUS=true; shift 1;;
+            -t|--trim)     TRIM=true; shift 1;;
+            -p|--purge)    PURGE="${2:-}"; shift 2;;
+            -h|--help)
+                cat <<EOF
+Usage:
+  singularity run image.sif [options]
 
-    Options:
-    -c, --cores N
-    -m, --mag-dir PATH
-    -M, --mode concat|sgt
-    -o, --outdir PATH
-    -d, --db PF|...
-    -a, --augustus        enable BUSCO+Augustus
-    -t, --trim            enable trimming
-    -p, --purge VALUE     purge by Unique ID or Long Name
+  Options:
+  -c, --cores N
+  -m, --mag-dir PATH
+  -M, --mode concat|sgt
+  -o, --outdir PATH
+  -d, --db PF|...
+  -a, --augustus        enable BUSCO+Augustus
+  -t, --trim            enable trimming
+  -p, --purge VALUE     purge by Unique ID or Long Name
 EOF
-            exit 0;;
-        *) echo "Unknown option: $1" >&2; exit 2;;
-        esac
-    done
+                exit 0;;
+            *) echo "Unknown option: $1" >&2; exit 2;;
+            esac
+        done
     else
-    # positional: 1=cores 2=mag_dir 3=mode 4=outdir 5=db 6=augustus 7=trim 8=purge
-    CORES="${1:-$CORES}"
-    MAG_DIR="${2:-$MAG_DIR}"
-    MODE="${3:-$MODE}"
-    OUTDIR_ARG="${4:-$OUTDIR_ARG}"
-    DATABASE="${5:-$DATABASE}"
-    AUGUSTUS=false; [[ "${6:-}" == "augustus" ]] && AUGUSTUS=true
-    TRIM=false;     [[ "${7:-}" =~ ^(trim|true|1)$ ]] && TRIM=true
-    PURGE="${8:-}"
+        # positional: 1=cores 2=mag_dir 3=mode 4=outdir 5=db 6=augustus 7=trim 8=purge
+        CORES="${1:-$CORES}"
+        MAG_DIR="${2:-$MAG_DIR}"
+        MODE="${3:-$MODE}"
+        OUTDIR_ARG="${4:-$OUTDIR_ARG}"
+        DATABASE="${5:-$DATABASE}"
+        AUGUSTUS=false; [[ "${6:-}" == "augustus" ]] && AUGUSTUS=true
+        TRIM=false;     [[ "${7:-}" =~ ^(trim|true|1)$ ]] && TRIM=true
+        PURGE="${8:-}"
     fi
 
     # normalize outdir to absolute with one trailing slash
-    ABS_OUTDIR="$(python - "${OUTDIR_ARG}" <<'PY'
-import os
-import sys
-
-path = os.path.abspath(sys.argv[1])
-print(path.rstrip(os.sep) + os.sep)
-PY
-)"
+    ABS_OUTDIR="$(python3 -c 'import os, sys; path = os.path.abspath(sys.argv[1]); print(path.rstrip(os.sep) + os.sep)' "${OUTDIR_ARG}")"
     
     mkdir -p "${ABS_OUTDIR}"
 
     # pick ruleset
     if [[ "${MODE}" == "concat" ]]; then
-    RULESET="/compact_classification/rules/taxa_class_${DATABASE}_concat.smk"
+        RULESET="/compact_classification/rules/taxa_class_${DATABASE}_concat.smk"
     elif [[ "${MODE}" == "sgt" ]]; then
-    RULESET="/compact_classification/rules/taxa_class_${DATABASE}.smk"
+        RULESET="/compact_classification/rules/taxa_class_${DATABASE}.smk"
     else
-    echo "Unknown MODE='${MODE}'. Use concat or sgt." >&2; exit 2
+        echo "Unknown MODE='${MODE}'. Use concat or sgt." >&2; exit 2
     fi
 
     # build --config (each toggle independent)
@@ -163,8 +156,8 @@ PY
     [[ -n "${PURGE}" ]] && CFG+=( "purge=${PURGE@Q}" )
 
     exec snakemake -s "${RULESET}" \
-    --cores "${CORES}" \
-    --config "${CFG[@]}" \
-    --use-conda --conda-frontend mamba \
-    -p --keep-going --rerun-incomplete
+        --cores "${CORES}" \
+        --config "${CFG[@]}" \
+        --use-conda --conda-frontend mamba \
+        -p --keep-going --rerun-incomplete
 
