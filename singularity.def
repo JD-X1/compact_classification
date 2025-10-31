@@ -52,16 +52,16 @@ From: continuumio/miniconda3:latest
     micromamba create -y -p /opt/conda/envs/busco -f /compact_classification/envs/busco.yaml
 
 
-    wget https://ndownloader.figshare.com/files/29093409 
-    tar -xzvf 29093409 
-    #mv /PhyloFisherDatabase_v1.0 /compact_classification/resources/. 
-    rm /compact_classification/29093409
+    #wget https://ndownloader.figshare.com/files/29093409 
+    #tar -xzvf 29093409 
+    mv /PhyloFisherDatabase_v1.0 /compact_classification/resources/. 
+    #rm /compact_classification/29093409
 
-    /opt/conda/envs/compleasm/bin/compleasm download eukaryota
-    #mv /mb_downloads /compact_classification/resources/.
+    #/opt/conda/envs/compleasm/bin/compleasm download eukaryota
+    mv /mb_downloads /compact_classification/resources/.
 
-    /opt/conda/envs/busco/bin/busco --download eukaryota_odb12 -L
-    #mv /busco_downloads/ /compact_classification/resources/
+    #/opt/conda/envs/busco/bin/busco --download eukaryota_odb12 -L
+    mv /busco_downloads/ /compact_classification/resources/
 
     cd ..
     echo "export PATH=/opt/micromamba/envs/snakemake/bin:\$PATH" >> ~/.bashrc
@@ -110,7 +110,7 @@ From: continuumio/miniconda3:latest
     -a, --augustus        enable BUSCO+Augustus
     -t, --trim            enable trimming
     -p, --purge VALUE     purge by Unique ID or Long Name
-    EOF
+EOF
             exit 0;;
         *) echo "Unknown option: $1" >&2; exit 2;;
         esac
@@ -132,7 +132,7 @@ From: continuumio/miniconda3:latest
     import os,sys
     p=sys.argv[1]
     print(os.path.abspath(p).rstrip(os.sep) + os.sep)
-    PY
+PY
     "${OUTDIR_ARG}")"
     mkdir -p "${ABS_OUTDIR}"
 
