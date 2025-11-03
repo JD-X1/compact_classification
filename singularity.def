@@ -168,5 +168,6 @@ EOF
         --cores "${CORES}" \
         --config "${CFG[@]}" \
         --use-conda --conda-frontend mamba \
+        --conda-prefix /opt/conda/envs \
         -p --keep-going --rerun-incomplete
 
