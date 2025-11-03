@@ -2,7 +2,11 @@ Bootstrap: docker
 From: continuumio/miniconda3:latest
 
 %environment
-    export PATH=/opt/conda/envs/snakemake/bin:$PATH
+    export HOME=/root
+    export PATH=/opt/micromamba/bin:/opt/conda/envs/snakemake/bin:$PATH
+    export MAMBA_ROOT_PREFIX=/opt/micromamba
+    export MAMBA_EXE=/opt/micromamba/bin/mamba
+    export CONDA_ENVS_PATH=/opt/conda/envs
 
 %files
     resources/PhyloFisherDatabase_v1.0 /
@@ -71,8 +75,13 @@ From: continuumio/miniconda3:latest
     #!/bin/bash
     set -euo pipefail
 
-    export PATH=/opt/micromamba/bin:$PATH
-    export PATH=/opt/conda/envs/snakemake/bin:$PATH
+    export HOME=/root
+    export PATH=/opt/micromamba/bin:/opt/conda/envs/snakemake/bin:$PATH
+    export MAMBA_ROOT_PREFIX=/opt/micromamba
+    export MAMBA_EXE=/opt/micromamba/bin/mamba
+    export CONDA_ENVS_PATH=/opt/conda/envs
+    unset CONDA_EXE CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER _CE_CONDA _CE_M
+    export CONDA_SHLVL=0
 
     # defaults
     CORES=2
