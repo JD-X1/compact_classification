@@ -255,6 +255,10 @@ rule run_busco:
             exit 2
         fi
         echo "Running compleasm for {wildcards.mag}"
+        mkdir -p $(dirname {log})
+        rm -rf ~/.config/compleasm
+        mkdir -p ~/.config
+        echo "Reset compleasm cache in $(pwd)" >> {log}
         compleasm run -a {input} -t {threads} \
             -l eukaryota \
             -L {params.resources_dir}/mb_downloads/ \
