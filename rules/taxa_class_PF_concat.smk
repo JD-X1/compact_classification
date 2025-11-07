@@ -581,14 +581,15 @@ rule gappa:
 #     output:
 #         config["outdir"] + "{mag}_epa_out/pairwise_distance_matrix.csv"
 #     conda:
-#         "gappa"
+#         "pline_max"
 #     threads: 1
 #     params:
-#         out_dir=config["outdir"]
+#         out_dir=config["outdir"],
+#         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
 #     priority: 0
 #     log:
 #         config["outdir"] + "logs/gappa/{mag}_pairwise_distance.log"
 #     shell:
 #         """
-#         gappa examine
+#         python {params.ADD_SCRIPTS}pairwise_distance_matrix.py -j {input} -o {output}
 #         """

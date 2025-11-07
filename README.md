@@ -33,7 +33,7 @@
    environment before executing the workflow:
 
    ```bash
-   singularity shell \
+   singularity shell --cleanenv \
        --bind $(pwd)/input:/input \
        --bind $(pwd)/output:/output \
        compact_class_latest.sif
@@ -42,6 +42,8 @@
    Useful flags:
    * `--bind` mounts host directories into the container. Any changes
      written inside `/input` or `/output` appear in the host directories.
+   * `--cleanenv` is a required arguement, ensures host environmental variable
+      don't override environmental variables set within the container
 
    Exit the interactive shell with `exit` when you are ready to leave the
    container.
