@@ -574,3 +574,20 @@ rule gappa:
         fi
         
         """
+
+rule jplace_pair_wise_dist_matrix:
+    input:
+        config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
+    output:
+        config["outdir"] + "{mag}_epa_out/pairwise_distance_matrix.csv"
+    conda:
+        "gappa"
+    threads: 1
+    params:
+        out_dir=config["outdir"]
+    priority: 0
+    log:
+        config["outdir"] + "logs/gappa/{mag}_pairwise_distance.log"
+    shell:
+        """
+        """
