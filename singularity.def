@@ -100,6 +100,18 @@ From: continuumio/miniconda3:latest
         done
     fi
 
+    lower() {
+        printf '%s' "${1:-}" | tr 'A-Z' 'a-z'
+    }
+
+    parse_bool_token() {
+        case "$(lower "$1")" in
+            1|true|yes|on)  printf 'true';;
+            0|false|no|off) printf 'false';;
+            *)              printf 'invalid';;
+        esac
+    }
+
     # flags-first; fallback to positional for back-compat
     if [[ $# -gt 0 && "$1" == -* ]]; then
         while [[ $# -gt 0 ]]; do
@@ -109,8 +121,34 @@ From: continuumio/miniconda3:latest
             -M|--mode)    MODE="$2"; shift 2;;
             -o|--outdir)  OUTDIR_ARG="$2"; shift 2;;
             -d|--db)      DATABASE="$2"; shift 2;;
-            -a|--augustus) AUGUSTUS=true; shift 1;;
-            -t|--trim)     TRIM=true; shift 1;;
+            -a|--augustus)
+                if [[ $# -gt 1 && "$2" != -* ]]; then
+                    AUG_VAL="$(parse_bool_token "$2")"
+                    if [[ "${AUG_VAL}" == "false" ]]; then
+                        AUGUSTUS=false
+                    else
+                        AUGUSTUS=true
+                    fi
+                    shift 2
+                else
+                    AUGUSTUS=true
+                    shift 1
+                fi
+                ;;
+            -t|--trim)
+                if [[ $# -gt 1 && "$2" != -* ]]; then
+                    TRIM_VAL="$(parse_bool_token "$2")"
+                    if [[ "${TRIM_VAL}" == "false" ]]; then
+                        TRIM=false
+                    else
+                        TRIM=true
+                    fi
+                    shift 2
+                else
+                    TRIM=true
+                    shift 1
+                fi
+                ;;
             -p|--purge)    PURGE="${2:-}"; shift 2;;
             -h|--help)
                 cat <<EOF
@@ -138,8 +176,52 @@ EOF
         MODE="${3:-$MODE}"
         OUTDIR_ARG="${4:-$OUTDIR_ARG}"
         DATABASE="${5:-$DATABASE}"
-        AUGUSTUS=false; [[ "${6:-}" == "augustus" ]] && AUGUSTUS=true
-        TRIM=false;     [[ "${7:-}" =~ ^(trim|true|1)$ ]] && TRIM=true
+        AUG_ARG="${6:-}"
+        TRIM_ARG="${7:-}"
+
+        # Support legacy key=value usage for the 6th/7th slots.
+        if [[ -z "${TRIM_ARG}" && "$(lower "${AUG_ARG%%=*}")" == "trim" ]]; then
+            TRIM_ARG="${AUG_ARG}"
+            AUG_ARG=""
+        fi
+
+        if [[ -n "${AUG_ARG}" ]]; then
+            if [[ "${AUG_ARG}" == "augustus" ]]; then
+                AUGUSTUS=true
+            elif [[ "$(lower "${AUG_ARG%%=*}")" == "augustus" ]]; then
+                AUG_VAL="${AUG_ARG#*=}"
+                AUG_MODE="$(parse_bool_token "${AUG_VAL}")"
+                if [[ "${AUG_MODE}" == "false" ]]; then
+                    AUGUSTUS=false
+                elif [[ "${AUG_MODE}" == "true" ]]; then
+                    AUGUSTUS=true
+                fi
+            fi
+        fi
+
+        if [[ -n "${TRIM_ARG}" ]]; then
+            TRIM_KEY="$(lower "${TRIM_ARG%%=*}")"
+            if [[ "${TRIM_KEY}" == "trim" ]]; then
+                if [[ "${TRIM_ARG}" == "trim" ]]; then
+                    TRIM=true
+                else
+                    TRIM_VAL="${TRIM_ARG#*=}"
+                    TRIM_MODE="$(parse_bool_token "${TRIM_VAL}")"
+                    if [[ "${TRIM_MODE}" == "false" ]]; then
+                        TRIM=false
+                    elif [[ "${TRIM_MODE}" == "true" ]]; then
+                        TRIM=true
+                    fi
+                fi
+            else
+                TRIM_MODE="$(parse_bool_token "${TRIM_ARG}")"
+                if [[ "${TRIM_MODE}" == "false" ]]; then
+                    TRIM=false
+                elif [[ "${TRIM_MODE}" == "true" ]]; then
+                    TRIM=true
+                fi
+            fi
+        fi
         PURGE="${8:-}"
     fi
 
