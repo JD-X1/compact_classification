@@ -80,7 +80,9 @@ From: continuumio/miniconda3:latest
     export MAMBA_EXE=/opt/micromamba/bin/mamba
     export CONDA_ENVS_PATH=/opt/conda/envs
     unset CONDA_EXE CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER _CE_CONDA _CE_M
+    unset HMMSEARCH HMMERDIR HMMERPATH
     export CONDA_SHLVL=0
+    export HMMSEARCH=/opt/conda/envs/compleasm/bin/hmmsearch
 
     # defaults
     CORES=2
