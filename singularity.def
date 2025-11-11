@@ -2,11 +2,14 @@ Bootstrap: docker
 From: continuumio/miniconda3:latest
 
 %environment
-    export HOME=/root
-    export PATH=/opt/micromamba/bin:/opt/conda/envs/snakemake/bin:$PATH
+    export PATH=/opt/conda/envs/snakemake/bin:/opt/conda/bin:/opt/micromamba/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+    unset CONDA_EXE CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER _CE_CONDA _CE_M CONDA_SHLVL PYTHONNOUSERSITE
+    unset HMMSEARCH HMMERDIR HMMERPATH
+    export CONDA_SHLVL=0
     export MAMBA_ROOT_PREFIX=/opt/micromamba
     export MAMBA_EXE=/opt/micromamba/bin/mamba
     export CONDA_ENVS_PATH=/opt/conda/envs
+    export XDG_CACHE_HOME=/tmp/.cache
 
 %files
     resources/PhyloFisherDatabase_v1.0 /
@@ -230,7 +233,7 @@ EOF
     # normalize outdir to absolute with one trailing slash
     ABS_OUTDIR="$(python3 -c 'import os, sys; path = os.path.abspath(sys.argv[1]); print(path.rstrip(os.sep) + os.sep)' "${OUTDIR_ARG}")"
     export HOME="${ABS_OUTDIR}"
-    export XDG_CACHE_HOME="${ABS_OUTDIR}.XDG_CACHE_HOME"
+    export XDG_CACHE_HOME="${ABS_OUTDIR}.cache"
     mkdir -p "${XDG_CACHE_HOME}"
     mkdir -p "${ABS_OUTDIR}"
     
