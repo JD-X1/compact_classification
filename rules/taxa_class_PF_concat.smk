@@ -249,12 +249,23 @@ rule run_busco:
         fi
         """,
         """
+        set -euo pipefail
         ### compleasm route requires genomic input
         if [[ "{params.busco_mode}" = "proteins" ]]; then
             echo "Error: Proteome input provided but compleasm mode selected. Please provide genomic input for compleasm."
             exit 2
         fi
         echo "Running compleasm for {wildcards.mag}"
+        export HOME="{config[outdir]}"
+        export XDG_CACHE_HOME="{config[outdir]}.cache"
+        mkdir -p "$XDG_CACHE_HOME"
+        rm -rf "${HOME}/.compleasm" || true
+        export HMMSEARCH="/opt/conda/envs/compleasm/bin/hmmsearch"
+
+        # breadcrumbs
+        echo "which hmmsearch: $(which hmmsearch)" >> {log}
+        echo "HMMSEARCH=${HMMSEARCH}" >> {log}
+
         compleasm run -a {input} -t {threads} \
             -l eukaryota \
             -L {params.resources_dir}/mb_downloads/ \
