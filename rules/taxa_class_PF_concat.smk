@@ -232,8 +232,6 @@ rule run_busco:
         resources_dir = RESOURCES_DIR
     log:
         config["outdir"] + "logs/busco/{mag}.log"
-    envvars:
-        "HMMSEARCH"
     shell:
         branch(augustus,
         """
@@ -257,11 +255,6 @@ rule run_busco:
             exit 2
         fi
         echo "Running compleasm for {wildcards.mag}"
-        mkdir -p $(dirname {log})
-        rm -rf ~/.config/compleasm
-        mkdir -p ~/.config
-        echo "Reset compleasm cache in $(pwd)" >> {log}
-        export HMMSEARCH="$(conda run -p /opt/conda/envs/compleasm which hmmsearch)"
         compleasm run -a {input} -t {threads} \
             -l eukaryota \
             -L {params.resources_dir}/mb_downloads/ \
