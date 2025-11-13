@@ -160,7 +160,6 @@ stage.
 Avoid the following symbols in fasta sequence/file names as certain tools in this pipeline do not interact well with them.
 
 ```
-'_'
 '@'
 '..'
 'whitespace'
