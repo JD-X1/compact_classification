@@ -1,8 +1,6 @@
-name: compleasm
+name: myenv
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - compleasm
-  - hmmer
+  - busco=6.0.0

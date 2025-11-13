@@ -2,11 +2,19 @@ Bootstrap: docker
 From: continuumio/miniconda3:latest
 
 %environment
-    export PATH=/opt/conda/envs/snakemake/bin:$PATH
+    export PATH=/opt/conda/envs/snakemake/bin:/opt/conda/bin:/opt/micromamba/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+    unset CONDA_EXE CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER _CE_CONDA _CE_M CONDA_SHLVL PYTHONNOUSERSITE
+    unset HMMSEARCH HMMERDIR HMMERPATH
+    export CONDA_SHLVL=0
+    export MAMBA_ROOT_PREFIX=/opt/micromamba
+    export MAMBA_EXE=/opt/micromamba/bin/mamba
+    export CONDA_ENVS_PATH=/opt/conda/envs
+    export XDG_CACHE_HOME=/tmp/.cache
 
 %files
-    compact_classification/resources/PhyloFisherDatabase_v1.0 /compact_classification/resources/PhyloFisherDatabase_v1.0
-    compact_classification/resources/mb_downloads /compact_classification/resources/mb_downloads
+    resources/PhyloFisherDatabase_v1.0 /
+    resources/mb_downloads /
+    resources/busco_downloads /
 %post
     set -e
     echo "Setting portable compiler flags + micromamba ..."
@@ -48,16 +56,19 @@ From: continuumio/miniconda3:latest
     micromamba create -y -p /opt/conda/envs/div -f /compact_classification/envs/div.yaml
     micromamba create -y -p /opt/conda/envs/dendropy -f /compact_classification/envs/dendropy.yaml
     micromamba create -y -p /opt/conda/envs/gappa -f /compact_classification/envs/gappa.yaml
-
+    micromamba create -y -p /opt/conda/envs/busco -f /compact_classification/envs/busco.yaml
 
 
     #wget https://ndownloader.figshare.com/files/29093409 
     #tar -xzvf 29093409 
-    #mv /compact_classification/PhyloFisherDatabase_v1.0 /compact_classification/resources/. 
+    mv /PhyloFisherDatabase_v1.0 /compact_classification/resources/. 
     #rm /compact_classification/29093409
 
     #/opt/conda/envs/compleasm/bin/compleasm download eukaryota
-    #mv /compact_classification/mb_downloads /compact_classification/resources/.
+    mv /mb_downloads /compact_classification/resources/.
+
+    #/opt/conda/envs/busco/bin/busco --download eukaryota_odb12 -L
+    mv /busco_downloads/ /compact_classification/resources/
 
     cd ..
     echo "export PATH=/opt/micromamba/envs/snakemake/bin:\$PATH" >> ~/.bashrc
@@ -65,30 +76,187 @@ From: continuumio/miniconda3:latest
 
 %runscript
     #!/bin/bash
-    export PATH=/opt/micromamba/bin:$PATH # just in case
-    export PATH=/opt/micromamba/envs/snakemake/bin:$PATH
+    set -euo pipefail
 
-    CORE=${1:-2}
-    MAG_DIR=${2:-"input"}
-    MODE=${3:-"concat"}
-    output=${4:-"output"}
-    DATABASE=${5:-"PF"}
+    export PATH=/opt/micromamba/bin:/opt/conda/envs/snakemake/bin:$PATH
+    export MAMBA_ROOT_PREFIX=/opt/micromamba
+    export MAMBA_EXE=/opt/micromamba/bin/mamba
+    export CONDA_ENVS_PATH=/opt/conda/envs
+    unset CONDA_EXE CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER _CE_CONDA _CE_M
+    unset HMMSEARCH HMMERDIR HMMERPATH
+    export CONDA_SHLVL=0
+    export HMMSEARCH=/opt/conda/envs/compleasm/bin/hmmsearch
 
+    # defaults
+    CORES=2
+    MAG_DIR="input"
+    MODE="concat"      # concat | sgt
+    OUTDIR_ARG="output"
+    DATABASE="PF"
+    AUGUSTUS=false
+    TRIM=false
+    PURGE=""
 
-    RULESET=""
-    if [ "${MODE}" == "concat" ]; then
-        echo "Running in concatenation mode"
-        RULESET="/compact_classification/rules/taxa_class_${DATABASE}_concat.smk"
-    elif [ "${MODE}" == "sgt" ]; then
-        echo "Running in single gene tree mode"
-        RULESET="/compact_classification/rules/taxa_class_${DATABASE}.smk"
+    if [[ -z "${PURGE}" ]]; then
+        for legacy_arg in "${@:6}"; do
+            [[ "${legacy_arg}" == purge=* ]] || continue
+            PURGE="${legacy_arg#purge=}"
+            break
+        done
     fi
 
-    cd "$output"
+    lower() {
+        printf '%s' "${1:-}" | tr 'A-Z' 'a-z'
+    }
 
-    exec snakemake -s ${RULESET} \
-        --cores ${CORE} \
-        --config mag_dir=${MAG_DIR} mode=${MODE} outdir=${output} \
+    parse_bool_token() {
+        case "$(lower "$1")" in
+            1|true|yes|on)  printf 'true';;
+            0|false|no|off) printf 'false';;
+            *)              printf 'invalid';;
+        esac
+    }
+
+    # flags-first; fallback to positional for back-compat
+    if [[ $# -gt 0 && "$1" == -* ]]; then
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+            -c|--cores)   CORES="$2"; shift 2;;
+            -m|--mag-dir) MAG_DIR="$2"; shift 2;;
+            -M|--mode)    MODE="$2"; shift 2;;
+            -o|--outdir)  OUTDIR_ARG="$2"; shift 2;;
+            -d|--db)      DATABASE="$2"; shift 2;;
+            -a|--augustus)
+                if [[ $# -gt 1 && "$2" != -* ]]; then
+                    AUG_VAL="$(parse_bool_token "$2")"
+                    if [[ "${AUG_VAL}" == "false" ]]; then
+                        AUGUSTUS=false
+                    else
+                        AUGUSTUS=true
+                    fi
+                    shift 2
+                else
+                    AUGUSTUS=true
+                    shift 1
+                fi
+                ;;
+            -t|--trim)
+                if [[ $# -gt 1 && "$2" != -* ]]; then
+                    TRIM_VAL="$(parse_bool_token "$2")"
+                    if [[ "${TRIM_VAL}" == "false" ]]; then
+                        TRIM=false
+                    else
+                        TRIM=true
+                    fi
+                    shift 2
+                else
+                    TRIM=true
+                    shift 1
+                fi
+                ;;
+            -p|--purge)    PURGE="${2:-}"; shift 2;;
+            -h|--help)
+                cat <<EOF
+Usage:
+  singularity run image.sif [options]
+
+  Options:
+  -c, --cores N
+  -m, --mag-dir PATH
+  -M, --mode concat|sgt
+  -o, --outdir PATH
+  -d, --db PF|...
+  -a, --augustus        enable BUSCO+Augustus
+  -t, --trim            enable trimming
+  -p, --purge VALUE     purge by Unique ID or Long Name
+EOF
+                exit 0;;
+            *) echo "Unknown option: $1" >&2; exit 2;;
+            esac
+        done
+    else
+        # positional: 1=cores 2=mag_dir 3=mode 4=outdir 5=db 6=augustus 7=trim 8=purge
+        CORES="${1:-$CORES}"
+        MAG_DIR="${2:-$MAG_DIR}"
+        MODE="${3:-$MODE}"
+        OUTDIR_ARG="${4:-$OUTDIR_ARG}"
+        DATABASE="${5:-$DATABASE}"
+        AUG_ARG="${6:-}"
+        TRIM_ARG="${7:-}"
+
+        # Support legacy key=value usage for the 6th/7th slots.
+        if [[ -z "${TRIM_ARG}" && "$(lower "${AUG_ARG%%=*}")" == "trim" ]]; then
+            TRIM_ARG="${AUG_ARG}"
+            AUG_ARG=""
+        fi
+
+        if [[ -n "${AUG_ARG}" ]]; then
+            if [[ "${AUG_ARG}" == "augustus" ]]; then
+                AUGUSTUS=true
+            elif [[ "$(lower "${AUG_ARG%%=*}")" == "augustus" ]]; then
+                AUG_VAL="${AUG_ARG#*=}"
+                AUG_MODE="$(parse_bool_token "${AUG_VAL}")"
+                if [[ "${AUG_MODE}" == "false" ]]; then
+                    AUGUSTUS=false
+                elif [[ "${AUG_MODE}" == "true" ]]; then
+                    AUGUSTUS=true
+                fi
+            fi
+        fi
+
+        if [[ -n "${TRIM_ARG}" ]]; then
+            TRIM_KEY="$(lower "${TRIM_ARG%%=*}")"
+            if [[ "${TRIM_KEY}" == "trim" ]]; then
+                if [[ "${TRIM_ARG}" == "trim" ]]; then
+                    TRIM=true
+                else
+                    TRIM_VAL="${TRIM_ARG#*=}"
+                    TRIM_MODE="$(parse_bool_token "${TRIM_VAL}")"
+                    if [[ "${TRIM_MODE}" == "false" ]]; then
+                        TRIM=false
+                    elif [[ "${TRIM_MODE}" == "true" ]]; then
+                        TRIM=true
+                    fi
+                fi
+            else
+                TRIM_MODE="$(parse_bool_token "${TRIM_ARG}")"
+                if [[ "${TRIM_MODE}" == "false" ]]; then
+                    TRIM=false
+                elif [[ "${TRIM_MODE}" == "true" ]]; then
+                    TRIM=true
+                fi
+            fi
+        fi
+        PURGE="${8:-}"
+    fi
+
+    # normalize outdir to absolute with one trailing slash
+    ABS_OUTDIR="$(python3 -c 'import os, sys; path = os.path.abspath(sys.argv[1]); print(path.rstrip(os.sep) + os.sep)' "${OUTDIR_ARG}")"
+    export HOME="${ABS_OUTDIR}"
+    export XDG_CACHE_HOME="${ABS_OUTDIR}.cache"
+    mkdir -p "${XDG_CACHE_HOME}"
+    mkdir -p "${ABS_OUTDIR}"
+    
+
+    # pick ruleset
+    if [[ "${MODE}" == "concat" ]]; then
+        RULESET="/compact_classification/rules/taxa_class_${DATABASE}_concat.smk"
+    elif [[ "${MODE}" == "sgt" ]]; then
+        RULESET="/compact_classification/rules/taxa_class_${DATABASE}.smk"
+    else
+        echo "Unknown MODE='${MODE}'. Use concat or sgt." >&2; exit 2
+    fi
+
+    # build --config (each toggle independent)
+    CFG=( "mag_dir=${MAG_DIR}" "mode=${MODE}" "outdir=${ABS_OUTDIR}" )
+    $AUGUSTUS && CFG+=( "augustus=True" )
+    $TRIM     && CFG+=( "trim=True" )
+    [[ -n "${PURGE}" ]] && CFG+=( "purge=${PURGE@Q}" )
+
+    exec snakemake -s "${RULESET}" \
+        --cores "${CORES}" \
+        --config "${CFG[@]}" \
         --use-conda --conda-frontend mamba \
+        --conda-prefix /opt/conda/envs \
         -p --keep-going --rerun-incomplete
 
