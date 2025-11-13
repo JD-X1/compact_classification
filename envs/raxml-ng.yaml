@@ -11,6 +11,6 @@ dependencies:
   - hmmer
   - boost
   - gappa
-  - raxml
+  - raxml-ng=1.2.2
   - pandas
-  - epa-ng
+  - epa-ng=0.3.8
