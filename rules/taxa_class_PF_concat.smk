@@ -78,10 +78,10 @@ def is_proteome(path):
 
 # checking if config["outdir"] ends with a slash if it doesn't add one, default to $pwd/output/
 output_default = os.path.join(os.getcwd(), "output/")
-if "outdir" not in config::
+if "outdir" not in config:
     config["outdir"] = output_default
     print("[{:%Y-%m-%d %H:%M:%S}]: No output directory specified. Defaulting to: {}".format(datetime.datetime.now(), config["outdir"]))
-    
+
 if not config["outdir"].endswith("/"):
     config["outdir"] += "/"
 if not config["mag_dir"].endswith("/"):
@@ -262,6 +262,16 @@ rule run_busco:
         fi
         echo "Running compleasm for {wildcards.mag}"
 
+        export HOME="{config[outdir]}"
+        export XDG_CACHE_HOME="{config[outdir]}.cache"
+        mkdir -p "$XDG_CACHE_HOME"
+        rm -rf "$HOME/.compleasm" || true
+        export HMMSEARCH="/opt/conda/envs/compleasm/bin/hmmsearch"
+
+        # breadcrumbs
+        echo "which hmmsearch: $(which hmmsearch)" >> {log}
+        echo "HMMSEARCH=$HMMSEARCH"               >> {log}
+        
         compleasm run -a {input} -t {threads} \
             -l eukaryota \
             -L {params.resources_dir}/mb_downloads/ \
