@@ -94,6 +94,7 @@ print("[{:%Y-%m-%d %H:%M:%S}]: Command invoked with the following options:".form
 print("[{:%Y-%m-%d %H:%M:%S}]: Output directory: {}".format(datetime.datetime.now(), config["outdir"]))
 print("[{:%Y-%m-%d %H:%M:%S}]: MAG directory: {}".format(datetime.datetime.now(), config["mag_dir"]))
 
+predict_proteins = False
 augustus = False
 if "augustus" in config and config["augustus"]==True:
     augustus = True
