@@ -12,5 +12,6 @@ dependencies:
   - boost
   - gappa
   - raxml-ng=1.2.2
+  - iqtree=3.0.1
   - pandas
   - epa-ng=0.3.8

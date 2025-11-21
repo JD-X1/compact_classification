@@ -96,6 +96,7 @@ print("[{:%Y-%m-%d %H:%M:%S}]: MAG directory: {}".format(datetime.datetime.now()
 
 predict_proteins = False
 augustus = False
+species_tree = False
 if "augustus" in config and config["augustus"]==True:
     augustus = True
     print("[{:%Y-%m-%d %H:%M:%S}]: Will use Augustus for BUSCO runs.".format(datetime.datetime.now()))
@@ -110,6 +111,10 @@ proteome_input = False
 if "proteome" in config and config["proteome"]==True:
     proteome_input = True
     print("[{:%Y-%m-%d %H:%M:%S}]: Using proteome input instead of BUSCO Output.".format(datetime.datetime.now()))
+
+if "species_tree" in config and config["species_tree"]==True:
+    species_tree = True
+    print("[{:%Y-%m-%d %H:%M:%S}]: Will infer species tree for each MAG.".format(datetime.datetime.now()))
 
 ## Parse database options
 DATABASE_TYPE = "PhyloFisher"
@@ -611,4 +616,26 @@ rule jplace_pair_wise_dist_matrix:
     shell:
         """
         python {params.ADD_SCRIPTS}jplace_dist2leaves_csv.py {input} -o {output}
+        """
+
+rule species_tree:
+    input:
+        config["outdir"] + "{mag}_SuperMatrix.fas"
+    output:
+        config["outdir"] + "species_tree/{mag}_species_tree"
+    conda:
+        "raxml-ng"
+    threads: workflow.cores
+    priority: 0
+    log:
+        config["outdir"] + "logs/species_tree/{mag}.log"
+    shell:
+        """
+        mkdir -p {config[outdir]}species_tree/
+        iqtree -s {input} \
+            -m Q.pfam+I+G4 \
+            -bb 1000 \
+            -nt {threads} \
+            -pre {config[outdir]}species_tree/{wildcards.mag}_species_tree \
+            1> {log} 2> {log}
         """
