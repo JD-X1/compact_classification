@@ -94,6 +94,7 @@ print("[{:%Y-%m-%d %H:%M:%S}]: Command invoked with the following options:".form
 print("[{:%Y-%m-%d %H:%M:%S}]: Output directory: {}".format(datetime.datetime.now(), config["outdir"]))
 print("[{:%Y-%m-%d %H:%M:%S}]: MAG directory: {}".format(datetime.datetime.now(), config["mag_dir"]))
 
+predict_proteins = False
 augustus = False
 if "augustus" in config and config["augustus"]==True:
     augustus = True
@@ -214,8 +215,9 @@ rule all:
         expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
         expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
-        expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags)
-        
+        expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
+        expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags)
+
     
 rule run_busco:
     input:
@@ -592,21 +594,21 @@ rule gappa:
         
         """
 
-# rule jplace_pair_wise_dist_matrix:
-#     input:
-#         config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
-#     output:
-#         config["outdir"] + "{mag}_epa_out/pairwise_distance_matrix.csv"
-#     conda:
-#         "pline_max"
-#     threads: 1
-#     params:
-#         out_dir=config["outdir"],
-#         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
-#     priority: 0
-#     log:
-#         config["outdir"] + "logs/gappa/{mag}_pairwise_distance.log"
-#     shell:
-#         """
-#         python {params.ADD_SCRIPTS}pairwise_distance_matrix.py -j {input} -o {output}
-#         """
+rule jplace_pair_wise_dist_matrix:
+    input:
+        config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
+    output:
+        config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv"
+    conda:
+        "pline_max"
+    threads: 1
+    params:
+        out_dir=config["outdir"],
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
+    priority: 0
+    log:
+        config["outdir"] + "logs/gappa/{mag}_pairwise_distance.log"
+    shell:
+        """
+        python {params.ADD_SCRIPTS}jplace_dist2leaves_csv.py {input} -o {output}
+        """

@@ -117,7 +117,6 @@ From: continuumio/miniconda3:latest
         esac
     }
 
-    # flags-first; fallback to positional for back-compat
     if [[ $# -gt 0 && "$1" == -* ]]; then
         while [[ $# -gt 0 ]]; do
             case "$1" in
@@ -230,7 +229,7 @@ EOF
         PURGE="${8:-}"
     fi
 
-    # normalize outdir to absolute with one trailing slash
+    # normalize outdir to absolute path with one trailing slash
     ABS_OUTDIR="$(python3 -c 'import os, sys; path = os.path.abspath(sys.argv[1]); print(path.rstrip(os.sep) + os.sep)' "${OUTDIR_ARG}")"
     export HOME="${ABS_OUTDIR}"
     export XDG_CACHE_HOME="${ABS_OUTDIR}.cache"
