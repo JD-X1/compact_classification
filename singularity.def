@@ -44,7 +44,7 @@ From: continuumio/miniconda3:latest
 
     git clone https://github.com/JD-X1/compact_classification.git
     cd compact_classification
-    git checkout EPDB-test 
+    git checkout experimental
 
     micromamba create -y -p /opt/conda/envs/compleasm -f /compact_classification/envs/compleasm.yaml
     micromamba create -y -p /opt/conda/envs/snakemake -f /compact_classification/envs/snakemake.yaml
