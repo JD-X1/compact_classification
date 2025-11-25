@@ -425,9 +425,6 @@ rule mafft:
     shell:
         "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
 
-#superMatrix_targets = get_superMatrix_targets(mag)
-#print(len(superMatrix_targets))
-
 rule divvier:
     input:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
