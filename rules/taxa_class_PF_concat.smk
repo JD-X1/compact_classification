@@ -2,9 +2,52 @@
 
 import os
 import datetime
+from pathlib import path
+
+# ------- Helpers + Constants ------- #
 
 GENOME_EXTS   = [".fna", ".fa", ".fasta", ".fna.gz", ".fa.gz", ".fasta.gz"]
 PROTEOME_EXTS = [".faa", ".faa.gz", ".aa.fa", ".aa.fasta"]
+
+
+def ts():
+    return "[{:%Y-%m-%d %H:%M:%S}]".format(datetime.datetime.now())
+
+def log(msg: str) -> None:
+    print(f"{ts()}: {msg}")
+
+def sanitize_gene_name(name):
+    return name.replace("/", "_").replace(" ", "_").replace("\\", "_")
+
+
+def _mag_path_candidates(base):
+    return [base + ext for ext in GENOME_EXTS + PROTEOME_EXTS]
+
+def find_mag_file(wildcards):
+    base = os.path.join(config["mag_dir"], wildcards.mag)
+    for cand in _mag_path_candidates(base):
+        if os.path.exists(cand):
+            return cand
+    raise ValueError(
+    f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}]: "
+    f"No input file found for {wildcards.mag} in {config['mag_dir']} "
+    f"with any of the expected extensions for genomic sequence: {GENOME_EXTS} "
+    f"or proteomic sequence: {PROTEOME_EXTS}"
+    )
+
+def is_proteome(path):
+    return any(path.endswith(ext) for ext in PROTEOME_EXTS)
+
+def get_superMatrix_targets_for_mag(mag):
+    ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
+    gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
+    # print([gene for gene in gene_files])
+    # print([sanitize_gene_name(gene) for gene in gene_files])
+    # print("################################################################################")
+    return [sanitize_gene_name(gene) for gene in gene_files]
+
+# ------- Resources & Pathing ---------------- #
+
 
 print("[{:%Y-%m-%d %H:%M:%S}]: Checking for resources directory...".format(datetime.datetime.now()))
 if os.path.exists("/compact_classification/resources/"):
@@ -47,34 +90,11 @@ def get_genes_from_goneFishing(mag):
 
     return valid_genes
 
-def sanitize_gene_name(name):
-    return name.replace("/", "_").replace(" ", "_").replace("\\", "_")
 
-def get_superMatrix_targets_for_mag(mag):
-    ckpt_out = checkpoints.goneFishing.get(mag=mag).output[0]
-    gene_files = glob_wildcards(os.path.join(ckpt_out, "{gene}.fas")).gene
-    # print([gene for gene in gene_files])
-    # print([sanitize_gene_name(gene) for gene in gene_files])
-    # print("################################################################################")
-    return [sanitize_gene_name(gene) for gene in gene_files]
 
-def _mag_path_candidates(base):
-    return [base + ext for ext in GENOME_EXTS + PROTEOME_EXTS]
 
-def find_mag_file(wildcards):
-    base = os.path.join(config["mag_dir"], wildcards.mag)
-    for cand in _mag_path_candidates(base):
-        if os.path.exists(cand):
-            return cand
-    raise ValueError(
-    f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}]: "
-    f"No input file found for {wildcards.mag} in {config['mag_dir']} "
-    f"with any of the expected extensions for genomic sequence: {GENOME_EXTS} "
-    f"or proteomic sequence: {PROTEOME_EXTS}"
-    )
 
-def is_proteome(path):
-    return any(path.endswith(ext) for ext in PROTEOME_EXTS)
+
 
 # checking if config["outdir"] ends with a slash if it doesn't add one, default to $pwd/output/
 output_default = os.path.join(os.getcwd(), "output/")
