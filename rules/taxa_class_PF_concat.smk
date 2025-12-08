@@ -47,27 +47,33 @@ def get_superMatrix_targets_for_mag(mag):
     return [sanitize_gene_name(gene) for gene in gene_files]
 
 # ------- Resources & Pathing ---------------- #
-
-
-print("[{:%Y-%m-%d %H:%M:%S}]: Checking for resources directory...".format(datetime.datetime.now()))
+log("Checking for resources directory...")
 if os.path.exists("/compact_classification/resources/"):
     RESOURCES_DIR = "/compact_classification/resources/"
-    print("[{:%Y-%m-%d %H:%M:%S}]: Found resources directory at /compact_classification/resources/".format(datetime.datetime.now()))
+    log("Found resources directory at /compact_classification/resources/")
 elif os.path.exists("resources/"):
     RESOURCES_DIR = "resources/"
-    print("[{:%Y-%m-%d %H:%M:%S}]: Found resources directory at resources/".format(datetime.datetime.now()))
+    log("Found resources directory at resources/")
 else:
-    raise ValueError("[{:%Y-%m-%d %H:%M:%S}]: If running from source code and not singularity, please ensure that the 'resources' directory is present in the current working directory and be sure it contains the necessary databases.".format(datetime.datetime.now()))
+    raise ValueError(
+        f"[{ts()}]: If running from source and not Singularity, please ensure that "
+        f"the 'resources' directory is present in the current working directory."
+    )
 
-print("[{:%Y-%m-%d %H:%M:%S}]: Checking for additional scripts directory...".format(datetime.datetime.now()))
+log("Checking for additional scripts directory...")
 if os.path.exists("/compact_classification/additional_scripts/"):
     ADDITIONAL_SCRIPTS_DIR = "/compact_classification/additional_scripts/"
-    print("[{:%Y-%m-%d %H:%M:%S}]: Found additional scripts directory at /compact_classification/additional_scripts/".format(datetime.datetime.now()))
+    log("Found additional scripts directory at /compact_classification/additional_scripts/")
 elif os.path.exists("additional_scripts/"):
     ADDITIONAL_SCRIPTS_DIR = "additional_scripts/"
-    print("[{:%Y-%m-%d %H:%M:%S}]: Found additional scripts directory at additional_scripts/".format(datetime.datetime.now()))
+    log("Found additional scripts directory at additional_scripts/")
 else:
-    raise ValueError("[{:%Y-%m-%d %H:%M:%S}]: If running from source code and not singularity, please ensure that the 'additional_scripts' directory is present in the current working directory and be sure it contains the necessary scripts.".format(datetime.datetime.now()))
+    raise ValueError(
+        f"[{ts()}]: If running from source and not Singularity, please ensure that "
+        f"the 'additional_scripts' directory is present and contains the necessary scripts."
+    )
+
+# ----------------------------------------------------------------------------------------------------
 
 def get_genes_from_goneFishing(mag):
     checkpoint_output = config["outdir"] + "{mag}_working_dataset"
@@ -90,51 +96,53 @@ def get_genes_from_goneFishing(mag):
 
     return valid_genes
 
+# Config Normalization
+# ---------------------------- #
 
-
-
-
-
-
-# checking if config["outdir"] ends with a slash if it doesn't add one, default to $pwd/output/
 output_default = os.path.join(os.getcwd(), "output/")
-if "outdir" not in config:
-    config["outdir"] = output_default
-    print("[{:%Y-%m-%d %H:%M:%S}]: No output directory specified. Defaulting to: {}".format(datetime.datetime.now(), config["outdir"]))
+outdir = config.get("outdir", output_default)
+outdir = os.path.abspath(outdir)
+if not outdir.endswith(os.sep):
+    outdir += os.sep
+config["outdir"] = outdir
 
-if not config["outdir"].endswith("/"):
-    config["outdir"] += "/"
-if not config["mag_dir"].endswith("/"):
-    config["mag_dir"] += "/"
-outdir = config["outdir"]
-mag_f = os.listdir(config["mag_dir"])
+if "mag_dir" not in config:
+    raise ValueError(
+        "[{:%Y-%m-%d %H:%M:%S}]: No MAG directory specified in config file. Please specify 'mag_dir'.".format(datetime.datetime.now())
+    )
+mag_dir = os.path.abspath(config["mag_dir"])
+if not mag_dir.endswith(os.sep):
+    mag_dir += os.sep
+config["mag_dir"] = mag_dir
 
-# Check if config["augustus"] is set, if not set it to default
-print("[{:%Y-%m-%d %H:%M:%S}]: Command invoked with the following options:".format(datetime.datetime.now()))
-print("[{:%Y-%m-%d %H:%M:%S}]: Output directory: {}".format(datetime.datetime.now(), config["outdir"]))
-print("[{:%Y-%m-%d %H:%M:%S}]: MAG directory: {}".format(datetime.datetime.now(), config["mag_dir"]))
+log(f"Command invoked with the following options:")
+log(f"Output directory: {config['outdir']}")
+log(f"MAG directory: {config['mag_dir']}")
 
-predict_proteins = False
-augustus = False
-species_tree = False
-if "augustus" in config and config["augustus"]==True:
-    augustus = True
-    print("[{:%Y-%m-%d %H:%M:%S}]: Will use Augustus for BUSCO runs.".format(datetime.datetime.now()))
-else:
-    print("[{:%Y-%m-%d %H:%M:%S}]: Will use Compleasm for BUSCO runs.".format(datetime.datetime.now()))
-trim_alignments = False
-if "trim" in config and config["trim"]==True:
-    trim_alignments = True
-    print("[{:%Y-%m-%d %H:%M:%S}]: Trimming alignments with trimAl + divvier.".format(datetime.datetime.now()))
+# Bool flags
 
-proteome_input = False
-if "proteome" in config and config["proteome"]==True:
-    proteome_input = True
-    print("[{:%Y-%m-%d %H:%M:%S}]: Using proteome input instead of BUSCO Output.".format(datetime.datetime.now()))
+augustus = bool(config.get("augustus", False))
+trim_alignments = bool(config.get("trim", False))
+proteome_input = bool(config.get("proteome", False))
 
-if "species_tree" in config and config["species_tree"]==True:
-    species_tree = True
-    print("[{:%Y-%m-%d %H:%M:%S}]: Will infer species tree for each MAG.".format(datetime.datetime.now()))
+# -------------------------------------------------------------------------------------------------
+
+species_tree_flag = bool(config.get("species_tree", False))
+
+log(f"Will use {'Augustus (BUSCO)' if augustus else 'Compleasm'} for BUSCO runs.")
+if trim_alignments:
+    log("Trimming alignments with trimAl + divvier.")
+if proteome_input:
+    log("Using proteome input instead of BUSCO Output.")
+
+
+gene_source = config.get("gene_source", "busco").lower()
+# -------------------------------------------------------------------------------------------------
+# ----- Database Handling & Purging ------- #
+
+DATABASE_TYPE = "PhyloFisher"
+PF_DIR = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0")
+EP_DIR = ""
 
 ## Parse database options
 DATABASE_TYPE = "PhyloFisher"
