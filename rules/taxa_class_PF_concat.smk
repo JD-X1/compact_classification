@@ -145,9 +145,9 @@ PF_DIR = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0")
 EP_DIR = ""
 
 ## Parse database options
-DATABASE_TYPE = "PhyloFisher"
-PF_DIR = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0")
-EP_DIR = ""
+
+
+
 if "database" in config:
     if config["database"] == "EukProt" or config["database"] == "EP":
         if not os.path.exists(os.path.join(RESOURCES_DIR, "PF_extended_DB_v0.1")):
