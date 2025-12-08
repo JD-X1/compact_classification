@@ -223,11 +223,11 @@ for f in mag_files:
         )
     mag_name = ".".join(parts[:-1])
     if "_" in mag_name or " " in mag_name:
-        mag_name = mag_name.replace("_", "").replace(" ", "")
+        new_mag_name = mag_name.replace("_", "").replace(" ", "")
         old_path = os.path.join(config["mag_dir"], f)
         new_path = os.path.join(config["mag_dir"], new_mag_name + "." + parts[-1])
-        os.rename(old_path, new_path
-        log(f"Renaming MAG file to: {new_mag_name}.{parts[-1]}")
+        os.rename(old_path, new_path)
+        log(f"Renaming MAG file to {f} -> {new_mag_name}.{parts[-1]}")
         mag_name = new_mag_name
         
     log(f"Processing MAG: {mag_name}")
