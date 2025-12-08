@@ -46,6 +46,34 @@ def get_superMatrix_targets_for_mag(mag):
     # print("################################################################################")
     return [sanitize_gene_name(gene) for gene in gene_files]
 
+def metaeuk_prefix(mag: str) -> str:
+    # Set prefix for metaeuk out files
+    return os.path.join(config["outdir"], "metaeuk", mag)
+
+def metaeuk_proteome_path(mag: str) -> str:
+    return metaeuk_prefix(mag) + ".faa"
+
+def get_protein_source(wildcards):
+    """
+    Determine where proteome for this MAG come from.
+
+    - If proteome_input is True, use user-provided proteome + proteome directory.
+    - If gene_source == "metaeuk", metaeuk predicted proteome.
+    - Else, BUSCO/compleasm predicted proteome.
+    """
+    mag = wildcards.mag
+    if proteome_input:
+        return config["mag_dir"]
+    if metaeuk_source:
+        return metaeuk_proteome_path(mag)
+    
+    return os.path.join(
+        config["outdir"],
+        "busco_out",
+        mag,
+        "eukaryota_odb12",
+        "translated_protein.fasta"
+    )
 # ------- Resources & Pathing ---------------- #
 log("Checking for resources directory...")
 if os.path.exists("/compact_classification/resources/"):
@@ -135,8 +163,21 @@ if trim_alignments:
 if proteome_input:
     log("Using proteome input instead of BUSCO Output.")
 
+# Prot Source Logic Handling
 
-gene_source = config.get("gene_source", "busco").lower()
+gene_source = str(config.get("gene_source", "busco")).strip().lower()
+metaeuk_source = (gene_source == "metaeuk")
+
+if metaeuk_source and proteome_input:
+    raise ValueError(
+        "[{ts()}]: Config conflict: gene_source=metaeuk and proteome=True. "
+        "Choose either "
+    )
+
+log(f"Using gene source: "
+    f"{'pre-predicted external proteome' if proteome_input else gene_source}"
+    )
+
 # -------------------------------------------------------------------------------------------------
 # ----- Database Handling & Purging ------- #
 
@@ -256,7 +297,8 @@ rule all:
         expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
         expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else []
 
-    
+
+
 rule run_busco:
     input:
         find_mag_file
@@ -384,6 +426,47 @@ rule proc_database:
                 touch {output[0]}
                 """
             )
+rule metaeuk:
+    input:
+        find_mag_file
+    output:
+        proteome = lambda wildcards: metaeuk_proteome_path(wildcards.mag)
+    conda:
+        "metaeuk"
+    threads: workflow.cores
+    params:
+        metaeuk_db = config.get(
+            "metaeuk_db",
+            os.path.join(RESOURCES_DIR, "metaeuk_db")
+        )
+        out_prefix = lambda wildcards: metaeuk_prefix(wildcards.mag)
+    log:
+        config["outdir"] + "logs/metaeuk/metaeuk.log"
+    shell:
+        r"""
+        set -euo pipefail
+
+        mkdir -p {config[outdir]}metaeuk/
+        mkdir -p {config[outdir]}metaeuk_tmp/{wildcards.mag}/
+
+        # MetaEuk: contigs -> DB -> out_prefix -> tmp_dir
+        metaeuk easy-predict \
+            {input} \
+            {params.metaeuk_db} \
+            {params.out_prefix} \
+            {config[outdir]}metaeuk_tmp/{wildcards.mag}/ \
+            --threads {threads} \
+            > {log} 2>&1
+        
+        if [ -f "{params.out_prefix}.fasta" ]; then
+            mv "{params.out_prefix}.fasta" {output.proteome}
+        elif [ -f "{params.out_prefix}_predicted_proteins.fasta" ]; then
+            mv "{params.out_prefix}_predicted_proteins.fasta" {output.proteome}
+        else
+            echo "ERROR: MetaEuk output file not found: {params.out_prefix}.fasta" >> {log}
+            exit 2
+        fi
+        """
 
 rule fishing_meta:
     input:
