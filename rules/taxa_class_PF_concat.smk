@@ -253,7 +253,8 @@ rule all:
         expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
-        expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags)
+        expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
+        expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else []
 
     
 rule run_busco:
@@ -651,7 +652,7 @@ rule species_tree:
     input:
         config["outdir"] + "{mag}_SuperMatrix.fas"
     output:
-        config["outdir"] + "species_tree/{mag}_species_tree"
+        config["outdir"] + "species_tree/{mag}_species_tree.treefile"
     conda:
         "raxml-ng"
     threads: workflow.cores
@@ -661,6 +662,7 @@ rule species_tree:
     shell:
         """
         mkdir -p {config[outdir]}species_tree/
+        mkdir -p {config[outdir]}logs/species_tree/
         iqtree -s {input} \
             -m Q.pfam+I+G4 \
             -bb 1000 \

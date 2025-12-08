@@ -96,6 +96,7 @@ From: continuumio/miniconda3:latest
     AUGUSTUS=false
     TRIM=false
     PURGE=""
+    SPECIES_TREE=false
 
     if [[ -z "${PURGE}" ]]; then
         for legacy_arg in "${@:6}"; do
@@ -153,6 +154,20 @@ From: continuumio/miniconda3:latest
                     shift 1
                 fi
                 ;;
+            -s|--species-tree)
+                if [[ $# -gt 1 && "$2" != -* ]]; then
+                    ST_VAL="$(parse_bool_token "$2")"
+                    if [[ "${ST_VAL}" == "false" ]]; then
+                        SPECIES_TREE=false
+                    else
+                        SPECIES_TREE=true
+                    fi
+                    shift 2
+                else
+                    SPECIES_TREE=true
+                    shift 1
+                fi
+                ;;
             -p|--purge)    PURGE="${2:-}"; shift 2;;
             -h|--help)
                 cat <<EOF
@@ -167,6 +182,7 @@ Usage:
   -d, --db PF|...
   -a, --augustus        enable BUSCO+Augustus
   -t, --trim            enable trimming
+  -s, --species-tree    infer species tree for each MAG
   -p, --purge VALUE     purge by Unique ID or Long Name
 EOF
                 exit 0;;
@@ -250,6 +266,7 @@ EOF
     CFG=( "mag_dir=${MAG_DIR}" "mode=${MODE}" "outdir=${ABS_OUTDIR}" )
     $AUGUSTUS && CFG+=( "augustus=True" )
     $TRIM     && CFG+=( "trim=True" )
+    $SPECIES_TREE && CFG+=( "species_tree=True" )
     [[ -n "${PURGE}" ]] && CFG+=( "purge=${PURGE@Q}" )
 
     exec snakemake -s "${RULESET}" \
