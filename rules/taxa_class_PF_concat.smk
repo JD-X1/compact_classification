@@ -364,7 +364,7 @@ rule run_busco:
 
 rule proc_database:
     input:
-        config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta" # ensures proteome exists before moving on
+        get_protein_source
     output:
         config["outdir"] + "{mag}_purged_taxa_check.complete",
         directory(config["outdir"] + "{mag}_PhyloFishScratch")
@@ -470,11 +470,7 @@ rule metaeuk:
 
 rule fishing_meta:
     input:
-        branch(
-            proteome_input,
-            config["mag_dir"],
-            config["outdir"] + "busco_out/{mag}/eukaryota_odb12/translated_protein.fasta"
-            )
+        get_protein_source
     output:
         config["outdir"] + "{mag}_input_metadata.tsv"
     conda:

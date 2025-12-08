@@ -57,7 +57,7 @@ From: continuumio/miniconda3:latest
     micromamba create -y -p /opt/conda/envs/dendropy -f /compact_classification/envs/dendropy.yaml
     micromamba create -y -p /opt/conda/envs/gappa -f /compact_classification/envs/gappa.yaml
     micromamba create -y -p /opt/conda/envs/busco -f /compact_classification/envs/busco.yaml
-
+    micromamba create -y -p /opt/conda/envs/metaeuk -f /compact_classification/envs/metaeuk.yaml
 
     #wget https://ndownloader.figshare.com/files/29093409 
     #tar -xzvf 29093409 
@@ -97,6 +97,7 @@ From: continuumio/miniconda3:latest
     TRIM=false
     PURGE=""
     SPECIES_TREE=false
+    METAEUK=false
 
     if [[ -z "${PURGE}" ]]; then
         for legacy_arg in "${@:6}"; do
@@ -168,6 +169,9 @@ From: continuumio/miniconda3:latest
                     shift 1
                 fi
                 ;;
+            -g|--metaeuk)
+                METAEUK=true
+                shift 1;;
             -p|--purge)    PURGE="${2:-}"; shift 2;;
             -h|--help)
                 cat <<EOF
@@ -183,6 +187,7 @@ Usage:
   -a, --augustus        enable BUSCO+Augustus
   -t, --trim            enable trimming
   -s, --species-tree    infer species tree for each MAG
+  -g, --metaeuk         use MetaEuk gene prediction (instead of BUSCO/compleam)
   -p, --purge VALUE     purge by Unique ID or Long Name
 EOF
                 exit 0;;
@@ -267,6 +272,7 @@ EOF
     $AUGUSTUS && CFG+=( "augustus=True" )
     $TRIM     && CFG+=( "trim=True" )
     $SPECIES_TREE && CFG+=( "species_tree=True" )
+    $METAEUK && CFG+=( "gene_source=metaeuk" )
     [[ -n "${PURGE}" ]] && CFG+=( "purge=${PURGE@Q}" )
 
     exec snakemake -s "${RULESET}" \
