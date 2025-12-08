@@ -76,7 +76,7 @@ else:
 # ----------------------------------------------------------------------------------------------------
 
 def get_genes_from_goneFishing(mag):
-    checkpoint_output = config["outdir"] + "{mag}_working_dataset"
+    checkpoint_output = config["outdir"] + f"{mag}_working_dataset"
 
     # Init an empty list to store genes with corresponding trees
     valid_genes = []
@@ -146,27 +146,16 @@ EP_DIR = ""
 
 ## Parse database options
 
-
-
-if "database" in config:
-    if config["database"] == "EukProt" or config["database"] == "EP":
-        if not os.path.exists(os.path.join(RESOURCES_DIR, "PF_extended_DB_v0.1")):
-            raise ValueError(
-                "[{:%Y-%m-%d %H:%M:%S}]: EukProt database not found in resources directory. Please ensure that the 'PF_extended_DB_v0.1' directory is present in the resources directory.".format(datetime.datetime.now())
-            )
-        else:
-            print("[{:%Y-%m-%d %H:%M:%S}]: Using EukProt database located in resources directory.".format(datetime.datetime.now()))
-        DATABASE_TYPE = "EukProt"
-        EP_DIR = os.path.join(RESOURCES_DIR, "PF_ExtendedEukProtDB_v0.1")
-
 purge = False
 purge_target = None
-if "purge" in config:
-    requested = config["purge"].strip()
+
+if "purge" in config and str(config["purge"]).strip():
+    requested = str(config["purge"]).strip()
     purge_target = requested
     purge = True
+
     if DATABASE_TYPE == "PhyloFisher":
-        meta_path = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0/database/metadata.tsv")
+        meta_path = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0", "database", "metadata.tsv")
         with open(meta_path, "r") as f:
             header = f.readline().strip().split("\t")
             def col_idx(name: str):
@@ -174,23 +163,26 @@ if "purge" in config:
                 for i, h in enumerate(header):
                     if h.strip().lower() == name:
                         return i
-            
+                return None
+
             uid_i = col_idx("Unique ID")
             lname_i = col_idx("Long Name")
             if uid_i is None or lname_i is None:
-                raise ValueError(f"[{datetime.datetime.now():%Y-%m-%d %H:%M:%S}]: "
-                                    f"Required columns 'Unique ID' and 'Long Name' not found in {meta_path}.")
-        
+                raise ValueError(
+                    f"[{ts()}]: Required columns 'Unique ID' and 'Long Name' not found in {meta_path}."
+                )
+            
             long2uids = {}
             all_uids = set()
             for line in f:
                 parts = line.strip().split("\t")
-                if len(parts) <= max(uid_i, lname_i):
+                if len(parts) <= max(uid_i, lname_i)::
                     continue
                 uid = parts[uid_i].strip()
                 lname = parts[lname_i].strip()
                 all_uids.add(uid)
                 long2uids.setdefault(lname, set()).add(uid)
+        
         if requested in all_uids:
             purge_target = requested
         elif requested in long2uids:
@@ -198,37 +190,49 @@ if "purge" in config:
             purge_target = ",".join(uids)
         else:
             raise ValueError(
-                "[{:%Y-%m-%d %H:%M:%S}]: Specified purge target '{}' not found in database.".format(datetime.datetime.now(), requested)
+                f"[{ts()}]: Specified purge target '{requested}' not found in database."
             )
-    print("[{:%Y-%m-%d %H:%M:%S}]: Will purge the following taxa from the database: {}".format(datetime.datetime.now(), purge_target))
+    log(f"Will purge the following taxa from the database: {purge_target}")
 
-mag_f = [f for f in mag_f if any(f.endswith(ext) for ext in (GENOME_EXTS + PROTEOME_EXTS))]
+# ---------------------------------------------------------------------------------------------------- #
+# ---------- MAG Tracking & Rule Definitions --------- #
+# ---------------------------------------------------------------------------------------------------- #
 
-if mag_f == []:
-    raise ValueError("#################\nNo MAGs found in the specified directory.\n#################\n")
+mag_files = [
+    f for f in os.listdir(config["mag_dir"])
+    if any(f.endswith(ext) for ext in (GENOME_EXTS + PROTEOME_EXTS))
+]
 
-# get mag names
-genes = []
+if not mag_files:
+    raise ValueError(
+        "#################"
+        "No MAG files found in the specified directory.\n"
+        "#################\n"
+        )
+
 mags = []
-for f in mag_f:
-    mag = ""
-    if len(f.split(".")) >= 2:
-        # get mag name
-        mag = '.'.join(f.split(".")[:-1])
-    # append to list
-    else:
+
+for f in mag_files:
+    parts = f.split(".")
+    if len(parts) < 2:
         raise ValueError(
-            "#################\nMake sure MAG file names follow the folowwing format:\n\t[unique id].[file extension] \n#################\n"
+            "#################\n"
+            "Make sure MAG file names follow the folowwing format:\n"
+            "   [unique id].[file extension] \n"
+            "#################\n"
         )
-    if "_" in mag or " " in mag:
-        mag = mag.replace("_", "").replace(" ", "")
-        os.rename(
-            os.path.join(config["mag_dir"], f),
-            os.path.join(config["mag_dir"], mag + ".fna")
-        )
-        print(f"Renaming MAG file to: {mag}.fna")
-    print(f"Processing MAG: " + mag)
-    mags.append(mag)
+    mag_name = ".".join(parts[:-1])
+    if "_" in mag_name or " " in mag_name:
+        mag_name = mag_name.replace("_", "").replace(" ", "")
+        old_path = os.path.join(config["mag_dir"], f)
+        new_path = os.path.join(config["mag_dir"], new_mag_name + "." + parts[-1])
+        os.rename(old_path, new_path
+        log(f"Renaming MAG file to: {new_mag_name}.{parts[-1]}")
+        mag_name = new_mag_name
+        
+    log(f"Processing MAG: {mag_name}")
+    mags.append(mag_name)
+
 
 rule all:
     input:
