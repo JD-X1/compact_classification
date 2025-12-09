@@ -1,0 +1,5 @@
+name: metaeuk
+channels:
+  - conda-forge
+dependencies:
+  - metaeuk
