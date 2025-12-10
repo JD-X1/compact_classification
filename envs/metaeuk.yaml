@@ -1,5 +1,6 @@
 name: metaeuk
 channels:
   - bioconda
+  - conda-forge
 dependencies:
   - metaeuk
