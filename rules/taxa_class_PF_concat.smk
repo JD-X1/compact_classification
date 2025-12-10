@@ -217,7 +217,7 @@ if "purge" in config and str(config["purge"]).strip():
             all_uids = set()
             for line in f:
                 parts = line.strip().split("\t")
-                if len(parts) <= max(uid_i, lname_i)::
+                if len(parts) <= max(uid_i, lname_i):
                     continue
                 uid = parts[uid_i].strip()
                 lname = parts[lname_i].strip()
