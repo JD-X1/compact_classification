@@ -1,8 +1,8 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 
 import os
 import datetime
-from pathlib import path
+from pathlib import Path
 
 # ------- Helpers + Constants ------- #
 
@@ -258,7 +258,7 @@ for f in mag_files:
     if len(parts) < 2:
         raise ValueError(
             "#################\n"
-            "Make sure MAG file names follow the folowwing format:\n"
+            "Make sure MAG file names follow the following format:\n"
             "   [unique id].[file extension] \n"
             "#################\n"
         )
@@ -407,7 +407,7 @@ rule proc_database:
                     exit 2
                 fi
 
-                cp -r {params.resources_dir}PhyloFisherDatabase_v1.0/database {output[1]}
+                cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {output[1]}
 
                 purge.py \
                     --input "{purge_list}" \
@@ -426,6 +426,7 @@ rule proc_database:
                 touch {output[0]}
                 """
             )
+
 rule metaeuk:
     input:
         find_mag_file
@@ -438,7 +439,7 @@ rule metaeuk:
         metaeuk_db = config.get(
             "metaeuk_db",
             os.path.join(RESOURCES_DIR, "metaeuk_db")
-        )
+        ),
         out_prefix = lambda wildcards: metaeuk_prefix(wildcards.mag)
     log:
         config["outdir"] + "logs/metaeuk/metaeuk.log"
