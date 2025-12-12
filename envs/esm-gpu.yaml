@@ -1,0 +1,12 @@
+name: esm-gpu
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  - pandas
+  - biopython
+prefix: /home/jduque2/miniforge3/envs/esm-gpu

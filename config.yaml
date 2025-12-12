@@ -1,0 +1,20 @@
+mag_dir: /path/to/mags/
+outdir:  /path/to/output/
+
+gene_source: busco        # or "metaeuk"
+proteome: false           # set true if supplying your own proteomes in mag_dir
+
+metaeuk_db: /compact_classification/resources/metaeuk_refDB/combined_refDB
+
+use_plm: true             # turn PLM on/off
+plm_epdb_embeds: /compact_classification/resources/plm/epdb_embeds.npy
+plm_epdb_meta:   /compact_classification/resources/plm/epdb_plm_meta.tsv
+
+plm_model: esm2_t33_650M_UR50D
+plm_batch_size: 32
+plm_max_residues: 1022
+plm_chunk_overlap: 256
+plm_top_families: 16
+plm_family_sim_thresh: 0.15
+plm_top_hits: 8
+plm_hit_sim_thresh: 0.25
