@@ -1,14 +1,26 @@
-name: esm_gpu
+name: esm-gpu
 channels:
   - pytorch
   - nvidia
   - conda-forge
 channel_priority: strict
+
 dependencies:
   - python=3.11
+
+  # GPU torch stack comes from pytorch+nvidia
   - pytorch
   - torchvision
   - torchaudio
   - pytorch-cuda=12.1
+  - pytorch-mutex=*=cuda   # optional but recommended
+
+  # safe utilities
   - pandas
   - biopython
+  - numpy
+
+  # pip-only bits (so we avoid conda fair-esm pulling cpu torch)
+  - pip
+  - pip:
+      - fair-esm
