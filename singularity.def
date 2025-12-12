@@ -191,7 +191,7 @@ Usage:
   -m, --mag-dir PATH
   -M, --mode concat|sgt
   -o, --outdir PATH
-  -d, --db PF|...
+  -d, --db PF|EP
   -a, --augustus        enable BUSCO+Augustus
   -t, --trim            enable trimming
   -s, --species-tree    infer species tree for each MAG
@@ -271,12 +271,15 @@ EOF
         RULESET="/compact_classification/rules/taxa_class_${DATABASE}_concat.smk"
     elif [[ "${MODE}" == "sgt" ]]; then
         RULESET="/compact_classification/rules/taxa_class_${DATABASE}.smk"
+        if [[ ! -f "${RULESET}" ]]; then
+            RULESET="/compact_classification/rules/taxa_class_PF_concat.smk"
+        fi
     else
         echo "Unknown MODE='${MODE}'. Use concat or sgt." >&2; exit 2
     fi
 
     # build --config (each toggle independent)
-    CFG=( "mag_dir=${MAG_DIR}" "mode=${MODE}" "outdir=${ABS_OUTDIR}" )
+    CFG=( "mag_dir=${MAG_DIR}" "mode=${MODE}" "outdir=${ABS_OUTDIR}" "database=${DATABASE}" )
     $AUGUSTUS && CFG+=( "augustus=True" )
     $TRIM     && CFG+=( "trim=True" )
     $SPECIES_TREE && CFG+=( "species_tree=True" )

@@ -114,22 +114,17 @@ else:
 def get_genes_from_goneFishing(mag):
     checkpoint_output = config["outdir"] + f"{mag}_working_dataset"
 
-    # Init an empty list to store genes with corresponding trees
     valid_genes = []
 
-    # Check if the checkpoint output directory exists to handle cases where it might not
     if os.path.exists(checkpoint_output):
-        # List files in the output directory
         files = os.listdir(checkpoint_output)
 
-        # Check each file to see if a corresponding tree file exists
         for f in files:
             if f.endswith('.fas'):
                 gene_name = os.path.splitext(f)[0]
-                tree_file = os.path.join("/compact_classification/resources/ref_trees", gene_name, gene_name + ".raxml.support")
+                tree_file = os.path.join(REF_TREES_DIR, gene_name, gene_name + REF_GENE_TREE_SUFFIX)
                 if os.path.exists(tree_file):
                     valid_genes.append(gene_name)
-
     return valid_genes
 
 # Config Normalization
@@ -172,10 +167,18 @@ if trim_alignments:
 if proteome_input:
     log("Using proteome input instead of BUSCO Output.")
 
-# Prot Source Logic Handling
+# -------------------------------------------------------------------------------------------------
+# Prot Source Logic Handling 
+# ----------------------------------------------- #
 
 gene_source = str(config.get("gene_source", "busco")).strip().lower()
 metaeuk_source = (gene_source == "metaeuk")
+
+plmsearch_enabled = bool(
+    config.get("plmsearch", False)
+    or config.get("use_plm", False)
+    or config.get("plm", False)
+)
 
 if metaeuk_source and proteome_input:
     raise ValueError(
@@ -193,11 +196,140 @@ if plmsearch_enabled:
 # -------------------------------------------------------------------------------------------------
 # ----- Database Handling & Purging ------- #
 
-DATABASE_TYPE = "PhyloFisher"
-PF_DIR = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0")
-EP_DIR = "Resources"
+DB_KEY = str(config.get("database", "PF")).strip().upper()
+if DB_KEY in {"EUKPROT", "EUKPROTMOD", "EPDB"}:
+    DB_KEY = "EP"
+if DB_KEY not in {"PF", "EP"}:
+    raise ValueError(f"{ts()}: Unsupported database='{DB_KEY}'. Use 'PF' or 'EP'.")
 
-## Parse database options
+USE_EP_REFS = (DB_KEY == "EP")
+
+PF_DIR = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0")
+EP_EXT_ROOT = os.path.join(RESOURCES_DIR, "PF_extended_DB_v0.1")
+
+def _require_exists(path: str, what: str) -> str:
+    if not os.path.exists(path):
+        raise ValueError(f"{ts()}: Missing {what}: {path}")
+    return path
+
+def _pick_dir(root: str, override_key: str, candidates: list[str], what: str) -> str | None:
+    override = config.get(override_key, None)
+    if override:
+        # allow absolute override or root-relative override
+        p = override if os.path.isabs(str(override)) else os.path.join(root, str(override))
+        if os.path.isdir(p):
+            return p
+        raise ValueError(f"{ts()}: {what} override '{override_key}={override}' not found: {p}")
+
+    for c in candidates:
+        p = os.path.join(root, c)
+        if os.path.isdir(p):
+            return p
+    return None
+
+# Where to look for *single-gene* reference trees (used by get_genes_from_goneFishing)
+REF_GENE_TREE_SUFFIX = str(config.get("ref_gene_tree_suffix", ".raxml.support"))
+
+# EP reference directories (only needed if USE_EP_REFS)
+EP_REF_ALN_DIR = None
+EP_REF_TREE_DIR = None
+if USE_EP_REFS:
+    _require_exists(EP_EXT_ROOT, "EP extended DB root (resources/PF_extended_DB_v0.1)")
+
+    EP_REF_ALN_DIR = _pick_dir(
+        EP_EXT_ROOT,
+        override_key="ep_ref_aln_dir",
+        candidates=[
+            "alignments",
+            "alns",
+            "ref_alns",
+            "gapped",
+            "gapped_alns",
+            os.path.join("EPDB_alns", "gapped"),
+            "EPDB_alns",
+        ],
+        what="EP reference alignment directory",
+    )
+    if EP_REF_ALN_DIR is None:
+        raise ValueError(
+            f"{ts()}: Could not auto-detect EP alignment directory under {EP_EXT_ROOT}. "
+            f"Set --config ep_ref_aln_dir=<path or subdir>."
+        )
+
+    EP_REF_TREE_DIR = _pick_dir(
+        EP_EXT_ROOT,
+        override_key="ep_ref_tree_dir",
+        candidates=[
+            "ref_trees",
+            "trees",
+            "gene_trees",
+            "single_gene_trees",
+        ],
+        what="EP reference tree directory",
+    )
+    if EP_REF_TREE_DIR is None:
+        raise ValueError(
+            f"{ts()}: Could not auto-detect EP tree directory under {EP_EXT_ROOT}. "
+            f"Set --config ep_ref_tree_dir=<path or subdir>."
+        )
+
+# PF reference tree dir (exists in your current image/resources layout)
+PF_REF_TREE_DIR = os.path.join(RESOURCES_DIR, "ref_trees")
+REF_TREES_DIR = EP_REF_TREE_DIR if USE_EP_REFS else PF_REF_TREE_DIR
+_require_exists(REF_TREES_DIR, "reference tree directory (for marker availability checks)")
+
+def resolve_ref_alignment(gene: str) -> str:
+    """
+    Resolve the *reference* alignment file for a marker gene when using EP refs.
+    Supports both flat layouts and per-gene subdirs.
+    """
+    if not USE_EP_REFS:
+        raise ValueError(f"{ts()}: resolve_ref_alignment called but database != EP")
+
+    suffixes = [
+        ".fas.aln.fixed",
+        ".fas.aln",
+        ".aln.fixed",
+        ".aln",
+        ".fas",
+        ".fasta",
+        ".fa",
+    ]
+
+    # flat: <ALN_DIR>/<gene><suffix>
+    for suf in suffixes:
+        cand = os.path.join(EP_REF_ALN_DIR, f"{gene}{suf}")
+        if os.path.exists(cand):
+            return cand
+
+    # nested: <ALN_DIR>/<gene>/<gene><suffix>
+    for suf in suffixes:
+        cand = os.path.join(EP_REF_ALN_DIR, gene, f"{gene}{suf}")
+        if os.path.exists(cand):
+            return cand
+
+    raise ValueError(
+        f"{ts()}: Could not find EP reference alignment for gene='{gene}' in {EP_REF_ALN_DIR}. "
+        f"Checked suffixes: {suffixes}. If your layout is different, set --config ep_ref_aln_dir=..."
+    )
+
+def resolve_ref_concat_tree() -> str:
+    override = config.get("ref_concat_tree", None)
+    if override:
+        p = override if os.path.isabs(str(override)) else os.path.join(RESOURCES_DIR, str(override))
+        return _require_exists(p, "ref_concat_tree override")
+
+    if not USE_EP_REFS:
+        return _require_exists(os.path.join(RESOURCES_DIR, "ref_concat_PF_alt3.tre"), "PF concatenated reference tree")
+
+    # EP attempt auto-detect
+    return _require_exists(os.path.join(RESOURCES_DIR, "ref_concat_EP.tre"), "EP concatenated reference tree")
+
+REF_CONCAT_TREE = resolve_ref_concat_tree()
+
+log(f"Database flag: {DB_KEY} (EP reference alignments/trees {'ENABLED' if USE_EP_REFS else 'disabled'})")
+
+# ---------------- Purge parsing ---------------- #
 
 purge = False
 purge_target = None
@@ -207,45 +339,53 @@ if "purge" in config and str(config["purge"]).strip():
     purge_target = requested
     purge = True
 
-    if DATABASE_TYPE == "PhyloFisher":
-        meta_path = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0", "database", "metadata.tsv")
-        with open(meta_path, "r") as f:
-            header = f.readline().strip().split("\t")
-            def col_idx(name: str):
-                name = name.lower()
-                for i, h in enumerate(header):
-                    if h.strip().lower() == name:
-                        return i
-                return None
+    # Purge resolution is based on PF metadata (UID/Long Name)
+    meta_path = os.path.join(PF_DIR, "database", "metadata.tsv")
+    with open(meta_path, "r") as f:
+        header = f.readline().strip().split("\t")
 
-            uid_i = col_idx("Unique ID")
-            lname_i = col_idx("Long Name")
-            if uid_i is None or lname_i is None:
-                raise ValueError(
-                    f"[{ts()}]: Required columns 'Unique ID' and 'Long Name' not found in {meta_path}."
-                )
-            
-            long2uids = {}
-            all_uids = set()
-            for line in f:
-                parts = line.strip().split("\t")
-                if len(parts) <= max(uid_i, lname_i):
-                    continue
-                uid = parts[uid_i].strip()
-                lname = parts[lname_i].strip()
-                all_uids.add(uid)
-                long2uids.setdefault(lname, set()).add(uid)
-        
-        if requested in all_uids:
-            purge_target = requested
-        elif requested in long2uids:
-            uids = sorted(long2uids[requested])
-            purge_target = ",".join(uids)
-        else:
+        def col_idx(name: str):
+            name = name.lower()
+            for i, h in enumerate(header):
+                if h.strip().lower() == name:
+                    return i
+            return None
+
+        uid_i = col_idx("Unique ID")
+        lname_i = col_idx("Long Name")
+        if uid_i is None or lname_i is None:
             raise ValueError(
-                f"[{ts()}]: Specified purge target '{requested}' not found in database."
+                f"{ts()}: Required columns 'Unique ID' and 'Long Name' not found in {meta_path}."
             )
+
+        long2uids = {}
+        all_uids = set()
+        for line in f:
+            parts = line.strip().split("\t")
+            if len(parts) <= max(uid_i, lname_i):
+                continue
+            uid = parts[uid_i].strip()
+            lname = parts[lname_i].strip()
+            all_uids.add(uid)
+            long2uids.setdefault(lname, set()).add(uid)
+
+    if requested in all_uids:
+        purge_target = requested
+    elif requested in long2uids:
+        uids = sorted(long2uids[requested])
+        purge_target = ",".join(uids)
+    else:
+        raise ValueError(f"{ts()}: Specified purge target '{requested}' not found in PF metadata.")
+
     log(f"Will purge the following taxa from the database: {purge_target}")
+
+# Safety: EP refs + purge is not supported without also purging the EP alignments/trees.
+if purge and USE_EP_REFS:
+    raise ValueError(
+        f"{ts()}: purge is currently incompatible with database=EP reference switching. "
+        f"Use database=PF, or supply a purged EP reference set and rerun."
+    )
+
 
 # ---------------------------------------------------------------------------------------------------- #
 # ---------- MAG Tracking & Rule Definitions --------- #
@@ -612,16 +752,24 @@ rule splitter:
     shell:
         "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output.qs} -r {output.ref} 1> {log} 2> {log}"
 
+def mafft_reference(wildcards):
+    if USE_EP_REFS:
+        return resolve_ref_alignment(wildcards.gene)
+    return os.path.join(
+        config["outdir"],
+        f"{wildcards.mag}_ref_frags",
+        f"{wildcards.gene}.fas"
+    )
 
 rule mafft:
     input:
         query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
-        reference=config["outdir"] + "{mag}_ref_frags/{gene}.fas"
+        reference=mafft_reference
     output:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:
         "pline_max"
-    threads: 22
+    threads: workflow.cores
     priority: 0
     log:
         config["outdir"] + "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
