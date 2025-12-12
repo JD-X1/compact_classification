@@ -195,7 +195,7 @@ if plmsearch_enabled:
 
 DATABASE_TYPE = "PhyloFisher"
 PF_DIR = os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0")
-EP_DIR = ""
+EP_DIR = "Resources"
 
 ## Parse database options
 
@@ -489,7 +489,7 @@ rule plm_embed_proteome:
         emb   = config["outdir"] + "plm/{mag}_embeds.npy",
         index = config["outdir"] + "plm/{mag}_embed_index.tsv"
     conda:
-        "esm_plm"  # your env with esm + torch + biopython + numpy
+        "esm_gpu"
     threads: int(config.get("plm_threads", 4))
     params:
         ADD_SCRIPTS    = ADDITIONAL_SCRIPTS_DIR,
@@ -522,7 +522,7 @@ rule plmsearch_epdb:
         hits       = config["outdir"] + "plm/{mag}_plm_hits.tsv",
         candidates = config["outdir"] + "plm/{mag}_plm_candidates.faa"
     conda:
-        "esm_plm"  # same env; needs numpy, pandas, biopython
+        "esm_gpu"
     threads: 1
     params:
         ADD_SCRIPTS       = ADDITIONAL_SCRIPTS_DIR,

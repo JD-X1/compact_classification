@@ -15,6 +15,9 @@ From: continuumio/miniconda3:latest
     resources/PhyloFisherDatabase_v1.0 /
     resources/mb_downloads /
     resources/busco_downloads /
+    resources/metaeuk_refDB /
+    resources/PF_extended_DB_v0.1 /
+    resources/plmDB /
 %post
     set -e
     echo "Setting portable compiler flags + micromamba ..."
@@ -58,6 +61,7 @@ From: continuumio/miniconda3:latest
     micromamba create -y -p /opt/conda/envs/gappa -f /compact_classification/envs/gappa.yaml
     micromamba create -y -p /opt/conda/envs/busco -f /compact_classification/envs/busco.yaml
     micromamba create -y -p /opt/conda/envs/metaeuk -f /compact_classification/envs/metaeuk.yaml
+    micromamba create -y -p /opt/conda/envs/esm_gpu -f /compact_classification/envs/esm_gpu.yaml
 
     #wget https://ndownloader.figshare.com/files/29093409 
     #tar -xzvf 29093409 
@@ -69,6 +73,10 @@ From: continuumio/miniconda3:latest
 
     #/opt/conda/envs/busco/bin/busco --download eukaryota_odb12 -L
     mv /busco_downloads/ /compact_classification/resources/
+
+    mv /metaeuk_refDB/ /compact_classification/resources/.
+    mv /PF_extended_DB_v0.1/ /compact_classification/resources/.
+    mv /plmDB/ /compact_classification/resources/.
 
     cd ..
     echo "export PATH=/opt/micromamba/envs/snakemake/bin:\$PATH" >> ~/.bashrc
