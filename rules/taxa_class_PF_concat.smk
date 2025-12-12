@@ -63,7 +63,7 @@ def get_protein_source(wildcards):
     """
     mag = wildcards.mag
     if proteome_input:
-        return config["mag_dir"]
+        return find_mag_file(wildcards)
     if metaeuk_source:
         return metaeuk_proteome_path(mag)
     
@@ -74,7 +74,15 @@ def get_protein_source(wildcards):
         "eukaryota_odb12",
         "translated_protein.fasta"
     )
-# ------- Resources & Pathing ---------------- #
+
+def get_plm_proteome_input(wildcards):
+    return get_protein_source(wildcards)
+
+# -------------------------------------------- #
+# -------    Resources & Pathing   ----------- #
+# -------------------------------------------- #
+
+
 log("Checking for resources directory...")
 if os.path.exists("/compact_classification/resources/"):
     RESOURCES_DIR = "/compact_classification/resources/"
@@ -149,6 +157,7 @@ log(f"MAG directory: {config['mag_dir']}")
 
 # Bool flags
 
+
 augustus = bool(config.get("augustus", False))
 trim_alignments = bool(config.get("trim", False))
 proteome_input = bool(config.get("proteome", False))
@@ -177,6 +186,9 @@ if metaeuk_source and proteome_input:
 log(f"Using gene source: "
     f"{'pre-predicted external proteome' if proteome_input else gene_source}"
     )
+
+if plmsearch_enabled:
+    log("PLMsearch filtering is Enabled (will run PLMembedding + search).")
 
 # -------------------------------------------------------------------------------------------------
 # ----- Database Handling & Purging ------- #
@@ -295,7 +307,8 @@ rule all:
         expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
-        expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else []
+        expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else [],
+        expand(config["outdir"] + "plm/{mag}_plm_candidates.faa", mag=mags) if plmsearch_enabled else []
 
 
 
@@ -469,9 +482,86 @@ rule metaeuk:
         fi
         """
 
+rule plm_embed_proteome:
+    input:
+        fasta = get_plm_proteome_input
+    output:
+        emb   = config["outdir"] + "plm/{mag}_embeds.npy",
+        index = config["outdir"] + "plm/{mag}_embed_index.tsv"
+    conda:
+        "esm_plm"  # your env with esm + torch + biopython + numpy
+    threads: int(config.get("plm_threads", 4))
+    params:
+        ADD_SCRIPTS    = ADDITIONAL_SCRIPTS_DIR,
+        model          = config.get("plm_model", "esm2_t33_650M_UR50D"),
+        batch_size     = int(config.get("plm_batch_size", 32)),
+        max_residues   = int(config.get("plm_max_residues", 1022)),
+        chunk_overlap  = int(config.get("plm_chunk_overlap", 256)),
+    log:
+        config["outdir"] + "logs/plm_embed/{mag}.log"
+    shell:
+        r"""
+        mkdir -p {config[outdir]}plm/ {config[outdir]}logs/plm_embed/
+
+        python {params.ADD_SCRIPTS}/embed_epdb_with_esm.py \
+            --fasta {input.fasta} \
+            --model {params.model} \
+            --batch_size {params.batch_size} \
+            --max_residues {params.max_residues} \
+            --chunk_overlap {params.chunk_overlap} \
+            --out_embeds {output.emb} \
+            --out_index {output.index} \
+            > {log} 2>&1
+        """
+
+rule plmsearch_epdb:
+    input:
+        emb   = config["outdir"] + "plm/{mag}_embeds.npy",
+        index = config["outdir"] + "plm/{mag}_embed_index.tsv"
+    output:
+        hits       = config["outdir"] + "plm/{mag}_plm_hits.tsv",
+        candidates = config["outdir"] + "plm/{mag}_plm_candidates.faa"
+    conda:
+        "esm_plm"  # same env; needs numpy, pandas, biopython
+    threads: 1
+    params:
+        ADD_SCRIPTS       = ADDITIONAL_SCRIPTS_DIR,
+        epdb_embeds       = config.get("plm_epdb_embeds", os.path.join(RESOURCES_DIR, "plm", "epdb_embeds.npy")),
+        epdb_meta         = config.get("plm_epdb_meta",   os.path.join(RESOURCES_DIR, "plm", "epdb_plm_meta.tsv")),
+        query_fasta       = get_plm_proteome_input,
+        top_families      = int(config.get("plm_top_families", 16)),
+        family_sim_thresh = float(config.get("plm_family_sim_thresh", 0.15)),
+        top_hits          = int(config.get("plm_top_hits", 8)),
+        hit_sim_thresh    = float(config.get("plm_hit_sim_thresh", 0.25)),
+    log:
+        config["outdir"] + "logs/plmsearch/{mag}.log"
+    shell:
+        r"""
+        mkdir -p {config[outdir]}plm/ {config[outdir]}logs/plmsearch/
+
+        python {params.ADD_SCRIPTS}/plmsearch_epdb.py \
+          --epdb-embeds  {params.epdb_embeds} \
+          --epdb-meta    {params.epdb_meta} \
+          --query-embeds {input.emb} \
+          --query-index  {input.index} \
+          --query-fasta  {params.query_fasta} \
+          --out-hits     {output.hits} \
+          --out-candidates {output.candidates} \
+          --top-families      {params.top_families} \
+          --family-sim-thresh {params.family_sim_thresh} \
+          --top-hits          {params.top_hits} \
+          --hit-sim-thresh    {params.hit_sim_thresh} \
+          > {log} 2>&1
+        """
+
+
 rule fishing_meta:
     input:
-        get_protein_source
+        lambda wildcards: (
+            os.path.join(config["outdir"], "plm", f"{wildcards.mag}_plm_candidates.faa")
+            if plmsearch_enabled
+            else get_protein_source(wildcards)
+        )
     output:
         config["outdir"] + "{mag}_input_metadata.tsv"
     conda:

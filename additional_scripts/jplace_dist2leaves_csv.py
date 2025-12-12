@@ -42,11 +42,11 @@ def parse_tree_with_edge_nums(tree_str):
 
 def dist_from_pos_on_edge(tree, branch_node, distal_length, leaf):
     """
-    Distance from a point P located `distal_length` away from the **distal end**
-    of branch (parent -> branch_node) to `leaf`.
+    Distance from the parent node to the placement position along the indicated
+    internal branch.
 
-    jplace: distal_length is from the distal (away from root) side of the
-    reference edge to the placement attachment point.
+    jplace: distal_length is the length from the parent node
+            to the placement attachment point.
     """
 
     L = branch_node.branch_length or 0.0

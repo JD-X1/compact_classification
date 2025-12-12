@@ -19,7 +19,6 @@ def load_epdb(epdb_embeds_path: str, epdb_meta_path: str):
     emb = np.load(epdb_embeds_path)
     meta = pd.read_csv(epdb_meta_path, sep="\t")
 
-    # Handle both old and normalized column names
     col_map = {}
     if "seq_id" not in meta.columns and "new_id" in meta.columns:
         col_map["new_id"] = "seq_id"
@@ -40,7 +39,6 @@ def load_epdb(epdb_embeds_path: str, epdb_meta_path: str):
             f"EPDB meta file {epdb_meta_path} is missing required columns: {missing}"
         )
 
-    # Align meta to embeddings by row_idx
     meta = meta.sort_values("row_idx").reset_index(drop=True)
     if not np.array_equal(meta["row_idx"].to_numpy(), np.arange(len(meta))):
         raise ValueError(
@@ -66,11 +64,9 @@ def build_gene_index(epdb_embeds: np.ndarray, epdb_meta: pd.DataFrame):
             continue
         gene_to_idxs[gene].append(idx)
 
-    # Convert lists to arrays
     for g in list(gene_to_idxs.keys()):
         gene_to_idxs[g] = np.array(gene_to_idxs[g], dtype=np.int32)
 
-    # Precompute normalized EPDB embeddings
     emb_norm = normalize_rows(epdb_embeds)
 
     # Centroids per gene
@@ -198,7 +194,6 @@ def plmsearch(
     if hits_df.empty:
         return hits_df, set()
 
-    # For candidate FASTA: any query that had at least one good hit
     candidate_ids = set(hits_df["query_id"].unique())
     return hits_df, candidate_ids
 
