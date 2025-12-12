@@ -584,7 +584,7 @@ rule metaeuk:
     input:
         find_mag_file
     output:
-        proteome = lambda wildcards: metaeuk_proteome_path(wildcards.mag)
+        proteome = config["outdir"] + "metaeuk/{mag}.faa"
     conda:
         "metaeuk"
     threads: workflow.cores
@@ -595,7 +595,7 @@ rule metaeuk:
         ),
         out_prefix = lambda wildcards: metaeuk_prefix(wildcards.mag)
     log:
-        config["outdir"] + "logs/metaeuk/metaeuk.log"
+        config["outdir"] + "logs/metaeuk/{mag}.log"
     shell:
         r"""
         set -euo pipefail
@@ -875,7 +875,7 @@ rule alignment_splitter:
     shell:
         "python {params.ADD_SCRIPTS}alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2> {log}"
 
-def get_ref_concat_tree():
+def get_ref_concat_tree(wildcards=None):
     """
     PF: resources/ref_concat_PF_alt3.tre
     EP: resources/ref_concat_EP.tre
