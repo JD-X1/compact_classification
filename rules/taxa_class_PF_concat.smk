@@ -629,7 +629,7 @@ rule plm_embed_proteome:
         emb   = config["outdir"] + "plm/{mag}_embeds.npy",
         index = config["outdir"] + "plm/{mag}_embed_index.tsv"
     conda:
-        "esm_gpu"
+        "esm-gpu"
     threads: int(config.get("plm_threads", 4))
     params:
         ADD_SCRIPTS    = ADDITIONAL_SCRIPTS_DIR,
@@ -662,7 +662,7 @@ rule plmsearch_epdb:
         hits       = config["outdir"] + "plm/{mag}_plm_hits.tsv",
         candidates = config["outdir"] + "plm/{mag}_plm_candidates.faa"
     conda:
-        "esm_gpu"
+        "esm-gpu"
     threads: 1
     params:
         ADD_SCRIPTS       = ADDITIONAL_SCRIPTS_DIR,
@@ -752,14 +752,24 @@ rule splitter:
     shell:
         "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output.qs} -r {output.ref} 1> {log} 2> {log}"
 
+
 def mafft_reference(wildcards):
-    if USE_EP_REFS:
-        return resolve_ref_alignment(wildcards.gene)
-    return os.path.join(
-        config["outdir"],
-        f"{wildcards.mag}_ref_frags",
-        f"{wildcards.gene}.fas"
-    )
+    db = str(config.get("database", "PF")).strip().upper()
+    if db in {"EP", "EUKPROT"}:
+        if "resolve_ref_alignment" in globals():
+            return resolve_ref_alignment(wildcards.gene)
+
+        ep_root = os.path.join(RESOURCES_DIR, "PF_extended_DB_v0.1")
+        aln_dir = os.path.join(ep_root, "alignments")
+        suffixes = [".fas.aln.fixed", ".fas.aln", ".aln.fixed", ".aln", ".fas", ".fasta", ".fa"]
+        for suf in suffixes:
+            cand = os.path.join(aln_dir, f"{wildcards.gene}{suf}")
+            if os.path.exists(cand):
+                return cand
+        raise ValueError(f"[{ts()}]: database=EP but could not find reference alignment for {wildcards.gene} under {aln_dir}")
+
+    return os.path.join(config["outdir"], f"{wildcards.mag}_ref_frags", f"{wildcards.gene}.fas")
+
 
 rule mafft:
     input:
@@ -769,12 +779,13 @@ rule mafft:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:
         "pline_max"
-    threads: workflow.cores
+    threads: 22
     priority: 0
     log:
         config["outdir"] + "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
     shell:
         "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
+
 
 rule divvier:
     input:
@@ -864,6 +875,32 @@ rule alignment_splitter:
     shell:
         "python {params.ADD_SCRIPTS}alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2> {log}"
 
+def get_ref_concat_tree():
+    """
+    PF: resources/ref_concat_PF_alt3.tre
+    EP: resources/ref_concat_EP.tre
+    Optional override: config['ref_concat_tree']
+    """
+    override = config.get("ref_concat_tree", None)
+    if override:
+        p = override if os.path.isabs(str(override)) else os.path.join(RESOURCES_DIR, str(override))
+        if not os.path.exists(p):
+            raise ValueError(f"[{ts()}]: ref_concat_tree override not found: {p}")
+        return p
+
+    db = str(config.get("database", "PF")).strip().upper()
+    if db in {"EP", "EUKPROT"}:
+        p = os.path.join(RESOURCES_DIR, "ref_concat_EP.tre")
+        if not os.path.exists(p):
+            raise ValueError(f"[{ts()}]: database=EP but missing: {p}")
+        return p
+
+    p = os.path.join(RESOURCES_DIR, "ref_concat_PF_alt3.tre")
+    if not os.path.exists(p):
+        raise ValueError(f"[{ts()}]: database=PF but missing: {p}")
+    return p
+
+
 rule sub_tree:
     input:
         aln=config["outdir"] + "{mag}_ref.aln"
@@ -873,7 +910,7 @@ rule sub_tree:
         "dendropy"
     params:
         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
-        resources_dir=RESOURCES_DIR,
+        ref_concat_tree=get_ref_concat_tree,
         target_taxa=purge_target
     threads: 1
     priority: 0
@@ -882,10 +919,10 @@ rule sub_tree:
     shell:
         branch(purge,
         """
-        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.resources_dir}/ref_concat_PF_alt3.tre -p {params.target_taxa} -o {output} > {log} 2> {log}
+        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.ref_concat_tree} -p {params.target_taxa} -o {output} > {log} 2> {log}
         """,
         """
-        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.resources_dir}/ref_concat_PF_alt3.tre -o {output} > {log} 2> {log}
+        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.ref_concat_tree} -o {output} > {log} 2> {log}
         """)
 
 rule epa:
@@ -970,9 +1007,9 @@ rule species_tree:
     input:
         config["outdir"] + "{mag}_SuperMatrix.fas"
     output:
-        config["outdir"] + "species_tree/{mag}_species_tree.treefile"
+        treefile=config["outdir"] + "species_tree/{mag}_species_tree.treefile"
     conda:
-        "raxml-ng"
+        "iqtree"
     threads: workflow.cores
     priority: 0
     log:
@@ -980,11 +1017,11 @@ rule species_tree:
     shell:
         """
         mkdir -p {config[outdir]}species_tree/
-        mkdir -p {config[outdir]}logs/species_tree/
-        iqtree -s {input} \
+        iqtree2 -s {input} \
             -m Q.pfam+I+G4 \
             -bb 1000 \
             -nt {threads} \
             -pre {config[outdir]}species_tree/{wildcards.mag}_species_tree \
             1> {log} 2> {log}
         """
+

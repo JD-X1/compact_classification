@@ -267,15 +267,17 @@ EOF
     
 
     # pick ruleset
+    # database switching is handled INSIDE the ruleset via --config database=PF|EP
     if [[ "${MODE}" == "concat" ]]; then
-        RULESET="/compact_classification/rules/taxa_class_${DATABASE}_concat.smk"
+        RULESET="/compact_classification/rules/taxa_class_PF_concat.smk"
     elif [[ "${MODE}" == "sgt" ]]; then
-        RULESET="/compact_classification/rules/taxa_class_${DATABASE}.smk"
+        RULESET="/compact_classification/rules/taxa_class_PF.smk"
         if [[ ! -f "${RULESET}" ]]; then
             RULESET="/compact_classification/rules/taxa_class_PF_concat.smk"
         fi
     else
-        echo "Unknown MODE='${MODE}'. Use concat or sgt." >&2; exit 2
+        echo "Unknown MODE='${MODE}'. Use concat or sgt." >&2
+        exit 2
     fi
 
     # build --config (each toggle independent)
