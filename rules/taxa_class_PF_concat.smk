@@ -182,8 +182,8 @@ plmsearch_enabled = bool(
 
 if metaeuk_source and proteome_input:
     raise ValueError(
-        "[{ts()}]: Config conflict: gene_source=metaeuk and proteome=True. "
-        "Choose either "
+        f"[{ts()}]: Config conflict: gene_source=metaeuk and proteome=True. "
+        f"Choose either."
     )
 
 log(f"Using gene source: "
@@ -406,15 +406,29 @@ if not mag_files:
 mags = []
 
 for f in mag_files:
-    parts = f.split(".")
-    if len(parts) < 2:
+    # parts = f.split(".")
+    # if len(parts) < 2:
+    #     raise ValueError(
+    #         "#################\n"
+    #         "Make sure MAG file names follow the following format:\n"
+    #         "   [unique id].[file extension] \n"
+    #         "#################\n"
+    #     )
+    # mag_name = ".".join(parts[:-1])
+
+    # # potentially replace the above with 
+    matched_ext = next((ext for ext in sorted(GENOME_EXTS + PROTEOME_EXTS, key=len, reverse=True) iff.endswith(ext)), None)
+    if not matched_ext:
+        raise ValueError(f"No recognized extension for file: {f}")
+    mag_name = f[:-len(matched_ext)]
+    if not mag_name:
         raise ValueError(
             "#################\n"
             "Make sure MAG file names follow the following format:\n"
             "   [unique id].[file extension] \n"
             "#################\n"
         )
-    mag_name = ".".join(parts[:-1])
+
     if "_" in mag_name or " " in mag_name:
         new_mag_name = mag_name.replace("_", "").replace(" ", "")
         old_path = os.path.join(config["mag_dir"], f)
@@ -480,7 +494,7 @@ rule run_busco:
             -l {params.resources_dir}/busco_downloads/lineages/eukaryota_odb12 \
             -c {threads} \
             -f --augustus \
-            -o {config[outdir]}busco_out/{wildcards.mag} 1> {log} 2> {log}
+            -o {config[outdir]}busco_out/{wildcards.mag} > {log} 2>&1
         mkdir -p {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/
         if [[ "{params.busco_mode}" == "proteins" ]]; then
             cat {config[outdir]}busco_out/{wildcards.mag}/run_eukaryota_odb12/augustus_output/*faa* >> {config[outdir]}busco_out/{wildcards.mag}/eukaryota_odb12/translated_protein.fasta
@@ -511,7 +525,7 @@ rule run_busco:
             -l eukaryota \
             -L {params.resources_dir}/mb_downloads/ \
             -o {config[outdir]}busco_out/{wildcards.mag} \
-            1> {log} 2> {log}
+            1> {log} 2>&1
         """
         )
 
@@ -713,7 +727,7 @@ rule fishing_meta:
         config["outdir"] + "logs/fishing_meta/{mag}.log"
     priority: 0
     shell:
-        "python {params.ADD_SCRIPTS}/fishing_meta.py -p {input} -o {output} > {log} 2> {log}"
+        "python {params.ADD_SCRIPTS}/fishing_meta.py -p {input} -o {output} > {log} 2>&1"
 
 
 checkpoint goneFishing:
@@ -730,7 +744,7 @@ checkpoint goneFishing:
     threads: workflow.cores
     priority: 0
     shell:
-        "bash {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input.meta} -r {params.resources_dir} -o {config[outdir]}"
+        "bash {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input.meta} -r {params.resources_dir} -o {config[outdir]} > {log} 2>&1"
 
 
 rule splitter:
@@ -750,7 +764,7 @@ rule splitter:
     log:
         config["outdir"] + "logs/splitter/{mag}_{gene}.log"
     shell:
-        "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output.qs} -r {output.ref} 1> {log} 2> {log}"
+        "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output.qs} -r {output.ref} > {log} 2>&1"
 
 
 def mafft_reference(wildcards):
@@ -800,7 +814,7 @@ rule divvier:
     threads: 1
     shell:
         """
-        divvier -mincol 4 -partial -divvygap {input} > {log} 2> {log}
+        divvier -mincol 4 -partial -divvygap {input} > {log} 2>&1
         """
 
 rule trimal:
@@ -815,7 +829,7 @@ rule trimal:
     threads: 1
     shell:
         """
-        trimal -in {input} -gt 0.8 -out {output} > {log} 2> {log}
+        trimal -in {input} -gt 0.8 -out {output} > {log} 2>&1
         """
 
 rule concat:
@@ -873,7 +887,7 @@ rule alignment_splitter:
     log:
         config["outdir"] + "logs/alignment_splitter/{mag}.log"
     shell:
-        "python {params.ADD_SCRIPTS}alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2> {log}"
+        "python {params.ADD_SCRIPTS}alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2>&1"
 
 def get_ref_concat_tree(wildcards=None):
     """
@@ -919,10 +933,10 @@ rule sub_tree:
     shell:
         branch(purge,
         """
-        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.ref_concat_tree} -p {params.target_taxa} -o {output} > {log} 2> {log}
+        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.ref_concat_tree} -p {params.target_taxa} -o {output} > {log} 2>&1
         """,
         """
-        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.ref_concat_tree} -o {output} > {log} 2> {log}
+        python {params.ADD_SCRIPTS}sub_tree.py -a {input.aln} -t {params.ref_concat_tree} -o {output} > {log} 2>&1
         """)
 
 rule epa:
@@ -1022,6 +1036,6 @@ rule species_tree:
             -bb 1000 \
             -nt {threads} \
             -pre {config[outdir]}species_tree/{wildcards.mag}_species_tree \
-            1> {log} 2> {log}
+            1> {log} 2>&1
         """
 
