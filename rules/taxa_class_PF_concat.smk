@@ -417,7 +417,7 @@ for f in mag_files:
     # mag_name = ".".join(parts[:-1])
 
     # # potentially replace the above with 
-    matched_ext = next((ext for ext in sorted(GENOME_EXTS + PROTEOME_EXTS, key=len, reverse=True) iff.endswith(ext)), None)
+    matched_ext = next((ext for ext in sorted(GENOME_EXTS + PROTEOME_EXTS, key=len, reverse=True) if f.endswith(ext)), None)
     if not matched_ext:
         raise ValueError(f"No recognized extension for file: {f}")
     mag_name = f[:-len(matched_ext)]
@@ -432,9 +432,9 @@ for f in mag_files:
     if "_" in mag_name or " " in mag_name:
         new_mag_name = mag_name.replace("_", "").replace(" ", "")
         old_path = os.path.join(config["mag_dir"], f)
-        new_path = os.path.join(config["mag_dir"], new_mag_name + "." + parts[-1])
+        new_path = os.path.join(config["mag_dir"], new_mag_name + matched_ext)
         os.rename(old_path, new_path)
-        log(f"Renaming MAG file to {f} -> {new_mag_name}.{parts[-1]}")
+        log(f"Renaming MAG file to {f} -> {new_mag_name}{matched_ext}")
         mag_name = new_mag_name
         
     log(f"Processing MAG: {mag_name}")
@@ -743,6 +743,7 @@ checkpoint goneFishing:
         resources_dir=RESOURCES_DIR
     threads: workflow.cores
     priority: 0
+    log: config["outdir"] + "logs/goneFishing/{mag}.log"
     shell:
         "bash {params.ADD_SCRIPTS}/fishing.sh -t {threads} -i {input.meta} -r {params.resources_dir} -o {config[outdir]} > {log} 2>&1"
 
@@ -964,9 +965,10 @@ rule epa:
         epa-ng --ref-msa {input.ref_aln} \
          --tree {input.ref_tree} \
          --query {input.q_aln} \
+         --outdir {params.out_dir}{wildcards.mag}_epa_out/ \
          --model LG -T {threads} >{log} 2>&1
-        mv epa_result.jplace {output}
-        if [ -f epa_info.log ]; then cat epa_info.log >> {log}; rm epa_info.log; fi
+        mv {params.out_dir}{wildcards.mag}_epa_out/epa_result.jplace {output}
+        if [ -f {params.out_dir}{wildcards.mag}_epa_out/epa_info.log ]; then cat {params.out_dir}{wildcards.mag}_epa_out/epa_info.log >> {log}; rm {params.out_dir}{wildcards.mag}_epa_out/epa_info.log; fi
         """
 
 rule gappa:
@@ -986,16 +988,15 @@ rule gappa:
         config["outdir"] + "logs/gappa/{mag}.log"
     shell:
         """
+        if [ ! -s "{input}" ]; then
+            echo "ERROR: Missing or empty JPLACE: {input}" >&2
+            exit 2
+        fi
         gappa examine assign \
             --jplace-path {input} \
             --taxon-file {params.resources_dir}/tax_tree.txt \
             --out-dir {params.out_dir}{wildcards.mag}_epa_out \
             --allow-file-overwriting --best-hit --verbose > {log}
-        if [ ! -s "{input}" ]; then
-            echo "ERROR: Missing or empty JPLACE: {input}" >&2
-            exit 2
-        fi
-        
         """
 
 rule jplace_pair_wise_dist_matrix:
