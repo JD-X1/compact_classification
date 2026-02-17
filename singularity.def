@@ -15,9 +15,7 @@ From: continuumio/miniconda3:latest
     resources/PhyloFisherDatabase_v1.0 /
     resources/mb_downloads /
     resources/busco_downloads /
-    resources/metaeuk_refDB /
     resources/PF_extended_DB_v0.1 /
-    resources/plmDB /
 %post
     set -e
     echo "Setting portable compiler flags + micromamba ..."
@@ -74,9 +72,8 @@ From: continuumio/miniconda3:latest
     #/opt/conda/envs/busco/bin/busco --download eukaryota_odb12 -L
     mv /busco_downloads/ /compact_classification/resources/
 
-    mv /metaeuk_refDB/ /compact_classification/resources/.
     mv /PF_extended_DB_v0.1/ /compact_classification/resources/.
-    mv /plmDB/ /compact_classification/resources/plm
+    #mv /plmDB/ /compact_classification/resources/plm
 
     cd ..
     echo "export PATH=/opt/micromamba/envs/snakemake/bin:\$PATH" >> ~/.bashrc
@@ -286,7 +283,7 @@ EOF
     $TRIM     && CFG+=( "trim=True" )
     $SPECIES_TREE && CFG+=( "species_tree=True" )
     $METAEUK && CFG+=( "gene_source=metaeuk" )
-    [[ -n "${PURGE}" ]] && CFG+=( "purge=${PURGE@Q}" )
+    [[ -n "${PURGE}" ]] && CFG+=( "purge=${PURGE}" )
 
     exec snakemake -s "${RULESET}" \
         --cores "${CORES}" \
