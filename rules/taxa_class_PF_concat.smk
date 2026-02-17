@@ -4,8 +4,6 @@ import os
 import datetime
 from pathlib import Path
 
-# ------- Helpers + Constants ------- #
-
 GENOME_EXTS   = [".fna", ".fa", ".fasta", ".fna.gz", ".fa.gz", ".fasta.gz"]
 PROTEOME_EXTS = [".faa", ".faa.gz", ".aa.fa", ".aa.fasta"]
 
@@ -78,10 +76,6 @@ def get_protein_source(wildcards):
 def get_plm_proteome_input(wildcards):
     return get_protein_source(wildcards)
 
-# -------------------------------------------- #
-# -------    Resources & Pathing   ----------- #
-# -------------------------------------------- #
-
 
 log("Checking for resources directory...")
 if os.path.exists("/compact_classification/resources/"):
@@ -109,8 +103,6 @@ else:
         f"the 'additional_scripts' directory is present and contains the necessary scripts."
     )
 
-# ----------------------------------------------------------------------------------------------------
-
 def get_genes_from_goneFishing(mag):
     checkpoint_output = config["outdir"] + f"{mag}_working_dataset"
 
@@ -126,9 +118,6 @@ def get_genes_from_goneFishing(mag):
                 if os.path.exists(tree_file):
                     valid_genes.append(gene_name)
     return valid_genes
-
-# Config Normalization
-# ---------------------------- #
 
 output_default = os.path.join(os.getcwd(), "output/")
 outdir = config.get("outdir", output_default)
@@ -150,14 +139,9 @@ log(f"Command invoked with the following options:")
 log(f"Output directory: {config['outdir']}")
 log(f"MAG directory: {config['mag_dir']}")
 
-# Bool flags
-
-
 augustus = bool(config.get("augustus", False))
 trim_alignments = bool(config.get("trim", False))
 proteome_input = bool(config.get("proteome", False))
-
-# -------------------------------------------------------------------------------------------------
 
 species_tree_flag = bool(config.get("species_tree", False))
 
@@ -167,9 +151,6 @@ if trim_alignments:
 if proteome_input:
     log("Using proteome input instead of BUSCO Output.")
 
-# -------------------------------------------------------------------------------------------------
-# Prot Source Logic Handling 
-# ----------------------------------------------- #
 
 gene_source = str(config.get("gene_source", "busco")).strip().lower()
 metaeuk_source = (gene_source == "metaeuk")
@@ -193,8 +174,7 @@ log(f"Using gene source: "
 if plmsearch_enabled:
     log("PLMsearch filtering is Enabled (will run PLMembedding + search).")
 
-# -------------------------------------------------------------------------------------------------
-# ----- Database Handling & Purging ------- #
+# Database Handling & Purging
 
 DB_KEY = str(config.get("database", "PF")).strip().upper()
 if DB_KEY in {"EUKPROT", "EUKPROTMOD", "EPDB"}:
@@ -227,7 +207,7 @@ def _pick_dir(root: str, override_key: str, candidates: list[str], what: str) ->
             return p
     return None
 
-# Where to look for *single-gene* reference trees (used by get_genes_from_goneFishing)
+# Where to look for single-gene reference trees (used by get_genes_from_goneFishing)
 REF_GENE_TREE_SUFFIX = str(config.get("ref_gene_tree_suffix", ".raxml.support"))
 
 # EP reference directories (only needed if USE_EP_REFS)
@@ -273,8 +253,41 @@ if USE_EP_REFS:
             f"Set --config ep_ref_tree_dir=<path or subdir>."
         )
 
-# PF reference tree dir (exists in your current image/resources layout)
-PF_REF_TREE_DIR = os.path.join(RESOURCES_DIR, "ref_trees")
+def get_ref_concat_tree(wildcards=None):
+    override = config.get("ref_concat_tree", None)
+    if override:
+        p = override if os.path.isabs(str(override)) else os.path.join(RESOURCES_DIR, str(override))
+        if not os.path.exists(p):
+            raise ValueError(f"[{ts()}]: ref_concat_tree override not found: {p}")
+        return p
+
+    db = str(config.get("database", "PF")).strip().upper()
+    if db in {"EP", "EUKPROT"}:
+        p = os.path.join(RESOURCES_DIR, "ref_concat_EP.tre")
+        if not os.path.exists(p):
+            raise ValueError(f"[{ts()}]: database=EP but missing: {p}")
+        return p
+
+    p = os.path.join(RESOURCES_DIR, "ref_concat_PF_alt3.tre")
+    if not os.path.exists(p):
+        raise ValueError(f"[{ts()}]: database=PF but missing: {p}")
+    return p
+
+PF_REF_TREE_DIR = _pick_dir(
+    RESOURCES_DIR,
+    override_key="pf_ref_tree_dir",
+    candidates=[
+        "ref_trees",
+        "ref_trees_PF",
+    ],
+    what="PF reference tree directory",
+)
+if PF_REF_TREE_DIR is None:
+    raise ValueError(
+        f"{ts()}: Could not auto-detect PF reference tree directory under {RESOURCES_DIR}. "
+        f"Set --config pf_ref_tree_dir=<path or subdir>."
+    )
+
 REF_TREES_DIR = EP_REF_TREE_DIR if USE_EP_REFS else PF_REF_TREE_DIR
 _require_exists(REF_TREES_DIR, "reference tree directory (for marker availability checks)")
 
@@ -603,10 +616,7 @@ rule metaeuk:
         "metaeuk"
     threads: workflow.cores
     params:
-        metaeuk_db = config.get(
-            "metaeuk_db",
-            os.path.join(RESOURCES_DIR, "metaeuk_db")
-        ),
+        metaeuk_db = config.get("metaeuk_db", ""),
         out_prefix = lambda wildcards: metaeuk_prefix(wildcards.mag)
     log:
         config["outdir"] + "logs/metaeuk/{mag}.log"
@@ -618,6 +628,10 @@ rule metaeuk:
         mkdir -p {config[outdir]}metaeuk_tmp/{wildcards.mag}/
 
         # MetaEuk: contigs -> DB -> out_prefix -> tmp_dir
+        if [ -z "{params.metaeuk_db}" ]; then
+            echo "ERROR: metaeuk_db is not set. Provide --config metaeuk_db=<path>." >> {log}
+            exit 2
+        fi
         metaeuk easy-predict \
             {input} \
             {params.metaeuk_db} \
@@ -643,7 +657,7 @@ rule plm_embed_proteome:
         emb   = config["outdir"] + "plm/{mag}_embeds.npy",
         index = config["outdir"] + "plm/{mag}_embed_index.tsv"
     conda:
-        "esm-gpu"
+        "esm_gpu"
     threads: int(config.get("plm_threads", 4))
     params:
         ADD_SCRIPTS    = ADDITIONAL_SCRIPTS_DIR,
@@ -676,7 +690,7 @@ rule plmsearch_epdb:
         hits       = config["outdir"] + "plm/{mag}_plm_hits.tsv",
         candidates = config["outdir"] + "plm/{mag}_plm_candidates.faa"
     conda:
-        "esm-gpu"
+        "esm_gpu"
     threads: 1
     params:
         ADD_SCRIPTS       = ADDITIONAL_SCRIPTS_DIR,
@@ -890,31 +904,6 @@ rule alignment_splitter:
     shell:
         "python {params.ADD_SCRIPTS}alignment_splitter.py -a {input} -t {wildcards.mag} -o {params.out_dir} > {log} 2>&1"
 
-def get_ref_concat_tree(wildcards=None):
-    """
-    PF: resources/ref_concat_PF_alt3.tre
-    EP: resources/ref_concat_EP.tre
-    Optional override: config['ref_concat_tree']
-    """
-    override = config.get("ref_concat_tree", None)
-    if override:
-        p = override if os.path.isabs(str(override)) else os.path.join(RESOURCES_DIR, str(override))
-        if not os.path.exists(p):
-            raise ValueError(f"[{ts()}]: ref_concat_tree override not found: {p}")
-        return p
-
-    db = str(config.get("database", "PF")).strip().upper()
-    if db in {"EP", "EUKPROT"}:
-        p = os.path.join(RESOURCES_DIR, "ref_concat_EP.tre")
-        if not os.path.exists(p):
-            raise ValueError(f"[{ts()}]: database=EP but missing: {p}")
-        return p
-
-    p = os.path.join(RESOURCES_DIR, "ref_concat_PF_alt3.tre")
-    if not os.path.exists(p):
-        raise ValueError(f"[{ts()}]: database=PF but missing: {p}")
-    return p
-
 
 rule sub_tree:
     input:
@@ -1039,4 +1028,3 @@ rule species_tree:
             -pre {config[outdir]}species_tree/{wildcards.mag}_species_tree \
             1> {log} 2>&1
         """
-

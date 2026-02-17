@@ -23,6 +23,7 @@ From: continuumio/miniconda3:latest
     echo "Setting portable compiler flags + micromamba ..."
 
     apt-get update && apt-get install -y build-essential git wget curl libtiff6 libgl1 libxext6 libsm6 libxrender1 \
+        && ln -sf /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5 \
         && rm -rf /var/lib/apt/lists/*
 
     curl -L https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
@@ -40,8 +41,6 @@ From: continuumio/miniconda3:latest
     export LDFLAGS=""
     export GOAMD64=v1
    
-
-    apt-get install -y libtiff6 && ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5
 
     . /opt/conda/etc/profile.d/conda.sh # had to learn a crumb of POSIX shell magic to make this work
 
@@ -62,6 +61,7 @@ From: continuumio/miniconda3:latest
     micromamba create -y -p /opt/conda/envs/busco -f /compact_classification/envs/busco.yaml
     micromamba create -y -p /opt/conda/envs/metaeuk -f /compact_classification/envs/metaeuk.yaml
     micromamba create -y -p /opt/conda/envs/esm_gpu -f /compact_classification/envs/esm_gpu.yaml
+    micromamba create -y -p /opt/conda/envs/iqtree -f /compact_classification/envs/iqtree.yaml
 
     #wget https://ndownloader.figshare.com/files/29093409 
     #tar -xzvf 29093409 
@@ -76,7 +76,7 @@ From: continuumio/miniconda3:latest
 
     mv /metaeuk_refDB/ /compact_classification/resources/.
     mv /PF_extended_DB_v0.1/ /compact_classification/resources/.
-    mv /plmDB/ /compact_classification/resources/.
+    mv /plmDB/ /compact_classification/resources/plm
 
     cd ..
     echo "export PATH=/opt/micromamba/envs/snakemake/bin:\$PATH" >> ~/.bashrc
