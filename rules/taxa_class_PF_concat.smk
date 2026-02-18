@@ -456,18 +456,6 @@ for f in mag_files:
 
 rule all:
     input:
-        expand(config["outdir"] + "{mag}_purged_taxa_check.complete", mag=mags),
-        expand(config["outdir"] + "{mag}_working_dataset", mag=mags),
-        lambda wildcards: [
-            f"{config['outdir']}{mag}_q_frags/{gene}.fas"
-            for mag in mags
-            for gene in get_superMatrix_targets_for_mag(mag)
-        ],
-        lambda wildcards: [
-            f"{config['outdir']}{mag}_mafft_out/{gene}.aln"
-            for mag in mags
-            for gene in get_superMatrix_targets_for_mag(mag)
-        ],
         expand(config["outdir"] + "{mag}_q.aln", mag=mags),
         expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
         expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
@@ -475,7 +463,8 @@ rule all:
         expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
         expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else [],
-        expand(config["outdir"] + "plm/{mag}_plm_candidates.faa", mag=mags) if plmsearch_enabled else []
+        expand(config["outdir"] + "plm/{mag}_plm_candidates.faa", mag=mags) if plmsearch_enabled else [],
+        expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
 
 
 
@@ -1028,3 +1017,43 @@ rule species_tree:
             -pre {config[outdir]}species_tree/{wildcards.mag}_species_tree \
             1> {log} 2>&1
         """
+
+
+localrules: cleanup
+
+rule cleanup:
+    input:
+        jplace  = expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
+        profile = expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
+        dists   = expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
+        matrix  = expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
+        q_aln   = expand(config["outdir"] + "{mag}_q.aln", mag=mags),
+        ref_aln = expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
+        ref_tre = expand(config["outdir"] + "{mag}_ref.tre", mag=mags),
+    output:
+        expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
+    run:
+        import shutil
+        outdir = config["outdir"]
+        for mag, sentinel in zip(mags, output):
+            for d in [
+                f"{outdir}{mag}_PhyloFishScratch",
+                f"{outdir}{mag}_working_dataset",
+                f"{outdir}{mag}_fish_out",
+                f"{outdir}{mag}_q_frags",
+                f"{outdir}{mag}_ref_frags",
+                f"{outdir}{mag}_mafft_out",
+                f"{outdir}{mag}_relabeled",
+                f"{outdir}busco_out/{mag}",
+            ]:
+                shutil.rmtree(d, ignore_errors=True)
+            for fp in [
+                f"{outdir}{mag}_input_metadata.tsv",
+                f"{outdir}{mag}_purged_taxa_check.complete",
+            ]:
+                try:
+                    os.remove(fp)
+                except FileNotFoundError:
+                    pass
+            Path(sentinel).touch()
+        shutil.rmtree(f"{outdir}.cache", ignore_errors=True)
