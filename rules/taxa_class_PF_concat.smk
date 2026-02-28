@@ -17,6 +17,25 @@ def log(msg: str) -> None:
 def sanitize_gene_name(name):
     return name.replace("/", "_").replace(" ", "_").replace("\\", "_")
 
+def as_bool(value, default=False):
+    """
+    Parse booleans from Snakemake config values robustly.
+    Accepts bools, ints, and common true/false strings.
+    """
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        v = value.strip().lower()
+        if v in {"1", "true", "t", "yes", "y", "on"}:
+            return True
+        if v in {"0", "false", "f", "no", "n", "off", ""}:
+            return False
+    raise ValueError(f"{ts()}: Cannot parse boolean value from config: {value!r}")
+
 
 def _mag_path_candidates(base):
     return [base + ext for ext in GENOME_EXTS + PROTEOME_EXTS]
@@ -139,11 +158,11 @@ log(f"Command invoked with the following options:")
 log(f"Output directory: {config['outdir']}")
 log(f"MAG directory: {config['mag_dir']}")
 
-augustus = bool(config.get("augustus", False))
-trim_alignments = bool(config.get("trim", False))
-proteome_input = bool(config.get("proteome", False))
+augustus = as_bool(config.get("augustus", False))
+trim_alignments = as_bool(config.get("trim", False))
+proteome_input = as_bool(config.get("proteome", False))
 
-species_tree_flag = bool(config.get("species_tree", False))
+species_tree_flag = as_bool(config.get("species_tree", False))
 
 log(f"Will use {'Augustus (BUSCO)' if augustus else 'Compleasm'} for BUSCO runs.")
 if trim_alignments:
@@ -155,10 +174,10 @@ if proteome_input:
 gene_source = str(config.get("gene_source", "busco")).strip().lower()
 metaeuk_source = (gene_source == "metaeuk")
 
-plmsearch_enabled = bool(
-    config.get("plmsearch", False)
-    or config.get("use_plm", False)
-    or config.get("plm", False)
+plmsearch_enabled = (
+    as_bool(config.get("plmsearch", False))
+    or as_bool(config.get("use_plm", False))
+    or as_bool(config.get("plm", False))
 )
 
 if metaeuk_source and proteome_input:
