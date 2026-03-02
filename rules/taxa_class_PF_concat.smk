@@ -68,7 +68,7 @@ def metaeuk_prefix(mag: str) -> str:
     return os.path.join(config["outdir"], "metaeuk", mag)
 
 def metaeuk_proteome_path(mag: str) -> str:
-    return metaeuk_prefix(mag) + ".faa"
+    return metaeuk_prefix(mag) + ".fas"
 
 def get_protein_source(wildcards):
     """
@@ -619,7 +619,7 @@ rule metaeuk:
     input:
         find_mag_file
     output:
-        proteome = config["outdir"] + "metaeuk/{mag}.faa"
+        proteome = config["outdir"] + "metaeuk/{mag}.fas"
     conda:
         "metaeuk"
     threads: workflow.cores
@@ -648,13 +648,15 @@ rule metaeuk:
             --threads {threads} \
             > {log} 2>&1
         
-        if [ -f "{params.out_prefix}.fasta" ]; then
-            mv "{params.out_prefix}.fasta" {output.proteome}
-        elif [ -f "{params.out_prefix}_predicted_proteins.fasta" ]; then
-            mv "{params.out_prefix}_predicted_proteins.fasta" {output.proteome}
-        else
-            echo "ERROR: MetaEuk output file not found: {params.out_prefix}.fasta" >> {log}
-            exit 2
+        if [ ! -f "{output.proteome}" ]; then
+            if [ -f "{params.out_prefix}.fasta" ]; then
+                mv "{params.out_prefix}.fasta" {output.proteome}
+            elif [ -f "{params.out_prefix}_predicted_proteins.fasta" ]; then
+                mv "{params.out_prefix}_predicted_proteins.fasta" {output.proteome}
+            else
+                echo "ERROR: MetaEuk output file not found: {output.proteome}" >> {log}
+                exit 2
+            fi
         fi
         """
 

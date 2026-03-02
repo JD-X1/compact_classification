@@ -40,10 +40,12 @@ def resolve_location_and_file(p: Path) -> Tuple[Path, str]:
         raise FileNotFoundError(f"No proteome file found in directory {p}")
     raise FileNotFoundError(f"Path does not exist: {p}")
 
-def infer_unique_id(location_dir: Path) -> str:
+def infer_unique_id(location_dir: Path, file_name: str = "") -> str:
     base = location_dir.name
     if base == "eukaryota_odb12":
         mag = location_dir.parent.name
+    elif base == "metaeuk" and file_name:
+        mag = Path(file_name).stem
     else:
         mag = base
     return sanatize_id(mag)
@@ -73,7 +75,7 @@ def main():
     for raw in args.path:
         p = Path(raw).resolve()
         loc_dir, file_name = resolve_location_and_file(p)
-        uid = infer_unique_id(loc_dir)
+        uid = infer_unique_id(loc_dir, file_name)
         if not uid:
             uid = sanatize_id(Path(file_name).stem)
 
