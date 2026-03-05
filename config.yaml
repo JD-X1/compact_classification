@@ -18,3 +18,17 @@ plm_top_families: 16
 plm_family_sim_thresh: 0.15
 plm_top_hits: 8
 plm_hit_sim_thresh: 0.25
+
+marker_filter: true
+marker_min_coverage: 0.30
+marker_max_gap_fraction: 0.70
+marker_min_informative_sites: 20
+min_markers_for_concat: 10
+
+mafft_threads: 22
+epa_threads: 8
+
+taxonomy_report: true
+taxonomy_consensus_top_k: 5
+taxonomy_conf_high: 0.70
+taxonomy_conf_medium: 0.45

@@ -163,12 +163,39 @@ trim_alignments = as_bool(config.get("trim", False))
 proteome_input = as_bool(config.get("proteome", False))
 
 species_tree_flag = as_bool(config.get("species_tree", False))
+marker_filter_enabled = as_bool(config.get("marker_filter", True))
+marker_min_coverage = float(config.get("marker_min_coverage", 0.30))
+marker_max_gap_fraction = float(config.get("marker_max_gap_fraction", 0.70))
+marker_min_informative_sites = int(config.get("marker_min_informative_sites", 20))
+min_markers_for_concat = int(config.get("min_markers_for_concat", 10))
+mafft_threads = max(1, int(config.get("mafft_threads", 22)))
+epa_threads = max(1, int(config.get("epa_threads", workflow.cores)))
+taxonomy_report_enabled = as_bool(config.get("taxonomy_report", True))
+taxonomy_consensus_top_k = int(config.get("taxonomy_consensus_top_k", 5))
+taxonomy_conf_high = float(config.get("taxonomy_conf_high", 0.70))
+taxonomy_conf_medium = float(config.get("taxonomy_conf_medium", 0.45))
 
 log(f"Will use {'Augustus (BUSCO)' if augustus else 'Compleasm'} for BUSCO runs.")
 if trim_alignments:
     log("Trimming alignments with trimAl + divvier.")
 if proteome_input:
     log("Using proteome input instead of BUSCO Output.")
+if marker_filter_enabled:
+    log(
+        f"Marker filtering enabled: min_coverage={marker_min_coverage}, "
+        f"max_gap_fraction={marker_max_gap_fraction}, "
+        f"min_informative_sites={marker_min_informative_sites}, "
+        f"min_markers_for_concat={min_markers_for_concat}"
+    )
+
+if not (0.0 <= marker_min_coverage <= 1.0):
+    raise ValueError(f"{ts()}: marker_min_coverage must be in [0,1].")
+if not (0.0 <= marker_max_gap_fraction <= 1.0):
+    raise ValueError(f"{ts()}: marker_max_gap_fraction must be in [0,1].")
+if marker_min_informative_sites < 0:
+    raise ValueError(f"{ts()}: marker_min_informative_sites must be >= 0.")
+if min_markers_for_concat < 1:
+    raise ValueError(f"{ts()}: min_markers_for_concat must be >= 1.")
 
 
 gene_source = str(config.get("gene_source", "busco")).strip().lower()
@@ -481,6 +508,9 @@ rule all:
         expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
+        expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if taxonomy_report_enabled else [],
+        expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if taxonomy_report_enabled else [],
+        expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if taxonomy_report_enabled else [],
         expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else [],
         expand(config["outdir"] + "plm/{mag}_plm_candidates.faa", mag=mags) if plmsearch_enabled else [],
         expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
@@ -560,6 +590,7 @@ rule proc_database:
         "fisher"
     params:
         resources_dir=RESOURCES_DIR,
+        db_src=os.path.join(RESOURCES_DIR, "PhyloFisherDatabase_v1.0", "database"),
         target_taxa=purge_target,
         purge_enabled=purge
     threads: 1
@@ -595,7 +626,8 @@ rule proc_database:
                     exit 2
                 fi
 
-                cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {output[1]}
+                rm -rf {output[1]}
+                cp -a --reflink=auto "{params.db_src}" {output[1]} 2>> {log} || cp -a "{params.db_src}" {output[1]}
 
                 purge.py \
                     --input "{purge_list}" \
@@ -610,7 +642,8 @@ rule proc_database:
         else:
             shell(
                 r"""
-                cp -r {params.resources_dir}/PhyloFisherDatabase_v1.0/database {config[outdir]}{wildcards.mag}_PhyloFishScratch
+                rm -rf {output[1]}
+                cp -a --reflink=auto "{params.db_src}" {output[1]} 2>> {log} || cp -a "{params.db_src}" {output[1]}
                 touch {output[0]}
                 """
             )
@@ -810,6 +843,20 @@ def mafft_reference(wildcards):
     return os.path.join(config["outdir"], f"{wildcards.mag}_ref_frags", f"{wildcards.gene}.fas")
 
 
+def marker_filter_keep_file(mag):
+    return config["outdir"] + f"{mag}_marker_filter/kept_genes.txt"
+
+
+def marker_filter_inputs_for_mag(mag):
+    genes = get_superMatrix_targets_for_mag(mag)
+    suffix = ".trimal" if trim_alignments else ".aln"
+    return [f"{config['outdir']}{mag}_mafft_out/{gene}{suffix}" for gene in genes]
+
+
+def marker_filter_input_alignments(wildcards):
+    return marker_filter_inputs_for_mag(wildcards.mag)
+
+
 rule mafft:
     input:
         query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
@@ -818,7 +865,7 @@ rule mafft:
         config["outdir"] + "{mag}_mafft_out/{gene}.aln"
     conda:
         "pline_max"
-    threads: 22
+    threads: mafft_threads
     priority: 0
     log:
         config["outdir"] + "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
@@ -857,19 +904,46 @@ rule trimal:
         trimal -in {input} -gt 0.8 -out {output} > {log} 2>&1
         """
 
+rule marker_filter:
+    input:
+        marker_filter_input_alignments
+    output:
+        keep=config["outdir"] + "{mag}_marker_filter/kept_genes.txt",
+        stats=config["outdir"] + "{mag}_marker_filter/marker_stats.tsv"
+    conda:
+        "pline_max"
+    threads: 1
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+        min_coverage=marker_min_coverage,
+        max_gap_fraction=marker_max_gap_fraction,
+        min_informative_sites=marker_min_informative_sites,
+        min_markers=min_markers_for_concat
+    priority: 0
+    log:
+        config["outdir"] + "logs/marker_filter/{mag}.log"
+    shell:
+        """
+        python {params.ADD_SCRIPTS}filter_markers.py \
+            --taxon {wildcards.mag} \
+            --inputs {input} \
+            --out-keep {output.keep} \
+            --out-stats {output.stats} \
+            --min-coverage {params.min_coverage} \
+            --max-gap-fraction {params.max_gap_fraction} \
+            --min-informative-sites {params.min_informative_sites} \
+            --min-markers {params.min_markers} \
+            > {log} 2>&1
+        """
+
 rule concat:
     input:
-        branch(
-            trim_alignments,
-            lambda wildcards: [
-                f"{config['outdir']}{wildcards.mag}_mafft_out/{gene}.trimal"
-                for gene in get_superMatrix_targets_for_mag(wildcards.mag)
-            ],
-            lambda wildcards: [
-                f"{config['outdir']}{wildcards.mag}_mafft_out/{gene}.aln"
-                for gene in get_superMatrix_targets_for_mag(wildcards.mag)
-            ]
-        )
+        filter=branch(
+            marker_filter_enabled,
+            lambda wildcards: marker_filter_keep_file(wildcards.mag),
+            []
+        ),
+        alns=marker_filter_input_alignments
     output:
         config["outdir"] + "{mag}_SuperMatrix.fas"
     conda:
@@ -877,7 +951,8 @@ rule concat:
     params:
         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
         out_dir=config["outdir"],
-        ALN_SUFFIX=branch(trim_alignments, ".trimal", ".aln")
+        ALN_SUFFIX=branch(trim_alignments, ".trimal", ".aln"),
+        FILTER_ENABLED=marker_filter_enabled
     threads: 1
     priority: 0       
     log:
@@ -886,12 +961,28 @@ rule concat:
         """
         FIXED_ALNS=()
         mkdir -p {params.out_dir}{wildcards.mag}_relabeled
-        for i in $(realpath {params.out_dir}{wildcards.mag}_mafft_out/*{params.ALN_SUFFIX});
-        do
-        prot=$(basename ${{i}} {params.ALN_SUFFIX})
-        python {params.ADD_SCRIPTS}add_gene_name.py -a ${{i}} -g ${{prot}} -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
-        FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
-        done
+        if [[ "{params.FILTER_ENABLED}" == "True" ]]; then
+            while IFS= read -r prot || [[ -n "$prot" ]];
+            do
+                [[ -z "$prot" ]] && continue
+                i="{params.out_dir}{wildcards.mag}_mafft_out/${{prot}}{params.ALN_SUFFIX}"
+                if [[ ! -s "$i" ]]; then
+                    echo "Missing alignment selected by marker_filter: $i" >&2
+                    exit 2
+                fi
+                python {params.ADD_SCRIPTS}add_gene_name.py -a "$i" -g "$prot" -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
+                FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
+            done < {input.filter}
+        else
+            for i in {input.alns};
+            do
+                prot=$(basename "${{i}}")
+                prot="${{prot%.trimal}}"
+                prot="${{prot%.aln}}"
+                python {params.ADD_SCRIPTS}add_gene_name.py -a "$i" -g "$prot" -t {wildcards.mag} -o {params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas
+                FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
+            done
+        fi
         python2 {params.ADD_SCRIPTS}geneStitcher.py -in ${{FIXED_ALNS[@]}} 
         mv SuperMatrix.fas {output}
         """
@@ -948,7 +1039,7 @@ rule epa:
         config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     conda:
         "pline_max"
-    threads: workflow.cores
+    threads: epa_threads
     priority: 0
     params:
         out_dir=config["outdir"]
@@ -1017,6 +1108,54 @@ rule jplace_pair_wise_dist_matrix:
         python {params.ADD_SCRIPTS}jplace_dist2leaves_csv.py {input} -o {output}
         """
 
+rule taxonomy_report:
+    input:
+        profile=config["outdir"] + "{mag}_epa_out/profile.tsv",
+        pairwise=config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv",
+        marker_stats=branch(
+            marker_filter_enabled,
+            config["outdir"] + "{mag}_marker_filter/marker_stats.tsv",
+            []
+        ),
+        kept=branch(
+            marker_filter_enabled,
+            config["outdir"] + "{mag}_marker_filter/kept_genes.txt",
+            []
+        )
+    output:
+        confidence=config["outdir"] + "{mag}_epa_out/classification_confidence.tsv",
+        consensus=config["outdir"] + "{mag}_epa_out/classification_consensus.tsv",
+        report=config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv"
+    conda:
+        "pline_max"
+    threads: 1
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+        tax_tree=os.path.join(RESOURCES_DIR, "tax_tree.txt"),
+        top_k=taxonomy_consensus_top_k,
+        high=taxonomy_conf_high,
+        medium=taxonomy_conf_medium
+    priority: 0
+    log:
+        config["outdir"] + "logs/taxonomy_report/{mag}.log"
+    shell:
+        r"""
+        EXTRA=""
+        if [[ -n "{input.marker_stats}" ]]; then EXTRA="$EXTRA --marker-stats {input.marker_stats}"; fi
+        if [[ -n "{input.kept}" ]]; then EXTRA="$EXTRA --kept-genes {input.kept}"; fi
+        python {params.ADD_SCRIPTS}taxonomy_report.py \
+            --profile {input.profile} \
+            --pairwise {input.pairwise} \
+            --tax-tree {params.tax_tree} \
+            --out-confidence {output.confidence} \
+            --out-consensus {output.consensus} \
+            --out-report {output.report} \
+            --top-k {params.top_k} \
+            --high-cutoff {params.high} \
+            --medium-cutoff {params.medium} \
+            $EXTRA > {log} 2>&1
+        """
+
 rule species_tree:
     input:
         config["outdir"] + "{mag}_SuperMatrix.fas"
@@ -1047,6 +1186,9 @@ rule cleanup:
         jplace  = expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
         profile = expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
         dists   = expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
+        conf    = expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if taxonomy_report_enabled else [],
+        cons    = expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if taxonomy_report_enabled else [],
+        report  = expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if taxonomy_report_enabled else [],
         matrix  = expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
         q_aln   = expand(config["outdir"] + "{mag}_q.aln", mag=mags),
         ref_aln = expand(config["outdir"] + "{mag}_ref.aln", mag=mags),

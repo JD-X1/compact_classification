@@ -4,12 +4,30 @@ import argparse
 from Bio import SeqIO
 
 
+def is_target_id(value, taxon_name):
+    text = str(value).split()[0]
+    return (
+        text == taxon_name
+        or text.startswith(f"{taxon_name}_")
+        or text.startswith(f"{taxon_name}..")
+        or text.split("|", 1)[0] == taxon_name
+    )
+
+
+def is_target_record(record, taxon_name):
+    fields = [record.id, record.name, record.description]
+    for field in fields:
+        if field and is_target_id(field, taxon_name):
+            return True
+    return False
+
+
 def split_mag_from_aln(input_fasta, taxon_name, output_dir, gene_name=None):
     records = list(SeqIO.parse(input_fasta, "fasta"))
     mag_records = []
     nonmag_records = []
     for record in records:
-        if taxon_name in record.id:
+        if is_target_record(record, taxon_name):
             mag_records.append(record)
         else:
             nonmag_records.append(record)

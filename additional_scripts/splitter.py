@@ -30,6 +30,40 @@ where necessary.
 
 FA_EXTS = (".fa", ".fasta", ".fas", ".faa", ".aln")
 
+
+def id_parts(rec) -> List[str]:
+    values = set()
+    for raw in (rec.id, rec.name, getattr(rec, "description", "")):
+        if not raw:
+            continue
+        value = str(raw).strip().split()[0]
+        if value:
+            values.add(value)
+    return list(values)
+
+
+def is_mag_id(value: str, mag: str) -> bool:
+    return (
+        value == mag
+        or value.startswith(f"{mag}_")
+        or value.startswith(f"{mag}..")
+        or value.split("|", 1)[0] == mag
+    )
+
+
+def is_query_record(rec, mag: str) -> bool:
+    return any(is_mag_id(value, mag) for value in id_parts(rec))
+
+
+def ids_match(hit_id: str, record_id: str, mag: str) -> bool:
+    left = str(hit_id).split()[0]
+    right = str(record_id).split()[0]
+    if left == right:
+        return True
+    if is_mag_id(left, mag) and is_mag_id(right, mag):
+        return left.startswith(right) or right.startswith(left)
+    return False
+
 def infer_context(input_fa: Path, outdir_opt: Optional[str]) -> Tuple[str, str, Path]:
     name = input_fa.name
     
@@ -65,7 +99,7 @@ def find_hmmout(outdir: Path, mag: str, gene: str) -> Optional[Path]:
             return cand
     return None
 
-def pick_best_hit(hmm_path: Path, input_ids: List[str]) -> Optional[str]:
+def pick_best_hit(hmm_path: Path, input_ids: List[str], mag: str) -> Optional[str]:
     for fmt in ("hmmer3-text", "hmmer3-domtab", "hmmer3-tab"):
         try:
             q = SearchIO.read(str(hmm_path), fmt)
@@ -76,7 +110,7 @@ def pick_best_hit(hmm_path: Path, input_ids: List[str]) -> Optional[str]:
         return None
     best_id, best_ev = None, None
     for hit in q:
-        if not any(hit.id in i or i in hit.id for i in input_ids):
+        if not any(ids_match(hit.id, rec_id, mag) for rec_id in input_ids):
             continue
         evs = [hsp.evalue for hsp in hit.hsps if getattr(hsp, "evalue", None) is not None]
         if not evs:
@@ -120,7 +154,7 @@ def main():
     candidate_indices = [
         idx
         for idx, rec in enumerate(records)
-        if mag in rec.id or mag in getattr(rec, "description", "")
+        if is_query_record(rec, mag)
     ]
 
     candidate_ids = [records[idx].id for idx in candidate_indices]
@@ -128,7 +162,7 @@ def main():
     selection_indices = candidate_indices or list(range(len(records)))
     selection_ids = candidate_ids or input_ids
 
-    best = pick_best_hit(hmm_path, selection_ids) or records[selection_indices[0]].id
+    best = pick_best_hit(hmm_path, selection_ids, mag) or records[selection_indices[0]].id
 
     out_fa.parent.mkdir(parents=True, exist_ok=True)
 
@@ -140,7 +174,7 @@ def main():
     query_index = None
     for idx in selection_indices:
         rec = records[idx]
-        if best == rec.id or best in rec.id or rec.id in best:
+        if ids_match(best, rec.id, mag):
             query_index = idx
             break
     

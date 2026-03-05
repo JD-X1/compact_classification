@@ -5,22 +5,27 @@ from Bio import SeqIO
 import dendropy as dp
 import argparse
 
+
+def parse_purge_items(purge_tip):
+    if not purge_tip:
+        return []
+    return [item.strip() for item in str(purge_tip).split(",") if item.strip()]
+
+
 def filter_tree_by_alignment(tree_file, alignment_file, output_tree_file, purge_tip=None):
-    # read in with SeqIO and extract list of taxa
     alignment = SeqIO.to_dict(SeqIO.parse(alignment_file, "fasta"))
     aln_taxa = set(alignment.keys())
-    # read in the tree
     tree = dp.Tree.get_from_path(tree_file, "newick")
     tree_taxa = tree.taxon_namespace.labels()
-    to_prune = []
+    to_prune = set()
     for taxon in tree_taxa:
         if taxon not in aln_taxa:
-            to_prune.append(taxon)
-    if purge_tip:
-        to_prune.append(purge_tip)
-    # prune the tree
-    tree.prune_taxa_with_labels(to_prune)
-    # write the pruned tree to the output file
+            to_prune.add(taxon)
+    for item in parse_purge_items(purge_tip):
+        to_prune.add(item)
+
+    tree.prune_taxa_with_labels(sorted(to_prune))
+
     with open(output_tree_file, "w") as out_file:
         out_file.write(tree.as_string("newick"))
 

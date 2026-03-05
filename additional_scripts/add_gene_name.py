@@ -14,7 +14,13 @@ args = parser.parse_args()
 def add_gene_name_to_fasta(input_fasta, gene_name, output_fasta):
     records = list(SeqIO.parse(input_fasta, "fasta"))
     for record in records:
-        if args.taxon in record.id:
+        rid = str(record.id).split()[0]
+        if (
+            rid == args.taxon
+            or rid.startswith(f"{args.taxon}_")
+            or rid.startswith(f"{args.taxon}..")
+            or rid.split("|", 1)[0] == args.taxon
+        ):
             record.id = record.id + "_" + gene_name
             record.description =  record.description + "_" + gene_name
     SeqIO.write(records, output_fasta, "fasta")
