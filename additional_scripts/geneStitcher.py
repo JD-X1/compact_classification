@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 import argparse
 import re
@@ -48,7 +48,7 @@ def Get_OTUS(List):
             [Log.write(OTU + '\n') for OTU in OTUS]
             Al.close()
         except:
-            print 'Problem reading alignment: %s' % Alignment
+            print("Problem reading alignment: %s" % Alignment)
             Problems.append(Alignment)
 
 def Fasta_Parser(File):
@@ -81,28 +81,28 @@ def is_Alignment(Arg):
     """Return True or False after evaluating that the length of all sequences in the input file are the same length.Arguments are either file names, or Fasta_record objects."""
     if type(Arg) != dict:
         Arg=Fasta_Parser(Arg)
-        Ref = Arg.keys()[0]
+        Ref = next(iter(Arg.keys()))
         Len= Arg[Ref].SeqLen # obtain a reference from the 1st dict entry.                   
-        if all(Len == Arg[key].SeqLen for key in Arg.iterkeys()):
+        if all(Len == Arg[key].SeqLen for key in Arg.keys()):
             return True
         else:
-            for key in Arg.iterkeys():
-                print "Warning %s lenght: %d" % (Arg[key].SeqId, Arg[key].SeqLen)
+            for key in Arg.keys():
+                print("Warning %s lenght: %d" % (Arg[key].SeqId, Arg[key].SeqLen))
             return False
     else:
-        Ref = Arg.keys()[0]
+        Ref = next(iter(Arg.keys()))
         Len= Arg[Ref].SeqLen # obtain a reference from the 1st dict entry.                                           
-        if all(Len == Arg[key].SeqLen for key in Arg.iterkeys()):
+        if all(Len == Arg[key].SeqLen for key in Arg.keys()):
             return True
         else:
-            for key in Arg.iterkeys():
-                print "Warning %s lenght: %d" % (Arg[key].SeqId, Arg[key].SeqLen)
+            for key in Arg.keys():
+                print("Warning %s lenght: %d" % (Arg[key].SeqId, Arg[key].SeqLen))
             return False
 
 def Write_Fasta(Dict):
     """Simple Fasta writer. NO wrap No extra features."""
     SuperMatrix = open('SuperMatrix.fas', 'w')
-    for Record in sorted(Dict.iterkeys()):
+    for Record in sorted(Dict.keys()):
         Identifier='>' + Record
         Sequence = Dict[Record] + "\n"
         SuperMatrix.write(Identifier + '\n')
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     Part = open('Partition.txt', 'w+')
     
     if len(Targets) <2:
-        print "Error not enough arguments to proceed, you need at least two alignments to concatenate."
+        print("Error not enough arguments to proceed, you need at least two alignments to concatenate.")
     else:
         Get_OTUS(Targets) # get a list with all OTUS
         SDict={key:'' for key in OTUS} #Makes an Dictionary with all OTUS as keys and  empty sequences.
@@ -136,7 +136,7 @@ if __name__ == "__main__":
             Role = 0 # Count Otus in Alignment
             D=Fasta_Parser(File)
             if is_Alignment(D):
-                Len = D[D.keys()[0]].SeqLen 
+                Len = D[next(iter(D.keys()))].SeqLen 
                 Dummy = '?'* Len #Generates all ?  seq for the terminals missing that loci.
                 TotalGaps = 0 
                 Init = 1 + CL
@@ -144,7 +144,7 @@ if __name__ == "__main__":
                 CL = End
                 Part.write("%s = %d-%d;\n"  % (File.split('.')[0], Init, End))
                 presab['loci'].append(File.split('.')[0])
-                for OTU in SDict.iterkeys(): #Populate the Dictionary with Sequences.
+                for OTU in SDict.keys(): #Populate the Dictionary with Sequences.
                     if OTU in D.keys():
                         presab[OTU].append('1')
                         SDict[OTU] = SDict[OTU] + D[OTU].Seq
@@ -160,13 +160,13 @@ if __name__ == "__main__":
                 Log.write("The alignment contains %d missing entries.\n" % TotalGaps)
             else:
                 Problems.append(File)
-                print "Error: The File %s  contains sequences of different lengths!" % File
+                print("Error: The File %s  contains sequences of different lengths!" % File)
 
         WritePresAb(presab, 'PAmatrix.txt')
         Write_Fasta(SDict)
         Log.close()
         Part.close()
         if len(Problems) >0:
-            print "The following files are not included in the final matrix: %s" % (' ').join(Problems)
+            print("The following files are not included in the final matrix: %s" % (' ').join(Problems))
         else:
-            print "Done, goodbye!"
+            print("Done, goodbye!")
