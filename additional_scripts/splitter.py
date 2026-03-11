@@ -80,9 +80,14 @@ def infer_context(input_fa: Path, outdir_opt: Optional[str]) -> Tuple[str, str, 
     if not mag:
         raise SystemExit(f"Could not infer MAG ID to {input_fa}")
 
+    if outdir_opt:
+        outdir = Path(outdir_opt).resolve()
+        if outdir.is_dir():
+            return mag, gene, outdir
+
     outdir = None
     for parent in [input_fa.parent] + list(input_fa.parents):
-        if (parent / f"{mag}_fish_out").exists() or (parent / f"{mag}_working dataset").exists():
+        if (parent / f"{mag}_fish_out").exists() or (parent / f"{mag}_working_dataset").exists():
             outdir = parent
             break
         if outdir is None: 

@@ -502,9 +502,6 @@ for f in mag_files:
 
 rule all:
     input:
-        expand(config["outdir"] + "{mag}_q.aln", mag=mags),
-        expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
-        expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
         expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
@@ -1193,6 +1190,7 @@ rule cleanup:
         q_aln   = expand(config["outdir"] + "{mag}_q.aln", mag=mags),
         ref_aln = expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
         ref_tre = expand(config["outdir"] + "{mag}_ref.tre", mag=mags),
+        species = expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else [],
     output:
         expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
     run:
