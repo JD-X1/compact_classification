@@ -814,12 +814,13 @@ rule splitter:
         "pline_max"
     params:
         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+        outdir=config["outdir"],
     threads: 1
     priority: 0
     log:
         config["outdir"] + "logs/splitter/{mag}_{gene}.log"
     shell:
-        "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {input.mag_dir} -o {output.qs} -r {output.ref} > {log} 2>&1"
+        "python {params.ADD_SCRIPTS}splitter.py -i {input.tar} -d {params.outdir} -o {output.qs} -r {output.ref} > {log} 2>&1"
 
 
 def mafft_reference(wildcards):
