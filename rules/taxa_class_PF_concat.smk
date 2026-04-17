@@ -220,6 +220,15 @@ log(f"Using gene source: "
 if plmsearch_enabled:
     log("PLMsearch filtering is Enabled (will run PLMembedding + search).")
 
+# Pipeline Mode
+pipeline_mode = str(config.get("mode", "concat")).strip().lower()
+if pipeline_mode not in {"concat", "sgt"}:
+    raise ValueError(f"{ts()}: Unsupported mode='{pipeline_mode}'. Use 'concat' or 'sgt'.")
+sgt_mode = (pipeline_mode == "sgt")
+log(f"Pipeline mode: {pipeline_mode}")
+if sgt_mode:
+    log("SGT mode: per-gene placements enabled. Concat/taxonomy-report/species-tree steps will be skipped.")
+
 # Database Handling & Purging
 
 DB_KEY = str(config.get("database", "PF")).strip().upper()
@@ -502,13 +511,18 @@ for f in mag_files:
 
 rule all:
     input:
-        expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
-        expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
-        expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
-        expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if taxonomy_report_enabled else [],
-        expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if taxonomy_report_enabled else [],
-        expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if taxonomy_report_enabled else [],
-        expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else [],
+        # ---- concat path ----
+        expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags) if not sgt_mode else [],
+        expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags) if not sgt_mode else [],
+        expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags) if not sgt_mode else [],
+        expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
+        expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
+        expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
+        expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if (not sgt_mode and species_tree_flag) else [],
+        # ---- sgt path ----
+        expand(config["outdir"] + "{mag}_epa_out/profile_summary.tsv", mag=mags) if sgt_mode else [],
+        expand(config["outdir"] + "{mag}_summary.csv", mag=mags) if sgt_mode else [],
+        # ---- always ----
         expand(config["outdir"] + "plm/{mag}_plm_candidates.faa", mag=mags) if plmsearch_enabled else [],
         expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
 
@@ -855,6 +869,11 @@ def marker_filter_input_alignments(wildcards):
     return marker_filter_inputs_for_mag(wildcards.mag)
 
 
+def sgt_summary_inputs(wildcards):
+    genes = get_superMatrix_targets_for_mag(wildcards.mag)
+    return [f"{config['outdir']}{wildcards.mag}_epa_out/{gene}/profile.tsv" for gene in genes]
+
+
 rule mafft:
     input:
         query=config["outdir"] + "{mag}_q_frags/{gene}.fas",
@@ -900,6 +919,110 @@ rule trimal:
     shell:
         """
         trimal -in {input} -gt 0.8 -out {output} > {log} 2>&1
+        """
+
+rule sgt_split_aln:
+    input:
+        branch(trim_alignments,
+            config["outdir"] + "{mag}_mafft_out/{gene}.trimal",
+            config["outdir"] + "{mag}_mafft_out/{gene}.aln"
+        )
+    output:
+        query=config["outdir"] + "{mag}_mafft_out/{gene}/{gene}_q.aln",
+        ref=config["outdir"] + "{mag}_mafft_out/{gene}/{gene}_ref.aln"
+    conda:
+        "pline_max"
+    threads: 1
+    priority: 0
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+        out_dir=config["outdir"]
+    log:
+        config["outdir"] + "logs/sgt_split_aln/{mag}/{gene}.log"
+    shell:
+        """
+        mkdir -p {params.out_dir}{wildcards.mag}_mafft_out/{wildcards.gene}/
+        python {params.ADD_SCRIPTS}alignment_splitter.py \
+            -a {input} -t {wildcards.mag} -g {wildcards.gene} \
+            -o {params.out_dir}{wildcards.mag}_mafft_out/{wildcards.gene}/ > {log} 2>&1
+        """
+
+rule sgt_epa:
+    input:
+        q_aln=config["outdir"] + "{mag}_mafft_out/{gene}/{gene}_q.aln",
+        ref_aln=config["outdir"] + "{mag}_mafft_out/{gene}/{gene}_ref.aln",
+        ref_tree=lambda wildcards: os.path.join(REF_TREES_DIR, wildcards.gene, wildcards.gene + REF_GENE_TREE_SUFFIX)
+    output:
+        config["outdir"] + "{mag}_epa_out/{gene}/{mag}_epa_out.jplace"
+    conda:
+        "pline_max"
+    threads: epa_threads
+    priority: 0
+    params:
+        out_dir=config["outdir"]
+    log:
+        config["outdir"] + "logs/sgt_epa/{mag}/{gene}.log"
+    shell:
+        """
+        mkdir -p {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene}/
+        epa-ng --redo \
+            --ref-msa {input.ref_aln} \
+            --tree {input.ref_tree} \
+            --query {input.q_aln} \
+            --outdir {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene}/ \
+            --model LG -T {threads} > {log} 2>&1
+        mv {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene}/epa_result.jplace {output}
+        if [ -f {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene}/epa_info.log ]; then
+            cat {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene}/epa_info.log >> {log}
+            rm {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene}/epa_info.log
+        fi
+        """
+
+rule sgt_gappa:
+    input:
+        config["outdir"] + "{mag}_epa_out/{gene}/{mag}_epa_out.jplace"
+    output:
+        config["outdir"] + "{mag}_epa_out/{gene}/profile.tsv"
+    conda:
+        "gappa"
+    threads: 1
+    priority: 0
+    params:
+        out_dir=config["outdir"],
+        tax_tree=os.path.join(RESOURCES_DIR, "tax_tree.txt")
+    log:
+        config["outdir"] + "logs/sgt_gappa/{mag}/{gene}.log"
+    shell:
+        """
+        if [ ! -s "{input}" ]; then
+            echo "ERROR: Missing or empty JPLACE: {input}" >&2
+            exit 2
+        fi
+        gappa examine assign \
+            --jplace-path {input} \
+            --taxon-file {params.tax_tree} \
+            --out-dir {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene} \
+            --allow-file-overwriting --best-hit --verbose > {log}
+        """
+
+rule sgt_summary:
+    input:
+        sgt_summary_inputs
+    output:
+        o1=config["outdir"] + "{mag}_epa_out/profile_summary.tsv",
+        o2=config["outdir"] + "{mag}_summary.csv"
+    conda:
+        "pline_max"
+    threads: 1
+    priority: 0
+    params:
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
+    log:
+        config["outdir"] + "logs/sgt_summary/{mag}.log"
+    shell:
+        """
+        grep -v "LWR" {input} > {output.o1} || true
+        python {params.ADD_SCRIPTS}gappa_parse.py -i {output.o1} -o {output.o2} > {log} 2>&1
         """
 
 rule marker_filter:
@@ -1181,17 +1304,22 @@ localrules: cleanup
 
 rule cleanup:
     input:
-        jplace  = expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags),
-        profile = expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags),
-        dists   = expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags),
-        conf    = expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if taxonomy_report_enabled else [],
-        cons    = expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if taxonomy_report_enabled else [],
-        report  = expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if taxonomy_report_enabled else [],
-        matrix  = expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags),
-        q_aln   = expand(config["outdir"] + "{mag}_q.aln", mag=mags),
-        ref_aln = expand(config["outdir"] + "{mag}_ref.aln", mag=mags),
-        ref_tre = expand(config["outdir"] + "{mag}_ref.tre", mag=mags),
-        species = expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if species_tree_flag else [],
+        # ---- concat path ----
+        jplace  = expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags) if not sgt_mode else [],
+        profile = expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags) if not sgt_mode else [],
+        dists   = expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags) if not sgt_mode else [],
+        conf    = expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
+        cons    = expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
+        report  = expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
+        matrix  = expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags) if not sgt_mode else [],
+        q_aln   = expand(config["outdir"] + "{mag}_q.aln", mag=mags) if not sgt_mode else [],
+        ref_aln = expand(config["outdir"] + "{mag}_ref.aln", mag=mags) if not sgt_mode else [],
+        ref_tre = expand(config["outdir"] + "{mag}_ref.tre", mag=mags) if not sgt_mode else [],
+        # ---- sgt path ----
+        sgt_profile_summary = expand(config["outdir"] + "{mag}_epa_out/profile_summary.tsv", mag=mags) if sgt_mode else [],
+        sgt_summary = expand(config["outdir"] + "{mag}_summary.csv", mag=mags) if sgt_mode else [],
+        # ---- optional ----
+        species = expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if (not sgt_mode and species_tree_flag) else [],
     output:
         expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
     run:
