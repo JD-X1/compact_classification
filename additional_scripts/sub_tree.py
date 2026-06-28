@@ -25,6 +25,7 @@ def filter_tree_by_alignment(tree_file, alignment_file, output_tree_file, purge_
         to_prune.add(item)
 
     tree.prune_taxa_with_labels(sorted(to_prune))
+    tree.resolve_polytomies()
 
     with open(output_tree_file, "w") as out_file:
         out_file.write(tree.as_string("newick"))

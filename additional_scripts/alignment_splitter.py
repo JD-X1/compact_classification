@@ -2,6 +2,18 @@
 
 import argparse
 from Bio import SeqIO
+from Bio.Seq import Seq
+
+# Residues outside the 20 standard AA that the LG model in epa-ng rejects
+# (it aborts on the first one). Selenocysteine (U) and pyrrolysine (O) are real
+# but unmodelled; B/Z/J are ambiguity codes. Map all to X (unknown) so placement
+# treats them as fully ambiguous rather than crashing. X and gaps are kept as-is.
+_NONSTANDARD = str.maketrans("UOBZJuobzj", "XXXXXxxxxx")
+
+
+def sanitize_record(record):
+    record.seq = Seq(str(record.seq).translate(_NONSTANDARD))
+    return record
 
 
 def is_target_id(value, taxon_name):
@@ -28,9 +40,9 @@ def split_mag_from_aln(input_fasta, taxon_name, output_dir, gene_name=None):
     nonmag_records = []
     for record in records:
         if is_target_record(record, taxon_name):
-            mag_records.append(record)
+            mag_records.append(sanitize_record(record))
         else:
-            nonmag_records.append(record)
+            nonmag_records.append(sanitize_record(record))
     if gene_name == None:
         SeqIO.write(mag_records, output_dir + taxon_name + "_q.aln", "fasta")
         SeqIO.write(nonmag_records, output_dir + taxon_name + "_ref.aln", "fasta")

@@ -52,6 +52,23 @@ echo "log outdir: ${log_dir}"
 echo "Fisher Out: ${fish_out}"
 echo "phyloscratch dir: ${phyloscratch_dir}"
 
+# A predictor that returned no residues (e.g. metaeuk found no genes) makes
+# fisher.py divide by zero in is_aa_seq. Detect that here and fall through to an
+# empty working_dataset so the workflow routes the MAG to UNCLASSIFIABLE.
+residues=0
+while IFS=$'\t' read -r pdir pfile _; do
+  [[ -z "${pfile:-}" ]] && continue
+  pf="${pdir}/${pfile}"
+  [[ -f "${pf}" ]] || continue
+  r=$(grep -v '^>' "${pf}" 2>/dev/null | tr -d '[:space:]' | wc -c)
+  residues=$((residues + r))
+done < "${input_abs}"
+if [[ "${residues}" -eq 0 ]]; then
+  echo "No predicted residues for ${mag}; skipping fisher, emitting empty working_dataset" >&2
+  mkdir -p "${working_dataset}"
+  exit 0
+fi
+
 phyloDB=""
 
 for cand in \
@@ -92,13 +109,22 @@ fisher.py --threads "${TCores}" -o "${fish_out}" --keep_tmp \
 echo "Fish Caught"
 
 
+# informant.py is diagnostic-only and raises on a zero-ortholog matrix
+# ("cannot set a frame with no defined columns"). A marker-empty MAG must not
+# hard-fail here -- let it fall through to an empty working_dataset so the
+# workflow can route it to a graceful UNCLASSIFIABLE verdict.
 informant.py -i "${fish_out}" --orthologs_only \
-    1> "${log_dir}/${mag}_informant.log" 2>&1
+    1> "${log_dir}/${mag}_informant.log" 2>&1 \
+    || echo "informant.py exited non-zero (likely zero ortholog hits); continuing" >&2
 echo "Informant Complete"
 
 echo "Choosing the best fish"
 working_dataset_constructor.py -i "${fish_out}" -o "${working_dataset}" \
-    1> "${log_dir}/${mag}_working_dataset_constructor.log" 2>&1
+    1> "${log_dir}/${mag}_working_dataset_constructor.log" 2>&1 \
+    || echo "working_dataset_constructor.py exited non-zero; emitting empty working_dataset" >&2
+# Guarantee the checkpoint output dir exists even when no markers were recovered,
+# so goneFishing succeeds and the empty gene list drives the UNCLASSIFIABLE ramp.
+mkdir -p "${working_dataset}"
 echo "Fish on the grill"
 
 [[ -f config.ini ]] && mv -f config.ini "${phyloscratch_dir}/config.ini"

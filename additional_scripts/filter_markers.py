@@ -103,10 +103,15 @@ def main() -> int:
 
     if len(kept) < args.min_markers:
         sys.stderr.write(
-            f"Only {len(kept)} markers passed filter for {args.taxon}; "
-            f"minimum required is {args.min_markers}.\n"
+            f"WARNING: only {len(kept)} markers passed filter for {args.taxon}; "
+            f"below the recommended minimum of {args.min_markers}. Proceeding with "
+            f"concatenation, but this placement should be treated as low-confidence.\n"
         )
-        return 2
+    if not kept:
+        sys.stderr.write(
+            f"WARNING: no markers passed filter for {args.taxon}; "
+            f"wrote empty keep list to route this MAG to UNCLASSIFIABLE.\n"
+        )
 
     return 0
 

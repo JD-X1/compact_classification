@@ -99,9 +99,9 @@ def is_Alignment(Arg):
                 print("Warning %s lenght: %d" % (Arg[key].SeqId, Arg[key].SeqLen))
             return False
 
-def Write_Fasta(Dict):
+def Write_Fasta(Dict, OutPath='SuperMatrix.fas'):
     """Simple Fasta writer. NO wrap No extra features."""
-    SuperMatrix = open('SuperMatrix.fas', 'w')
+    SuperMatrix = open(OutPath, 'w')
     for Record in sorted(Dict.keys()):
         Identifier='>' + Record
         Sequence = Dict[Record] + "\n"
@@ -115,13 +115,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='This script is  a simple script for concatenate alignments in FASTA format.')
     parser.add_argument('-d', action= 'store', dest = 'delimiter', default = '|', type =str,  help='Specify field delimiter in fasta identifier. First element is considered to be OTU name and should be identical in the different alignments.')
     parser.add_argument('-in', dest = 'alignments', type = str, nargs= '+',  help = 'Files to process(FASTA alignment)')
-    
+    parser.add_argument('-o', action= 'store', dest = 'outdir', default = '.', type = str, help = 'Directory for output files (SuperMatrix.fas, Partition.txt, PAmatrix.txt, StitcherLog.out). Defaults to the current directory. Set a per-job directory so concurrent runs cannot clobber each other.')
+
     arguments = parser.parse_args()
     Delim = arguments.delimiter
     Targets = arguments.alignments
+    OutDir = arguments.outdir
+    os.makedirs(OutDir, exist_ok=True)
 
-    Log = open('StitcherLog.out', 'w+')
-    Part = open('Partition.txt', 'w+')
+    Log = open(os.path.join(OutDir, 'StitcherLog.out'), 'w+')
+    Part = open(os.path.join(OutDir, 'Partition.txt'), 'w+')
     
     if len(Targets) <2:
         print("Error not enough arguments to proceed, you need at least two alignments to concatenate.")
@@ -162,8 +165,8 @@ if __name__ == "__main__":
                 Problems.append(File)
                 print("Error: The File %s  contains sequences of different lengths!" % File)
 
-        WritePresAb(presab, 'PAmatrix.txt')
-        Write_Fasta(SDict)
+        WritePresAb(presab, os.path.join(OutDir, 'PAmatrix.txt'))
+        Write_Fasta(SDict, os.path.join(OutDir, 'SuperMatrix.fas'))
         Log.close()
         Part.close()
         if len(Problems) >0:

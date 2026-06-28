@@ -171,9 +171,6 @@ min_markers_for_concat = int(config.get("min_markers_for_concat", 10))
 mafft_threads = max(1, int(config.get("mafft_threads", 22)))
 epa_threads = max(1, int(config.get("epa_threads", workflow.cores)))
 taxonomy_report_enabled = as_bool(config.get("taxonomy_report", True))
-taxonomy_consensus_top_k = int(config.get("taxonomy_consensus_top_k", 5))
-taxonomy_conf_high = float(config.get("taxonomy_conf_high", 0.70))
-taxonomy_conf_medium = float(config.get("taxonomy_conf_medium", 0.45))
 
 log(f"Will use {'Augustus (BUSCO)' if augustus else 'Compleasm'} for BUSCO runs.")
 if trim_alignments:
@@ -395,7 +392,22 @@ def resolve_ref_concat_tree() -> str:
 
 REF_CONCAT_TREE = resolve_ref_concat_tree()
 
+def resolve_tax_tree() -> str:
+    override = config.get("tax_tree", None)
+    if override:
+        p = override if os.path.isabs(str(override)) else os.path.join(RESOURCES_DIR, str(override))
+        return _require_exists(p, "tax_tree override")
+
+    if not USE_EP_REFS:
+        return _require_exists(os.path.join(RESOURCES_DIR, "tax_tree.txt"), "PF gappa taxon file")
+
+    # EP mode: taxon file must label every leaf of ref_concat_EP.tre (PF + EukProt)
+    return _require_exists(os.path.join(RESOURCES_DIR, "tax_tree_EP.txt"), "EP gappa taxon file")
+
+TAX_TREE = resolve_tax_tree()
+
 log(f"Database flag: {DB_KEY} (EP reference alignments/trees {'ENABLED' if USE_EP_REFS else 'disabled'})")
+log(f"gappa taxon file: {TAX_TREE}")
 
 # ---------------- Purge parsing ---------------- #
 
@@ -509,22 +521,73 @@ for f in mag_files:
     mags.append(mag_name)
 
 
+def concat_terminal_targets(mag):
+    """Per-MAG terminal outputs for the concat path, chosen on retained-marker
+    count after the marker_filter checkpoint. A MAG with <2 retained markers
+    cannot be concatenated (geneStitcher needs >=2 alignments), so it is routed
+    to a graceful UNCLASSIFIABLE report instead of hard-failing the chain."""
+    if marker_filter_enabled:
+        keep = checkpoints.marker_filter.get(mag=mag).output.keep
+        n_markers = sum(1 for line in open(keep) if line.strip())
+    else:
+        n_markers = 2  # filtering disabled -> assume concat-eligible (legacy behaviour)
+
+    if n_markers < 2:
+        return [config["outdir"] + f"{mag}_epa_out/{mag}_unclassifiable_report.tsv"]
+
+    targets = [
+        config["outdir"] + f"{mag}_epa_out/{mag}_epa_out.jplace",
+        config["outdir"] + f"{mag}_epa_out/profile.tsv",
+    ]
+    if taxonomy_report_enabled:
+        targets += [
+            config["outdir"] + f"{mag}_epa_out/classification_decision_report.tsv",
+            config["outdir"] + f"{mag}_epa_out/classification_heterogeneity.tsv",
+        ]
+    if species_tree_flag:
+        targets += [config["outdir"] + f"species_tree/{mag}_species_tree.treefile"]
+    return targets
+
+
+def all_concat_terminal_targets(wildcards):
+    if sgt_mode:
+        return []
+    out = []
+    for mag in mags:
+        out += concat_terminal_targets(mag)
+    return out
+
+
 rule all:
     input:
-        # ---- concat path ----
-        expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags) if not sgt_mode else [],
-        expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags) if not sgt_mode else [],
-        expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags) if not sgt_mode else [],
-        expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
-        expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
-        expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
-        expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if (not sgt_mode and species_tree_flag) else [],
+        # ---- concat path (per-MAG, marker-count aware) ----
+        all_concat_terminal_targets,
         # ---- sgt path ----
         expand(config["outdir"] + "{mag}_epa_out/profile_summary.tsv", mag=mags) if sgt_mode else [],
         expand(config["outdir"] + "{mag}_summary.csv", mag=mags) if sgt_mode else [],
+        expand(config["outdir"] + "{mag}_epa_out/sgt_classification_heterogeneity.tsv", mag=mags) if (sgt_mode and taxonomy_report_enabled) else [],
         # ---- always ----
         expand(config["outdir"] + "plm/{mag}_plm_candidates.faa", mag=mags) if plmsearch_enabled else [],
         expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
+
+
+rule unclassifiable_low_markers:
+    """Graceful terminal for MAGs with <2 retained markers (concat impossible)."""
+    input:
+        keep=config["outdir"] + "{mag}_marker_filter/kept_genes.txt"
+    output:
+        config["outdir"] + "{mag}_epa_out/{mag}_unclassifiable_report.tsv"
+    run:
+        markers = [l.strip() for l in open(input.keep) if l.strip()]
+        os.makedirs(os.path.dirname(output[0]), exist_ok=True)
+        with open(output[0], "w") as fh:
+            fh.write("mag\tstatus\tn_retained_markers\tretained_markers\treason\n")
+            fh.write(
+                f"{wildcards.mag}\tUNCLASSIFIABLE_LOW_MARKERS\t{len(markers)}\t"
+                f"{','.join(markers)}\t"
+                "fewer than 2 markers retained after marker_filter; "
+                "concatenation requires >=2 alignments\n"
+            )
 
 
 
@@ -887,7 +950,7 @@ rule mafft:
     log:
         config["outdir"] + "logs/mafft/{mag}/{mag}_{gene}_mafft.log"
     shell:
-        "mafft --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
+        "mafft --anysymbol --auto --addfragments {input.query} --keeplength --thread {threads} {input.reference} > {output} 2> {log}"
 
 
 rule divvier:
@@ -989,20 +1052,26 @@ rule sgt_gappa:
     priority: 0
     params:
         out_dir=config["outdir"],
-        tax_tree=os.path.join(RESOURCES_DIR, "tax_tree.txt")
+        tax_tree=TAX_TREE,
+        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
     log:
         config["outdir"] + "logs/sgt_gappa/{mag}/{gene}.log"
     shell:
         """
-        if [ ! -s "{input}" ]; then
-            echo "ERROR: Missing or empty JPLACE: {input}" >&2
-            exit 2
+        # Missing / empty / zero-placement jplace = gene too divergent to place.
+        # Record it as unplaceable (a novelty signal) and emit a sentinel
+        # profile.tsv instead of failing the run. See sgt_place_guard.py.
+        STATUS=$(python {params.ADD_SCRIPTS}sgt_place_guard.py classify \
+            --jplace {input} --gene {wildcards.gene} --profile-out {output})
+        if [ "$STATUS" = "PLACEABLE" ]; then
+            gappa examine assign \
+                --jplace-path {input} \
+                --taxon-file {params.tax_tree} \
+                --out-dir {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene} \
+                --allow-file-overwriting --best-hit --verbose > {log}
+        else
+            echo "sgt_gappa: {wildcards.gene} unplaceable for {wildcards.mag}; wrote sentinel profile.tsv" > {log}
         fi
-        gappa examine assign \
-            --jplace-path {input} \
-            --taxon-file {params.tax_tree} \
-            --out-dir {params.out_dir}{wildcards.mag}_epa_out/{wildcards.gene} \
-            --allow-file-overwriting --best-hit --verbose > {log}
         """
 
 rule sgt_summary:
@@ -1010,7 +1079,8 @@ rule sgt_summary:
         sgt_summary_inputs
     output:
         o1=config["outdir"] + "{mag}_epa_out/profile_summary.tsv",
-        o2=config["outdir"] + "{mag}_summary.csv"
+        o2=config["outdir"] + "{mag}_summary.csv",
+        o3=config["outdir"] + "{mag}_unplaceable_fraction.tsv"
     conda:
         "pline_max"
     threads: 1
@@ -1023,9 +1093,48 @@ rule sgt_summary:
         """
         grep -v "LWR" {input} > {output.o1} || true
         python {params.ADD_SCRIPTS}gappa_parse.py -i {output.o1} -o {output.o2} > {log} 2>&1
+        python {params.ADD_SCRIPTS}sgt_place_guard.py tally \
+            --profiles {input} --out {output.o3} --mag {wildcards.mag} >> {log} 2>&1
         """
 
-rule marker_filter:
+# SGT between-marker dispersion (D1). Each gene's best-hit taxopath is one marker
+# vote; sgt_perquery reshapes the per-gene profiles into the per-query table that
+# taxonomy_report consumes. Distinct sgt_* output paths + sgt_mode gating keep this
+# entirely separate from the concat gappa->per_query.tsv->classification_heterogeneity
+# chain (no rule/output ambiguity; concat path untouched). taxonomy_report.py is reused
+# unmodified. Unplaceable genes (header-only sentinels) cast no vote.
+if sgt_mode and taxonomy_report_enabled:
+    rule sgt_taxonomy_report:
+        input:
+            sgt_summary_inputs
+        output:
+            per_query=config["outdir"] + "{mag}_epa_out/sgt_per_query.tsv",
+            report=config["outdir"] + "{mag}_epa_out/sgt_classification_decision_report.tsv",
+            heterogeneity=config["outdir"] + "{mag}_epa_out/sgt_classification_heterogeneity.tsv"
+        conda:
+            "pline_max"
+        threads: 1
+        priority: 0
+        params:
+            ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
+            min_markers=min_markers_for_concat
+        log:
+            config["outdir"] + "logs/sgt_taxonomy_report/{mag}.log"
+        shell:
+            r"""
+            python {params.ADD_SCRIPTS}sgt_perquery.py \
+                --profiles {input} --out {output.per_query} > {log} 2>&1
+            python {params.ADD_SCRIPTS}taxonomy_report.py \
+                --profile {output.per_query} \
+                --out-report {output.report} \
+                --out-heterogeneity {output.heterogeneity} \
+                --mag-name {wildcards.mag} \
+                --min-markers {params.min_markers} \
+                --out-flag {config[outdir]}{wildcards.mag}_epa_out/{wildcards.mag}_SGT_LOW_MARKER_COUNT.flag \
+                >> {log} 2>&1
+            """
+
+checkpoint marker_filter:
     input:
         marker_filter_input_alignments
     output:
@@ -1045,6 +1154,16 @@ rule marker_filter:
         config["outdir"] + "logs/marker_filter/{mag}.log"
     shell:
         """
+        mkdir -p "$(dirname {output.keep})"
+        # Marker-empty MAG (e.g. goneFishing recovered no genes): emit an empty
+        # keep list + stats header so the concat path routes it to UNCLASSIFIABLE
+        # instead of feeding filter_markers.py an empty --inputs.
+        if [ -z "{input}" ]; then
+            : > {output.keep}
+            printf 'gene\tcoverage\tgap_fraction\tinformative_sites\tkept\n' > {output.stats}
+            echo "marker_filter: no input alignments; wrote empty kept_genes for {wildcards.mag}" > {log}
+            exit 0
+        fi
         python {params.ADD_SCRIPTS}filter_markers.py \
             --taxon {wildcards.mag} \
             --inputs {input} \
@@ -1104,8 +1223,8 @@ rule concat:
                 FIXED_ALNS+=("{params.out_dir}{wildcards.mag}_relabeled/${{prot}}.fas")
             done
         fi
-        python {params.ADD_SCRIPTS}geneStitcher.py -in ${{FIXED_ALNS[@]}} 
-        mv SuperMatrix.fas {output}
+        python {params.ADD_SCRIPTS}geneStitcher.py -in ${{FIXED_ALNS[@]}} -o {params.out_dir}
+        mv {params.out_dir}SuperMatrix.fas {output}
         """
 
 rule alignment_splitter:
@@ -1173,7 +1292,7 @@ rule epa:
         mkdir -p {params.out_dir}logs/raxml_epa/
         #ulimit -n 65536
         #ulimit -s unlimited
-        epa-ng --ref-msa {input.ref_aln} \
+        epa-ng --redo --ref-msa {input.ref_aln} \
          --tree {input.ref_tree} \
          --query {input.q_aln} \
          --outdir {params.out_dir}{wildcards.mag}_epa_out/ \
@@ -1186,14 +1305,15 @@ rule gappa:
     input:
         config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
     output:
-        config["outdir"] + "{mag}_epa_out/profile.tsv"
+        profile=config["outdir"] + "{mag}_epa_out/profile.tsv",
+        per_query=config["outdir"] + "{mag}_epa_out/per_query.tsv"
     conda:
         "gappa"
     threads: 1
     params:
         out_dir=config["outdir"],
         resources_dir=RESOURCES_DIR,
-        tax_tree=os.path.join(RESOURCES_DIR, "tax_tree.txt")
+        tax_tree=TAX_TREE
     priority: 0
     log:
         config["outdir"] + "logs/gappa/{mag}.log"
@@ -1205,34 +1325,14 @@ rule gappa:
         fi
         gappa examine assign \
             --jplace-path {input} \
-            --taxon-file {params.resources_dir}/tax_tree.txt \
+            --taxon-file {params.tax_tree} \
             --out-dir {params.out_dir}{wildcards.mag}_epa_out \
-            --allow-file-overwriting --best-hit --verbose > {log}
-        """
-
-rule jplace_pair_wise_dist_matrix:
-    input:
-        config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace"
-    output:
-        config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv"
-    conda:
-        "pline_max"
-    threads: 1
-    params:
-        out_dir=config["outdir"],
-        ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR
-    priority: 0
-    log:
-        config["outdir"] + "logs/gappa/{mag}_pairwise_distance.log"
-    shell:
-        """
-        python {params.ADD_SCRIPTS}jplace_dist2leaves_csv.py {input} -o {output}
+            --allow-file-overwriting --per-query-results --best-hit --verbose > {log}
         """
 
 rule taxonomy_report:
     input:
-        profile=config["outdir"] + "{mag}_epa_out/profile.tsv",
-        pairwise=config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv",
+        profile=config["outdir"] + "{mag}_epa_out/per_query.tsv",
         marker_stats=branch(
             marker_filter_enabled,
             config["outdir"] + "{mag}_marker_filter/marker_stats.tsv",
@@ -1244,18 +1344,14 @@ rule taxonomy_report:
             []
         )
     output:
-        confidence=config["outdir"] + "{mag}_epa_out/classification_confidence.tsv",
-        consensus=config["outdir"] + "{mag}_epa_out/classification_consensus.tsv",
-        report=config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv"
+        report=config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv",
+        heterogeneity=config["outdir"] + "{mag}_epa_out/classification_heterogeneity.tsv"
     conda:
         "pline_max"
     threads: 1
     params:
         ADD_SCRIPTS=ADDITIONAL_SCRIPTS_DIR,
-        tax_tree=os.path.join(RESOURCES_DIR, "tax_tree.txt"),
-        top_k=taxonomy_consensus_top_k,
-        high=taxonomy_conf_high,
-        medium=taxonomy_conf_medium
+        min_markers=min_markers_for_concat
     priority: 0
     log:
         config["outdir"] + "logs/taxonomy_report/{mag}.log"
@@ -1266,14 +1362,11 @@ rule taxonomy_report:
         if [[ -n "{input.kept}" ]]; then EXTRA="$EXTRA --kept-genes {input.kept}"; fi
         python {params.ADD_SCRIPTS}taxonomy_report.py \
             --profile {input.profile} \
-            --pairwise {input.pairwise} \
-            --tax-tree {params.tax_tree} \
-            --out-confidence {output.confidence} \
-            --out-consensus {output.consensus} \
             --out-report {output.report} \
-            --top-k {params.top_k} \
-            --high-cutoff {params.high} \
-            --medium-cutoff {params.medium} \
+            --out-heterogeneity {output.heterogeneity} \
+            --mag-name {wildcards.mag} \
+            --min-markers {params.min_markers} \
+            --out-flag {config[outdir]}{wildcards.mag}_epa_out/{wildcards.mag}_LOW_MARKER_COUNT.flag \
             $EXTRA > {log} 2>&1
         """
 
@@ -1300,26 +1393,16 @@ rule species_tree:
         """
 
 
-localrules: cleanup
+localrules: cleanup, unclassifiable_low_markers
 
 rule cleanup:
     input:
-        # ---- concat path ----
-        jplace  = expand(config["outdir"] + "{mag}_epa_out/{mag}_epa_out.jplace", mag=mags) if not sgt_mode else [],
-        profile = expand(config["outdir"] + "{mag}_epa_out/profile.tsv", mag=mags) if not sgt_mode else [],
-        dists   = expand(config["outdir"] + "{mag}_epa_out/pairwise_qSeqDistance2leaves.tsv", mag=mags) if not sgt_mode else [],
-        conf    = expand(config["outdir"] + "{mag}_epa_out/classification_confidence.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
-        cons    = expand(config["outdir"] + "{mag}_epa_out/classification_consensus.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
-        report  = expand(config["outdir"] + "{mag}_epa_out/classification_decision_report.tsv", mag=mags) if (not sgt_mode and taxonomy_report_enabled) else [],
-        matrix  = expand(config["outdir"] + "{mag}_SuperMatrix.fas", mag=mags) if not sgt_mode else [],
-        q_aln   = expand(config["outdir"] + "{mag}_q.aln", mag=mags) if not sgt_mode else [],
-        ref_aln = expand(config["outdir"] + "{mag}_ref.aln", mag=mags) if not sgt_mode else [],
-        ref_tre = expand(config["outdir"] + "{mag}_ref.tre", mag=mags) if not sgt_mode else [],
+        # ---- concat path (per-MAG, marker-count aware; degenerate MAGs route
+        #      to the UNCLASSIFIABLE report so cleanup still runs and clears chaff) ----
+        concat = all_concat_terminal_targets,
         # ---- sgt path ----
         sgt_profile_summary = expand(config["outdir"] + "{mag}_epa_out/profile_summary.tsv", mag=mags) if sgt_mode else [],
         sgt_summary = expand(config["outdir"] + "{mag}_summary.csv", mag=mags) if sgt_mode else [],
-        # ---- optional ----
-        species = expand(config["outdir"] + "species_tree/{mag}_species_tree.treefile", mag=mags) if (not sgt_mode and species_tree_flag) else [],
     output:
         expand(config["outdir"] + "{mag}_cleanup.done", mag=mags)
     run:
